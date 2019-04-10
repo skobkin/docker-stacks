@@ -1,0 +1,68 @@
+database=/data/murmur.sqlite
+
+#icesecretread=
+icesecretwrite=
+
+#autobanAttempts = 10
+#autobanTimeframe = 120
+#autobanTime = 300
+
+#logfile=/data/murmur.log
+
+# Not needed in Docker environment
+#pidfile=/run/murmur/murmur.pid
+
+welcometext="
+<br />
+<a href='http://skobk.in/mumble/'><img src='https://i.skobk.in/i/philosoraptor.jpg'></a><br />
+Welcome to my Mumble server <a href='http://skobkin.ru/mumble'>skobk.in</a>
+<br />Contacts:
+<br /><b>skobkin</b>
+<br />E-mail: <a href='mailto:skobkin-ru@ya.ru'>skobkin-ru@ya.ru</a>
+<br />Telegram: <a href='https://t.me/skobkin'>@skobkin</a>
+<br />
+<br /><b>How to set up Mumble client:</b>
+<br /><a href='http://skobk.in/mumble/'>http://skobk.in/mumble</a>
+<br />"
+
+
+# Port to bind TCP and UDP sockets to.
+port=64738
+
+#host=
+
+# Password to join server.
+serverpassword=
+
+# 'Other'
+defaultchannel=10
+
+# suggestVersion=1.2.3
+
+suggestPushToTalk=true
+
+bandwidth=130000
+
+timeout=30
+
+users=100
+
+opusthreshold=0
+
+#channelnestinglimit=10
+
+#channelname=[ \\-=\\w\\#\\[\\]\\{\\}\\(\\)\\@\\|]+
+#username=[-=\\w\\[\\]\\{\\}\\(\\)\\@\\|\\.]+
+
+#textmessagelength=5000
+#imagemessagelength=131072
+
+#allowhtml=true
+
+logdays=31
+
+registerName="Skobkin's Mumble server"
+
+sslCert=/ssl/domain.crt
+#sslCA=/ssl/intermediate.crt
+sslKey=/ssl/domain.key

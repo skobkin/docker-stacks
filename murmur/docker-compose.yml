@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+  murmur:
+    image: skobkin/murmur-official-static
+    container_name: murmur
+    ports:
+      - "64738:64738/tcp"
+      - "64738:64738/udp"
+    volumes:
+      # Database location
+      - "murmur-data:/data"
+      # SSL cert and key
+      - "/etc/ssl/${MURMUR_HOSTNAME}:/ssl:ro"
+      # murmur.ini location
+      - "./config:/config:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+    env_file: .env
+    restart: unless-stopped
+
+volumes:
+  murmur-data:
