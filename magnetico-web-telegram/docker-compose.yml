@@ -1,0 +1,8 @@
+version: '3.7'
+
+services:
+  bot:
+    image: skobkin/magnetico-web-telegram-bot:latest
+    container_name: magnetico-telegram
+    env_file: .env
+    restart: unless-stopped
