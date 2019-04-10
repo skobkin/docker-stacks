@@ -1,0 +1,16 @@
+version: '3.7'
+
+services:
+  duplicati:
+    image: linuxserver/duplicati:latest
+    container_name: duplicati
+    restart: always
+    env_file: .env
+    ports:
+      - "127.0.0.1:8200:8200/tcp"
+    volumes:
+      - "duplicati-data:/config"
+      - "/var/backups:/source:ro"
+
+volumes:
+  duplicati-data:
