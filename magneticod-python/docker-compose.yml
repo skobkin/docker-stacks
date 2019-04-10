@@ -1,0 +1,14 @@
+version: '3.7'
+
+services:
+  magneticod:
+    image: skobkin/magneticod-python:latest
+    container_name: magneticod-python
+    ports:
+      - "${MAGNETICO_PORT}:${MAGNETICO_PORT}/udp"
+    env_file: .env
+    volumes:
+      - "${HOST_DB_PATH}:/data"
+    user: "${HOST_USER}"
+    restart: unless-stopped
+    command: "--node-addr 0.0.0.0:${MAGNETICO_PORT} --database-file /data/database.sqlite3"
