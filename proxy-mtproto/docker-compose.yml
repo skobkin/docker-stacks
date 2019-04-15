@@ -5,7 +5,7 @@ services:
     image: nineseconds/mtg:stable
     container_name: proxy-mtproto
     ports:
-      - "444:443/tcp"
+      - "${MTG_IPV4_PORT}:${MTG_PORT}/tcp"
     env_file: .env
     restart: unless-stopped
     command: "${MTPROTO_SECRET} ${MTPROTO_TAG}"
