@@ -4,6 +4,9 @@ services:
   magneticod:
     image: skobkin/magneticod-python:latest
     container_name: magneticod-python
+    # Using host mode to be able to simply apply firewall rules to disable connection tracking
+    # https://github.com/boramalper/magnetico/blob/master/cmd/magneticod/README.md#setup
+    network_mode: "host"
     ports:
       - "${MAGNETICO_PORT}:${MAGNETICO_PORT}/udp"
     env_file: .env
