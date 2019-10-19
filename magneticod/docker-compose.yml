@@ -1,0 +1,17 @@
+version: '3.7'
+
+services:
+  magneticod:
+    image: skobkin/magneticod:0.9.1-extra-engines
+    container_name: magneticod-go
+    # Using host mode to be able to simply apply firewall rules to disable connection tracking
+    # https://github.com/boramalper/magnetico/blob/master/cmd/magneticod/README.md#setup
+    network_mode: "host"
+    ports:
+      - "${MAGNETICO_PORT}:${MAGNETICO_PORT}/udp"
+    env_file: .env
+    #volumes:
+    #  - "${HOST_DB_PATH}:/data"
+    user: "${HOST_USER}"
+    restart: unless-stopped
+    command: "-v --indexer-addr=0.0.0.0:${MAGNETICO_PORT} --indexer-max-neighbors=${MAGNETICO_NEIGHBORS} --database=${MAGNETICO_DATABASE_URL}"
