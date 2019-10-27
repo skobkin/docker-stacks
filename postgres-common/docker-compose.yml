@@ -1,0 +1,23 @@
+version: '3.7'
+
+services:
+  postgres-common:
+    image: postgres:12-alpine
+    container_name: postgres-common
+    env_file: .env
+    networks:
+      - db-network
+    ports:
+      - "127.0.0.1:5432:5432/tcp"
+    volumes:
+      # Database files
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+
+networks:
+  db-network:
+    name: "${COMMON_DATABASE_NETWORK:-database-network}"
+    external: true
