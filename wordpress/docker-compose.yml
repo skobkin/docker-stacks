@@ -1,0 +1,16 @@
+version: '3.7'
+
+services:
+    wordpress:
+        image: 'wordpress:php7.3-fpm-alpine'
+        restart: unless-stopped
+        ports:
+            - '127.0.0.1:${FPM_EXT_PORT}:9000'
+        environment:
+            WORDPRESS_DB_HOST: '${MYSQL_HOST:-mariadb-common}'
+            WORDPRESS_DB_USER: '${MYSQL_USER}'
+            WORDPRESS_DB_PASSWORD: '${MYSQL_PASSWORD}'
+            WORDPRESS_DB_NAME: '${MYSQL_DATABASE}'
+        volumes:
+            - '${THEMES_DIR}:/var/www/html/wp-content/themes'
+            - '${PLUGINS_DIR}:/var/www/html/wp-content/plugins'
