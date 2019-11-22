@@ -20,8 +20,8 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "${LOG_MAX_SIZE}"
-        max-file: "${LOG_MAX_FILE}"
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
 
 volumes:
   murmur-data:
