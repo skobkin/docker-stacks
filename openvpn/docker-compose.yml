@@ -11,6 +11,12 @@ services:
       - "1194:1194/udp"
     volumes:
       - "ovpn-data:/etc/openvpn"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-1m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
 
 volumes:
   ovpn-data:
