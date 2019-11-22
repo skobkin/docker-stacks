@@ -17,6 +17,11 @@ services:
       - "/etc/localtime:/etc/localtime:ro"
     env_file: .env
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE}"
+        max-file: "${LOG_MAX_FILE}"
 
 volumes:
   murmur-data:

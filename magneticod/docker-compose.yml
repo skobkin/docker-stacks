@@ -15,3 +15,8 @@ services:
     user: "${HOST_USER}"
     restart: unless-stopped
     command: "-v --indexer-addr=0.0.0.0:${MAGNETICO_PORT} --indexer-max-neighbors=${MAGNETICO_NEIGHBORS} --database=${MAGNETICO_DATABASE_URL}"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE}"
+        max-file: "${LOG_MAX_FILE}"
