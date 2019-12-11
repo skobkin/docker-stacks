@@ -1,1 +1,2 @@
 config/murmur.ini
+db/*.sqlite
