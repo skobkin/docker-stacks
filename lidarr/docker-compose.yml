@@ -1,0 +1,21 @@
+version: '3.7'
+
+services:
+  lidarr:
+    # https://hub.docker.com/r/linuxserver/lidarr
+    image: linuxserver/lidarr:latest
+    container_name: lidarr
+    #network_mode: "host"
+    ports:
+      - "${EXT_PORT}:8686/tcp"
+    env_file: .env
+    volumes:
+      - "${CONFIG_PATH}:/config"
+      - "${MUSIC_PATH}:/music"
+      - "${DOWNLOADS_PATH}:/downloads"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"

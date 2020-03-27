@@ -1,0 +1,21 @@
+version: '3.7'
+
+services:
+  sonarr:
+    # https://hub.docker.com/r/linuxserver/sonarr
+    image: linuxserver/sonarr:latest
+    container_name: sonarr
+    #network_mode: "host"
+    ports:
+      - "${EXT_PORT}:8989/tcp"
+    env_file: .env
+    volumes:
+      - "${CONFIG_PATH}:/config"
+      - "${TVSERIES_PATH}:/tv"
+      - "${DOWNLOADS_PATH}:/downloads"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"

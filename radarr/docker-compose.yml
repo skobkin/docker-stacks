@@ -1,0 +1,21 @@
+version: '3.7'
+
+services:
+  radarr:
+    # https://hub.docker.com/r/linuxserver/radarr
+    image: linuxserver/radarr:latest
+    container_name: radarr
+    #network_mode: "host"
+    ports:
+      - "${EXT_PORT}:7878/tcp"
+    env_file: .env
+    volumes:
+      - "${CONFIG_PATH}:/config"
+      - "${MOVIES_PATH}:/movies"
+      - "${DOWNLOADS_PATH}:/downloads"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
