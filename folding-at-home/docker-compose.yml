@@ -1,0 +1,17 @@
+version: '3.7'
+
+services:
+  folding-at-home:
+    # https://hub.docker.com/r/johnktims/folding-at-home
+    image: johnktims/folding-at-home:latest
+    container_name: folding-at-home
+    ports:
+      - "127.0.0.1:${EXT_PORT}:7396/tcp"
+    env_file: .env
+    command: ["--user=${FAH_USER}", "--team=${FAH_TEAM}", "--passkey=${FAH_PASS}", "--power=${FAH_POWER}"]
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
