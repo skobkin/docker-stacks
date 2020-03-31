@@ -12,8 +12,10 @@ services:
     env_file: .env
     volumes:
       - "${CONFIG_PATH}:/config"
-      - "${TVSERIES_PATH}:/tv"
-      - "${DOWNLOADS_PATH}:/downloads"
+      # Using same path to fix integration with transmission working on host
+      - "${TVSERIES_PATH}:${TVSERIES_PATH}"
+      #- "${TVSERIES_PATH}:/tv"
+      #- "${DOWNLOADS_PATH}:/downloads"
     restart: unless-stopped
     logging:
       driver: "json-file"
