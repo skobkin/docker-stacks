@@ -20,3 +20,25 @@ docker-compose logs -f
 
 Some services may require additional configuration. Check for additional `README.md` files
 or comments in the `docker-compose.yml` files or `.env.dist` templates.
+
+## Is it working?
+
+Not every stack is tested to fully work.
+
+- [x] Duplicati
+- [x] Folding@Home
+- [ ] Lidarr (prototype state, see sonarr)
+- [x] magnetico-web-telegram
+- [x] magneticod
+- [x] magneticod-python
+- [ ] mariadb-common (prototype state)
+- [ ] mastodon (didn't work when tried to set up)
+- [x] Murmur (Mumble server)
+- [x] OpenVPN
+- [ ] Postgres Common (prototype state)
+- [x] Proxy MTProto
+- [x] Proxy Socks5
+- [ ] Radarr (prototype state, see sonarr)
+- [ ] Sonarr (prototype state, working itself, but transmission-on-host integration didn't work due to path mismatch)
+- [ ] Wordpress (prototype state)
+- [ ] YaCy (abandoned due to upstream code problems)
