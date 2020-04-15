@@ -11,8 +11,8 @@ services:
     image: deamos/openstreamingplatform
     ports:
       - "1935:1935/tcp"
-      - "localhost:8585:80/tcp"
-      - "localhost:8553:443/tcp"
+      - "127.0.0.1:8585:80/tcp"
+      - "127.0.0.1:8553:443/tcp"
     environment:
       - REDIS_HOST="ospredis"
       - REDIS_PORT=6379
