@@ -22,6 +22,8 @@ services:
       - "${STORAGE_DIR}:/var/www"
       - "${DATABASE_DIR}:/opt/osp/db"
       - "${NGINX_DIR}:/usr/local/nginx/conf"
+    depends_on:
+      - redis
     restart: unless-stopped
     logging:
       driver: "json-file"
