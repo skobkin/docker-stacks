@@ -14,7 +14,7 @@ services:
       - "127.0.0.1:8585:80/tcp"
       - "127.0.0.1:8553:443/tcp"
     environment:
-      - REDIS_HOST="ospredis"
+      - REDIS_HOST=ospredis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=""
     env_file: .env
