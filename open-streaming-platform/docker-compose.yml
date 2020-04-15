@@ -1,0 +1,24 @@
+# https://gitlab.com/Deamos/flask-nginx-rtmp-manager/-/blob/master/docker-compose.yml
+version: '3.4'
+services:
+    redis:
+        image: redis
+        container_name: ospredis
+        expose:
+            - 6379
+    app:
+        image: deamos/openstreamingplatform
+        restart: always
+        ports:
+            - '1935:1935'
+            - 'localhost:8585:80'
+            - 'localhost:8553:443'
+        environment:
+            - REDIS_HOST="ospredis"
+            - REDIS_PORT=6379
+            - REDIS_PASSWORD=""
+        env_file: .env
+        volumes:
+            - "${STORAGE_DIR}:/var/www"
+            - "${DATABASE_DIR}:/opt/osp/db"
+            - "${NGINX_DIR}:/usr/local/nginx/conf"
