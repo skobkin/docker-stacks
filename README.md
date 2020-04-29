@@ -34,6 +34,7 @@ Not every stack is tested to fully work.
 - [ ] mariadb-common (prototype state)
 - [ ] mastodon (didn't work when tried to set up)
 - [x] Murmur (Mumble server)
+- [ ] NextCloud
 - [x] Open Streaming Platform
 - [x] OpenVPN
 - [x] Portainer
