@@ -1,0 +1,18 @@
+version: '3.7'
+
+services:
+  speedtest:
+    # https://hub.docker.com/r/adolfintel/speedtest
+    image: adolfintel/speedtest
+    container_name: speedtest
+    ports:
+      - "127.0.0.1:8888:80/tcp"
+    # See here for ENV variables:
+    # https://github.com/librespeed/speedtest/blob/docker/Dockerfile
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
