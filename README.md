@@ -36,6 +36,7 @@ Not every stack is tested to fully work.
 - [x] Murmur (Mumble server)
 - [x] Open Streaming Platform
 - [x] OpenVPN
+- [ ] Portainer (prototype state)
 - [ ] Postgres Common (prototype state)
 - [x] Proxy MTProto
 - [x] Proxy Socks5
