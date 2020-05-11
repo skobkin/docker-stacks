@@ -8,4 +8,4 @@ services:
       - "${MTG_IPV4_PORT}:${MTG_PORT}/tcp"
     env_file: .env
     restart: unless-stopped
-    command: "/mtg ${MTPROTO_SECRET:-} ${MTPROTO_TAG:-}"
+    command: "/mtg run ${MTPROTO_SECRET:-} ${MTPROTO_TAG:-}"
