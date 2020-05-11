@@ -8,4 +8,4 @@ services:
       - "${EXTERNAL_PORT}:${INTERNAL_PORT}/tcp"
     env_file: .env
     restart: unless-stopped
-    command: "run ${MTPROTO_SECRET} ${MTPROTO_TAG}"
+    command: "run ${PROXY_SECRET} ${PROXY_TAG}"
