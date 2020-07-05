@@ -42,6 +42,7 @@ Not every stack is tested to fully work.
 - [x] Proxy MTProto
 - [x] Proxy Socks5
 - [ ] Radarr (prototype state, see sonarr)
+- [x] Redis
 - [ ] Sonarr (prototype state, working itself, but transmission-on-host integration didn't work due to path mismatch)
 - [x] Speedtest (LibreSpeed)
 - [ ] Wordpress (prototype state)
