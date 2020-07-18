@@ -45,5 +45,6 @@ Not every stack is tested to fully work.
 - [x] Redis
 - [ ] Sonarr (prototype state, working itself, but transmission-on-host integration didn't work due to path mismatch)
 - [x] Speedtest (LibreSpeed)
+- [ ] Watchtower (prototype state)
 - [ ] Wordpress (prototype state)
 - [ ] YaCy (abandoned due to upstream code problems)
