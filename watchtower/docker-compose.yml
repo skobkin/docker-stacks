@@ -8,6 +8,7 @@ services:
     container_name: watchtower
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/etc/localtime:/etc/localtime:ro"
     env_file: .env
     restart: unless-stopped
     command: "${CONTAINERS_LIST}"
