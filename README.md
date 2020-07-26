@@ -46,6 +46,6 @@ Not every stack is tested to fully work.
 - [ ] Sonarr (prototype state, working itself, but transmission-on-host integration didn't work due to path mismatch)
 - [x] Speedtest (LibreSpeed)
 - [x] Watchtower
-- [ ] [Wireguard](https://hub.docker.com/r/cmulk/wireguard-docker) (prototype state)
+- [ ] [Wireguard](https://hub.docker.com/r/cmulk/wireguard-docker) (prototype state, not working yet)
 - [ ] Wordpress (prototype state)
 - [ ] YaCy (abandoned due to upstream code problems)
