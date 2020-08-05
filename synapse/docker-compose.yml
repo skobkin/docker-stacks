@@ -10,6 +10,8 @@ services:
       - "${INTERFACE_EXT:-127.0.0.1}:${HTTP_PORT_EXT:-8008}:${HTTP_PORT_INT:-8008}/tcp"
     volumes:
       - "${DATA_PATH:-./data}:/data"
+      # SSL certs directory
+      - "${SSL_PATH:-./ssl}:/ssl:ro"
     env_file: .env
     restart: unless-stopped
     logging:
