@@ -45,6 +45,7 @@ Not every stack is tested to fully work.
 - [x] Redis
 - [ ] Sonarr (prototype state, working itself, but transmission-on-host integration didn't work due to path mismatch)
 - [x] Speedtest (LibreSpeed)
+- [ ] [Synapse](https://hub.docker.com/r/matrixdotorg/synapse) ([Matrix.org](https://matrix.org/) server)
 - [x] Watchtower
 - [ ] [Wireguard](https://hub.docker.com/r/cmulk/wireguard-docker) (prototype state, not working yet)
 - [ ] Wordpress (prototype state)

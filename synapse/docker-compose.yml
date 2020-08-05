@@ -1,0 +1,17 @@
+version: '3.7'
+
+services:
+  synapse:
+    # https://hub.docker.com/r/matrixdotorg/synapse
+    # https://github.com/matrix-org/synapse/tree/master/docker
+    image: "matrixdotorg/synapse:${IMAGE_VERSION:-latest}"
+    container_name: synapse
+    volumes:
+      - "${DATA_PATH:-./data}:/data"
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
