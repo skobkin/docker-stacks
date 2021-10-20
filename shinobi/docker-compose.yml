@@ -1,0 +1,28 @@
+version: '3.7'
+
+services:
+  # https://hub.docker.com/r/shinobisystems/shinobi
+  # https://gitlab.com/Shinobi-Systems/Shinobi/-/tree/dev/Docker
+  shinobi:
+    image: shinobisystems/shinobi
+    container_name: shinobi
+    ports:
+      - "${WEB_PORT}:8080/tcp"
+      #- "443:443/tcp"
+      #- "21:21/tcp"
+      #- "25:25/tcp"
+    volumes:
+      - "${SHM_PATH}:/dev/shm/streams:rw"
+      - "${CONFIG_DIR}:/config:rw"
+      - "${CUSTOM_AUTOLOAD_DIR}:/home/Shinobi/libs/customAutoLoad:rw"
+      - "${DB_DIR}:/var/lib/mysql:rw"
+      - "${VIDEOS_DIR}:/home/Shinobi/videos:rw"
+      - "${PLUGINS_DIR}:/home/Shinobi/plugins:rw"
+      - "/etc/localtime:/etc/localtime:ro"
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"

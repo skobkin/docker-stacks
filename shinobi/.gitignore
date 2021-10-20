@@ -1,0 +1,10 @@
+config/*
+custom_autoload/*
+database/*
+plugins/*
+video/*
+!config/.gitkeep
+!custom_autoload/.gitkeep
+!database/.gitkeep
+!plugins/.gitkeep
+!video/.gitkeep
