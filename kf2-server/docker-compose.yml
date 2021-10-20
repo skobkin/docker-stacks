@@ -1,0 +1,23 @@
+version: '3.7'
+
+services:
+  kf2-server:
+    image: jeeaaasustest/killingfloor2-srv
+    container_name: kf2-server
+    ports:
+      - "8080:8080/tcp"
+      - "7777:7777/udp"
+      - "20560:20560/udp"
+      - "27015:27015/udp"
+    volumes:
+      - "kf2-data:${INSTALLDIR}/KFGame/Config"
+    env_file: .env
+    #restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
+volumes:
+    kf2-data:
