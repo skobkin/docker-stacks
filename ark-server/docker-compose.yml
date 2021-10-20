@@ -1,0 +1,30 @@
+version: '3.7'
+
+services:
+  server:
+    # https://hub.docker.com/r/thmhoag/arkserver
+    image: thmhoag/arkserver:latest
+    container_name: 'ark-server'
+    #network_mode: "host"
+    ports:
+      - "${am_ark_QueryPort}:${am_ark_QueryPort}/tcp"
+      - "${am_ark_QueryPort}:${am_ark_QueryPort}/udp"
+      - "${am_ark_Port}:${am_ark_Port}/tcp"
+      - "${am_ark_Port}:${am_ark_Port}/udp"
+      - "7777:7777/tcp"
+      - "7777:7777/udp"
+      - "${am_ark_RCONPort}:${am_ark_RCONPort}/tcp"
+      - "${am_ark_RCONPort}:${am_ark_RCONPort}/udp"
+    env_file: .env
+    volumes:
+      - "${STEAMAPPS_DIR}:/home/steam/.steam/steamapps"
+      - "${SERVER_DATA}:/ark"
+      - "${SERVER_BINARIES}:/arkserver"
+      - "${SERVER_SAVES}:/arkserver/ShooterGame/Saved"
+      - "${SERVER_CLUSTERS}:/arkserver/ShooterGame/Saved/clusters"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
