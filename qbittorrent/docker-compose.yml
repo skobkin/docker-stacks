@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+  qbittorrent:
+    # https://hub.docker.com/r/linuxserver/qbittorrent
+    image: linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    #network_mode: "host"
+    ports:
+      - "${WEBUI_PORT}:${WEBUI_PORT}/tcp"
+      - "6881:6881/tcp"
+      - "6881:6881/udp"
+    env_file: .env
+    volumes:
+      - "${CONFIG_PATH}:/config"
+      - "${DOWNLOAD_PATH}:${DOWNLOAD_PATH}"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
