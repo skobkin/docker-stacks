@@ -1,0 +1,17 @@
+version: '3.7'
+
+services:
+  tor-privoxy:
+    # https://hub.docker.com/r/dperson/torproxy
+    image: dperson/torproxy:latest
+    container_name: tor-privoxy
+    ports:
+      - "8118:8118/tcp"
+      - "9050:9050/tcp"
+    #env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
