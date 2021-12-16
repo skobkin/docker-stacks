@@ -3,8 +3,7 @@ version: '3.7'
 services:
   sonarr:
     # https://hub.docker.com/r/linuxserver/sonarr
-    #image: linuxserver/sonarr:latest
-    image: linuxserver/sonarr:preview
+    image: linuxserver/sonarr:latest
     container_name: sonarr
     #network_mode: "host"
     ports:
