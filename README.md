@@ -27,7 +27,7 @@ Not every stack is tested to fully work.
 
 - [x] Duplicati
 - [x] Folding@Home
-- [ ] Lidarr (prototype state, see sonarr)
+- [ ] Lidarr (didn't test, may not work)
 - [x] magnetico-web-telegram
 - [x] magneticod
 - [x] magneticod-python
@@ -41,11 +41,11 @@ Not every stack is tested to fully work.
 - [ ] Postgres Common (prototype state)
 - [x] Proxy MTProto
 - [x] Proxy Socks5
-- [ ] Radarr (prototype state, see sonarr)
+- [x] Radarr (prototype state, see sonarr)
 - [x] Redis
-- [ ] Sonarr (prototype state, working itself, but transmission-on-host integration didn't work due to path mismatch)
+- [x] Sonarr (prototype state, working itself, but transmission-on-host integration didn't work due to path mismatch)
 - [x] Speedtest (LibreSpeed)
-- [ ] [Synapse](https://hub.docker.com/r/matrixdotorg/synapse) ([Matrix.org](https://matrix.org/) server)
+- [x] [Synapse](https://hub.docker.com/r/matrixdotorg/synapse) ([Matrix.org](https://matrix.org/) server)
 - [x] Watchtower
 - [ ] [Wireguard](https://hub.docker.com/r/cmulk/wireguard-docker) (prototype state, not working yet)
 - [ ] Wordpress (prototype state)
