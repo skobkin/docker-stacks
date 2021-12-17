@@ -8,6 +8,8 @@ services:
     ports:
       - "8118:8118/tcp"
       - "9050:9050/tcp"
+    volumes:
+      - "./config/torrc:/etc/tor/torrc:ro"
     env_file: .env
     restart: unless-stopped
     logging:
