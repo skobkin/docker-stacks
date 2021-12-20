@@ -3,7 +3,8 @@ version: '3.7'
 services:
   tor-privoxy:
     # https://hub.docker.com/r/dperson/torproxy
-    image: dperson/torproxy:latest
+    # Temporary using my own image with obfs4 support until it hits upstream
+    image: registry.gitlab.com/skobkin/torproxy-obfs4
     container_name: tor-privoxy
     ports:
       - "8118:8118/tcp"
