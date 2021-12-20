@@ -46,6 +46,7 @@ Not every stack is tested to fully work.
 - [x] Sonarr (prototype state, working itself, but transmission-on-host integration didn't work due to path mismatch)
 - [x] Speedtest (LibreSpeed)
 - [x] [Synapse](https://hub.docker.com/r/matrixdotorg/synapse) ([Matrix.org](https://matrix.org/) server)
+- [x] [Tor Privoxy](https://hub.docker.com/r/dperson/torproxy)
 - [x] Watchtower
 - [ ] [Wireguard](https://hub.docker.com/r/cmulk/wireguard-docker) (prototype state, not working yet)
 - [ ] Wordpress (prototype state)
