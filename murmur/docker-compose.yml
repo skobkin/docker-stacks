@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   murmur:
-    image: skobkin/murmur-official-static
+    image: registry.gitlab.com/skobkin/docker-murmur:latest
     container_name: murmur
     ports:
       - "64738:64738/tcp"
