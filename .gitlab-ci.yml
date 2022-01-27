@@ -1,0 +1,4 @@
+validate:
+  image: 'docker/compose:1.29.2'
+  script:
+    - for DIR in */ ; do echo $DIR && cd $DIR && cp .env.dist .env && docker-compose config && cd .. ; done
