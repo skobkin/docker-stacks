@@ -1,4 +1,5 @@
 validate:
   image: 'docker/compose:1.29.2'
   script:
-    - for DIR in */ ; do echo $DIR && cd $DIR && cp .env.dist .env && docker-compose config && cd .. ; done
+    - for DIR in */ ; do test -f $DIR/.env.dist && cp $DIR/.env.dist $DIR/.env
+    - for DIR in */ ; do echo $DIR && cd $DIR && docker-compose config && cd .. ; done
