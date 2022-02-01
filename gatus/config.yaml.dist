@@ -1,0 +1,34 @@
+storage:
+  type: sqlite
+  path: /data/db.sqlite
+
+endpoints:
+  - name: blog-wordpress
+    group: 01-blog
+    url: "https://skobk.in/"
+    interval: 5m
+    conditions:
+      - "[STATUS] == 200"
+      - "[CERTIFICATE_EXPIRATION] > 48h"
+#    alerts:
+#      - type: telegram
+
+  - name: mumble-server-tls
+    group: 02-services
+    url: "tls://mumble.skobk.in:64738"
+    interval: 1m
+    conditions:
+      - "[CONNECTED] == true"
+      - "[CERTIFICATE_EXPIRATION] > 48h"
+#    alerts:
+#      - type: telegram
+
+#alerting:
+#  telegram:
+#    token: "token"
+#    id: "chat_id"
+#    default-alert:
+#      enabled: true
+#      send-on-resolved: true
+#      failure-threshold: 5
+#      success-threshold: 5

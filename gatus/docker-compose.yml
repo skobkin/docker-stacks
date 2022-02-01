@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  gatus:
+    image: twinproduction/gatus:latest
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./config.yaml:/config/config.yaml:ro
+      - ./data:/data/
+    env_file: .env
+    user: '${HOST_USER:-0}'

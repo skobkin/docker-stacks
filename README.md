@@ -27,6 +27,7 @@ Not every stack is tested to fully work.
 
 - [x] Duplicati
 - [x] Folding@Home
+- [x] [Gatus](https://github.com/TwiN/gatus)
 - [ ] Lidarr (didn't test, may not work)
 - [x] magnetico-web-telegram
 - [x] magneticod
