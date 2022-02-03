@@ -9,4 +9,5 @@ services:
       - ./config.yaml:/config/config.yaml:ro
       - ./data:/data/
     env_file: .env
+    restart: unless-stopped
     user: '${HOST_USER:-0}'
