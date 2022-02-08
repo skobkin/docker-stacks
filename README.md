@@ -3,7 +3,7 @@
 ## How to set up?
 
 Basically you need to choose which service you want to run and then
-create needed `.env` files from `.end.dist` template.
+create needed `.env` files from `.env.dist` template.
 
 ```shell
 # Choose a service
