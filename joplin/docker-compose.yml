@@ -1,0 +1,22 @@
+version: "3.7"
+services:
+    db:
+        image: postgres:13
+        volumes:
+            - ./data/postgres:/var/lib/postgresql/data
+        expose:
+            - "5432"
+        restart: unless-stopped
+        env_file: .env
+
+    app:
+        image: joplin/server:latest
+        depends_on:
+            - db
+        ports:
+            - "127.0.0.1:${EXTERNAL_PORT:-8030}:22300"
+        env_file: .env
+        environment:
+            - POSTGRES_HOST=${POSTGRES_HOST:-db}
+        restart: unless-stopped
+        user: '${HOST_USER:-0}'
