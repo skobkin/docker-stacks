@@ -39,6 +39,7 @@ Not every stack is tested to fully work.
 - [ ] NextCloud
 - [x] Open Streaming Platform
 - [x] OpenVPN
+- [ ] [Owncast](https://owncast.online/)
 - [x] Portainer
 - [ ] Postgres Common (prototype state)
 - [x] Proxy MTProto

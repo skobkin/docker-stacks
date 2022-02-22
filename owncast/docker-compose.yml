@@ -1,0 +1,21 @@
+# https://hub.docker.com/r/gabekangas/owncast
+# https://owncast.online/quickstart/container/
+
+version: '3.7'
+
+services:
+  owncast:
+    image: gabekangas/owncast
+    container_name: owncast
+    ports:
+      - "127.0.0.1:${EXT_HTTP_PORT}:8080/tcp"
+      - "${EXT_RTMP_PORT}:1935/tcp"
+    volumes:
+      - "./data:/app/data"
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
