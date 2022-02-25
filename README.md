@@ -28,6 +28,7 @@ Not every stack is tested to fully work.
 - [x] Duplicati
 - [x] Folding@Home
 - [x] [Gatus](https://github.com/TwiN/gatus)
+- [ ] [I2PD](https://github.com/PurpleI2P/i2pd)
 - [x] [Joplin](https://hub.docker.com/r/joplin/server) (working, abandoned)
 - [ ] Lidarr (didn't test, may not work)
 - [x] magnetico-web-telegram
