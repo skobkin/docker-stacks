@@ -46,9 +46,9 @@ Not every stack is tested to fully work.
 - [ ] Postgres Common (prototype state)
 - [x] Proxy MTProto
 - [x] Proxy Socks5
-- [x] Radarr (prototype state, see sonarr)
+- [x] Radarr
 - [x] Redis
-- [x] Sonarr (prototype state, working itself, but transmission-on-host integration didn't work due to path mismatch)
+- [x] Sonarr
 - [x] Speedtest (LibreSpeed)
 - [x] [Synapse](https://hub.docker.com/r/matrixdotorg/synapse) ([Matrix.org](https://matrix.org/) server)
 - [x] [Syncthing](https://hub.docker.com/r/linuxserver/syncthing)
