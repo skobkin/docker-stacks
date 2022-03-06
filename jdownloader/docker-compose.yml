@@ -19,7 +19,7 @@ services:
       #MYJD_DEVICE_NAME: "${MYJD_DEVICE_NAME}" #optional
       #XDG_DOWNLOAD_DIR: /opt/JDownloader/Downloads #optional
     ports:
-      - "${WEBUI_BIND_ADDR}:${WEBUI_BIND_PORT:-3129}:3129"
+      - "${MYJD_BIND_PORT:-3129}:3129"
     logging:
       driver: "json-file"
       options:
