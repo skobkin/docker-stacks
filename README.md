@@ -29,7 +29,7 @@ Not every stack is tested to fully work.
 - [x] Folding@Home
 - [x] [Gatus](https://github.com/TwiN/gatus)
 - [x] [Gitea](https://gitea.io/)
-- [ ] [I2PD](https://github.com/PurpleI2P/i2pd)
+- [x] [I2PD](https://github.com/PurpleI2P/i2pd)
 - [ ] [JDownloader](https://jdownloader.org)
 - [x] [Joplin](https://hub.docker.com/r/joplin/server) (working, abandoned)
 - [ ] Lidarr (didn't test, may not work)
