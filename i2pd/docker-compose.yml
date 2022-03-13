@@ -1,4 +1,5 @@
 # https://github.com/PurpleI2P/i2pd/blob/openssl/contrib/docker/Dockerfile
+# https://i2pd.readthedocs.io/en/latest/user-guide/configuration/
 
 version: '3.7'
 
@@ -10,16 +11,24 @@ services:
       #- "./config:/config"
       - "${HOST_DATA_DIR}:${DATA_DIR}"
     ports:
+      # Web interface
       - "7070:7070/tcp"
+      # HTTP Proxy
       - "4444:4444/tcp"
+      # SOCKS proxy
       - "4447:4447/tcp"
+      # SAM bridge
       - "7656:7656/tcp"
-      - "2827:2827/tcp"
+      # BOB command channel
+      #- "2827:2827/tcp"
+      # I2CP server
       - "7654:7654/tcp"
+      # I2P control service
       - "7650:7650/tcp"
     env_file: .env
+    network_mode: host
     restart: unless-stopped
-    user: "${HOST_USER:-}"
+    user: "${HOST_USER:-0}"
     logging:
       driver: "json-file"
       options:
