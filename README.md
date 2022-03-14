@@ -57,4 +57,4 @@ Not every stack is tested to fully work.
 - [x] Watchtower
 - [ ] [Wireguard](https://hub.docker.com/r/cmulk/wireguard-docker) (prototype state, not working yet)
 - [ ] ~~Wordpress~~ (abandoned)
-- [ ] YaCy (abandoned due to upstream code problems)
+- [ ] ~~YaCy~~ (abandoned due to upstream code problems)
