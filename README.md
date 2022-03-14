@@ -44,7 +44,7 @@ Not every stack is tested to fully work.
 - [x] OpenVPN
 - [ ] [Owncast](https://owncast.online/)
 - [x] Portainer
-- [ ] Postgres Common (prototype state)
+- [ ] ~~Postgres Common~~ (abandoned for now)
 - [x] Proxy MTProto
 - [x] Proxy Socks5
 - [x] Radarr
