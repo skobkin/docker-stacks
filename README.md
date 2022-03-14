@@ -36,7 +36,7 @@ Not every stack is tested to fully work.
 - [x] magnetico-web-telegram
 - [x] magneticod
 - [x] magneticod-python
-- [ ] mariadb-common (prototype state)
+- [ ] ~~mariadb-common~~ (abandoned for now)
 - [ ] mastodon (didn't work when tried to set up)
 - [x] Murmur (Mumble server)
 - [ ] NextCloud
