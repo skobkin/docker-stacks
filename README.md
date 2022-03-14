@@ -30,7 +30,7 @@ Not every stack is tested to fully work.
 - [x] [Gatus](https://github.com/TwiN/gatus)
 - [x] [Gitea](https://gitea.io/)
 - [x] [I2PD](https://github.com/PurpleI2P/i2pd)
-- [ ] [JDownloader](https://jdownloader.org)
+- [x] [~~JDownloader~~](https://jdownloader.org) (tested, but abandoned)
 - [x] [Joplin](https://hub.docker.com/r/joplin/server) (working, abandoned)
 - [ ] Lidarr (didn't test, may not work)
 - [x] magnetico-web-telegram
