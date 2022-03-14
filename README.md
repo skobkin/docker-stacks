@@ -56,5 +56,5 @@ Not every stack is tested to fully work.
 - [x] [Tor Privoxy](https://hub.docker.com/r/dperson/torproxy)
 - [x] Watchtower
 - [ ] [Wireguard](https://hub.docker.com/r/cmulk/wireguard-docker) (prototype state, not working yet)
-- [ ] Wordpress (prototype state)
+- [ ] ~~Wordpress~~ (abandoned)
 - [ ] YaCy (abandoned due to upstream code problems)
