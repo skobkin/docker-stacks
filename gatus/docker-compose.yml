@@ -2,6 +2,7 @@ version: "3.7"
 services:
   gatus:
     image: twinproduction/gatus:latest
+    container_name: gatus
     ports:
       - "127.0.0.1:8080:8080"
     network_mode: "host"
