@@ -6,6 +6,8 @@ services:
     # https://github.com/matrix-org/synapse/tree/master/docker
     image: "matrixdotorg/synapse:${IMAGE_VERSION:-latest}"
     container_name: synapse
+    # This way we'll be able to access PostgreSQL on local machine using 'localhost' when it's listening only locally.
+    network_mode: host
     ports:
       - "${INTERFACE_EXT:-127.0.0.1}:${HTTP_PORT_EXT:-8008}:${HTTP_PORT_INT:-8008}/tcp"
     volumes:
