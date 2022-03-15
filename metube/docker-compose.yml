@@ -7,9 +7,9 @@ services:
     container_name: metube
     user: "${HOST_USER:-1000}"
     volumes:
-      - "${HOST_DATA_DIR}:/downloads"
+      - "${HOST_DATA_DIR:-./data}:/downloads"
     ports:
-      - "${WEBUI_BIND_ADDR}:${WEBUI_BIND_PORT}:8081"
+      - "${WEBUI_BIND_ADDR:-127.0.0.1}:${WEBUI_BIND_PORT:-8081}:8081/tcp"
     env_file: .env
     restart: unless-stopped
     logging:
