@@ -1,0 +1,19 @@
+# https://hub.docker.com/r/alexta69/metube
+version: '3.7'
+
+services:
+  metube:
+    image: alexta69/metube
+    container_name: metube
+    user: "${HOST_USER:-1000}"
+    volumes:
+      - "${HOST_DATA_DIR}:/downloads"
+    ports:
+      - "${WEBUI_BIND_ADDR}:${WEBUI_BIND_PORT}:8081"
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
