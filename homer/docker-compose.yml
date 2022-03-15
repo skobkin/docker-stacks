@@ -1,0 +1,21 @@
+# https://hub.docker.com/r/b4bz/homer
+version: '3.7'
+
+services:
+  homer:
+    image: b4bz/homer
+    container_name: homer
+    volumes:
+      - "${HOST_DATA_DIR:-./data}:/www/assets"
+    ports:
+      - "${WEBUI_BIND_ADDR:-127.0.0.1}:${WEBUI_BIND_PORT:-8084}:8080/tcp"
+    environment:
+      - "UID=${HOST_USER:-1000}"
+      - "GID=${HOST_USER:-1000}"
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
