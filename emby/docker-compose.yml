@@ -1,0 +1,24 @@
+# https://hub.docker.com/r/emby/embyserver
+version: '3.7'
+
+services:
+  emby:
+    image: "${DOCKER_IMAGE:-emby/embyserver}"
+    container_name: emby
+    volumes:
+      - "${HOST_CONFIG_DIR:-./config}:/config"
+      - "${HOST_MULTIMEDIA_DIR}:${INT_MULTIMEDIA_DIR:-/libraries}"
+    ports:
+      - "${WEBUI_BIND_ADDR:-127.0.0.1}:${WEBUI_BIND_PORT:-8096}:${WEBUI_INT_BIND_PORT:-8096}/tcp"
+      # Use reverse-proxy instead
+      #- "${WEBUI_BIND_ADDR-127.0.0.1}:${WEBUI_HTTPS_BIND_PORT:-8920}:${WEBUI_INT_HTTPS_BIND_PORT:-8920}/tcp"
+    env_file: .env
+    environment:
+      UID: "${HOST_USER:-1000}"
+      GID: "${HOST_GROUP:-1000}"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
