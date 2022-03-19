@@ -10,7 +10,10 @@ docker-compose run synapse generate
 
 After that you can edit `./data/homeserver.yaml` according to your needs.
 
-If you want to use full-fledged PostgreSQL instead of SQLite, you can check [this documentation](https://github.com/matrix-org/synapse/blob/master/docs/postgres.md).
+If you want to use full-fledged PostgreSQL instead of SQLite, you can check
+[this documentation](https://github.com/matrix-org/synapse/blob/master/docs/postgres.md).
+
+To use PostgreSQL running on the host machine, use [this](../_docs/access_database_on_host_from_docker.md) configuration.
 
 # Running the server
 
