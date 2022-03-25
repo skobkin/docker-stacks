@@ -1,0 +1,30 @@
+# https://mau.dev/mautrix/telegram/
+version: '3.7'
+
+services:
+  mautrix-telegram:
+    image: "dock.mau.dev/mautrix/telegram:${IMAGE_VERSION:-latest}"
+    container_name: mautrix-telegram
+    volumes:
+      # This volume is also used by 'synapse' stack.
+      # Do not change the path unless you know what you're doing.
+      - "${HOST_DATA_DIR:-./data}:/data"
+    env_file: .env
+    environment:
+      UID: "${HOST_USER:-1337}"
+      GID: "${HOST_GROUP:-1337}"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - default
+      - matrix
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  matrix:
+    external: true

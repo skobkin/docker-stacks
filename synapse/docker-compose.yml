@@ -15,10 +15,20 @@ services:
       - "${DATA_PATH:-./data}:/data"
       # SSL certs directory
       - "${SSL_PATH:-./ssl}:/ssl:ro"
+      # Bridges
+      # Telegram
+      - "../mautrix-telegram/data:/bridges/mautrix-telegram/data:ro"
     env_file: .env
+    networks:
+      - default
+      - matrix
     restart: unless-stopped
     logging:
       driver: "json-file"
       options:
         max-size: "${LOG_MAX_SIZE:-5m}"
         max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  matrix:
+    external: true
