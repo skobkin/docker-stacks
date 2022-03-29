@@ -1,0 +1,22 @@
+# https://hub.docker.com/r/drone/drone
+version: '3.7'
+
+services:
+  drone:
+    image: "drone/drone:${IMAGE_VERSION:-2}"
+    container_name: drone
+    hostname: drone
+    extra_hosts:
+      # Not necessary, but allows to access to local database if chosen over SQLite.
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - "${HOST_DATA_DIR:-./data}:/data"
+    ports:
+      - "${WEBUI_BIND_ADDR:-127.0.0.1}:${WEBUI_BIND_PORT:-8386}:80"
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"

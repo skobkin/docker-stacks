@@ -1,0 +1,10 @@
+kind: pipeline
+type: docker
+name: default
+
+steps:
+  - name: validate
+    image: 'docker/compose:1.29.2'
+    commands:
+      - for DIR in */ ; do if [[ $(expr match "$DIR" "_.*") != 0 ]] ; then echo "SKIPPING $DIR" && continue; fi && test -f $DIR/.env.dist && cp $DIR/.env.dist $DIR/.env ; done
+      - for DIR in */ ; do if [[ $(expr match "$DIR" "_.*") != 0 ]] ; then echo "SKIPPING $DIR" && continue; fi && echo $DIR && cd $DIR && docker-compose config && cd .. ; done

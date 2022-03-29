@@ -1,0 +1,21 @@
+# https://hub.docker.com/r/drone/drone-runner-docker
+version: '3.7'
+
+services:
+  drone-runner:
+    image: "drone/drone-runner-docker:${IMAGE_VERSION:-1}"
+    container_name: drone-runner
+    volumes:
+      # Mounting Docker socket inside the container to control temporary Docker containers from runner.
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    ports:
+      # Optional, used for dashboard:
+      # https://discourse.drone.io/t/drone-agent-port/5914/5
+      - "${WEBUI_BIND_ADDR:-127.0.0.1}:${WEBUI_BIND_PORT:-8387}:3000"
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
