@@ -1,0 +1,19 @@
+# https://hub.docker.com/r/umputun/remark42
+version: '3.7'
+
+services:
+  remark:
+    image: '${IMAGE:-umputun/remark42:latest}'
+    container_name: 'remark42'
+    hostname: 'remark42'
+    restart: unless-stopped
+    ports:
+      - '${WEBUI_BIND_ADDR:-127.0.0.1}:${WEBUI_BIND_PORT:-8387}:8080'
+    env_file: .env
+    volumes:
+      - '${HOST_DATA_DIR:-./data}:/srv/var'
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'
