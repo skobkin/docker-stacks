@@ -5,7 +5,7 @@ services:
     image: inbucket/inbucket:latest
     container_name: inbucket
     ports:
-      - "${HOST_HTTP_PORT:-0.0.0.0}:${HOST_HTTP_PORT:-8389}:9000/tcp"
+      - "${HOST_HTTP_ADDR:-0.0.0.0}:${HOST_HTTP_PORT:-8389}:9000/tcp"
       - "${HOST_SMTP_ADDR:-0.0.0.0}:${HOST_SMTP_PORT:-8389}:2500/tcp"
       - "${HOST_HTTP_ADDR:-0.0.0.0}:${HOST_POP3_PORT:-8389}:1100/tcp"
     volumes:
