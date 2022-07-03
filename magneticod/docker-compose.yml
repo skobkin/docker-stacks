@@ -6,7 +6,7 @@ services:
     container_name: magneticod
     # Using host mode to be able to simply apply firewall rules to disable connection tracking
     # https://github.com/boramalper/magnetico/blob/master/cmd/magneticod/README.md#setup
-    network_mode: "host"
+    #network_mode: "host"
     ports:
       - "${MAGNETICO_PORT}:${MAGNETICO_PORT}/udp"
     env_file: .env
