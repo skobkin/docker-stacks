@@ -1,0 +1,21 @@
+version: '3.7'
+
+services:
+  magnetico-web:
+    image: skobkin/magnetico-web
+    container_name: magnetico-web
+    hostname: magnetico-web
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    ports:
+      - "127.0.0.1:${EXT_HTTP_PORT:-8080}:8080/tcp"
+    restart: unless-stopped
+    user: "${HOST_USER:-0}"
+    volumes:
+      - "${LOG_PATH:-./logs}:/app/var/log"
+    env_file: .env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
