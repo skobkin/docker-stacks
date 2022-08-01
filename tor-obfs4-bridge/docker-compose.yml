@@ -19,12 +19,8 @@ services:
       - NICKNAME=${NICKNAME:-DockerObfs4Bridge}
     env_file: .env
     volumes:
-      - data:/var/lib/tor
+      - "${DATA_PATH:-./data}:/var/lib/tor"
     ports:
-      - ${OR_PORT}:${OR_PORT}
-      - ${PT_PORT}:${PT_PORT}
+      - "${OR_PORT}:${OR_PORT}/tcp"
+      - "${PT_PORT}:${PT_PORT}/tcp"
     restart: unless-stopped
-
-volumes:
-  data:
-    name: tor-obfs4-bridge-datadir-${OR_PORT}-${PT_PORT}
