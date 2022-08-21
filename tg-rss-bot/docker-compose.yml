@@ -6,6 +6,8 @@ services:
     image: 'miroslavsckaya/tg-rss-bot:${IMAGE_VERSION:-latest}'
     env_file: .env
     restart: unless-stopped
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     labels:
       ofelia.enabled: "true"
       ofelia.job-exec.update-feeds.schedule: "@every ${SCHEDULER_UPDATE:-1h}"
