@@ -1,0 +1,32 @@
+version: '3.7'
+
+services:
+  app:
+    # https://hub.docker.com/r/miroslavsckaya/tg-rss-bot
+    image: 'miroslavsckaya/tg-rss-bot:${IMAGE_VERSION:-latest}'
+    env_file: .env
+    restart: unless-stopped
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.update-feeds.schedule: "@every ${SCHEDULER_UPDATE:-1h}"
+      ofelia.job-exec.update-feeds.command: "python /bot/update.py"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
+  scheduler:
+    # https://hub.docker.com/r/mcuadros/ofelia
+    image: mcuadros/ofelia:latest
+    restart: unless-stopped
+    depends_on:
+      - app
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
