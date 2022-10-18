@@ -2,6 +2,7 @@ version: '3.7'
 
 services:
   sslocal:
+    # https://github.com/shadowsocks/shadowsocks-rust
     image: ghcr.io/shadowsocks/sslocal-rust:latest
     container_name: sslocal
     ports:
