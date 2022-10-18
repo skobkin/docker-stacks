@@ -1,0 +1,18 @@
+version: '3.7'
+
+services:
+  sslocal:
+    # https://github.com/shadowsocks/shadowsocks-rust
+    image: ghcr.io/shadowsocks/sslocal-rust:latest
+    container_name: sslocal
+    ports:
+      - "${LOCAL_PORT:-1050}:${LOCAL_PORT:-1050}/tcp"
+    volumes:
+      - "./config/config.json:/etc/shadowsocks-rust/config.json:ro"
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
