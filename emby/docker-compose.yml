@@ -1,5 +1,5 @@
 # https://hub.docker.com/r/emby/embyserver
-version: '3.7'
+version: '3.8'
 
 services:
   emby:
@@ -8,6 +8,8 @@ services:
     volumes:
       - "${HOST_CONFIG_DIR:-./config}:/config"
       - "${HOST_MULTIMEDIA_DIR}:${INT_MULTIMEDIA_DIR:-/libraries}"
+    devices:
+      - "${VIDEO_ACCEL_DEVICE:-/dev/null}:${VIDEO_ACCEL_DEVICE:-/dev/null}"
     ports:
       - "${WEBUI_BIND_ADDR:-127.0.0.1}:${WEBUI_BIND_PORT:-8096}:${WEBUI_INT_BIND_PORT:-8096}/tcp"
       # Use reverse-proxy instead
