@@ -1,0 +1,19 @@
+# https://www.home-assistant.io/installation/linux#install-home-assistant-container
+version: '3.8'
+
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: 'ghcr.io/home-assistant/home-assistant:${IMAGE_TAG:-stable}'
+    volumes:
+      - '${HOST_CONFIG_DIR:-./config}:/config'
+      - '/etc/localtime:/etc/localtime:ro'
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    env_file: .env
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'
