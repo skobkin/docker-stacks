@@ -9,9 +9,9 @@ To achieve that edit `configuration.yaml` after it was generated at first launch
 
 ```yaml
 # config/configuration.yaml
-http:                                                                                                                                                        
-  use_x_forwarded_for: true                                                                                                                                  
-  trusted_proxies:                                                                                                                                           
-    - '127.0.0.1'                                                                                                                                            
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - '127.0.0.1'
     - '::1'
 ```
