@@ -1,0 +1,48 @@
+# https://hub.docker.com/r/webhooksite/webhook.site
+version: '3.8'
+
+services:
+  webhook:
+    image: "webhooksite/webhook.site"
+    container_name: webhook-site
+    command: "php artisan queue:work --daemon --tries=3 --timeout=10"
+    ports:
+      - "${WEBUI_BIND_ADDR}:${WEBUI_BIND_PORT}:80"
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
+  laravel-echo-server:
+    image: "webhooksite/laravel-echo-server"
+    depends_on:
+      - redis
+    ports:
+      - "${ECHO_BIND_ADDR:-127.0.0.1}:${ECHO_BIND_PORT:-6001}:${ECHO_BIND_PORT:-6001}"
+    environment:
+      - "LARAVEL_ECHO_SERVER_AUTH_HOST=http://webhook"
+      - "LARAVEL_ECHO_SERVER_HOST=${ECHO_BIND_ADDR:-0.0.0.0}"
+      - "LARAVEL_ECHO_SERVER_PORT=${ECHO_BIND_PORT:-6001}"
+      - "ECHO_REDIS_PORT=${REDIS_PORT:-6379}"
+      - "ECHO_REDIS_HOSTNAME=${REDIS_HOST:-redis}"
+      - "ECHO_PROTOCOL=http"
+      - "ECHO_ALLOW_CORS=true"
+      - "ECHO_ALLOW_ORIGIN=*"
+      - "ECHO_ALLOW_METHODS=*"
+      - "ECHO_ALLOW_HEADERS=*"
+
+  redis:
+    image: redis:alpine
+    command: "redis-server --save ${PERSISTENCE_PERIOD_SEC:-60} ${PERSISTENCE_MIN_OPS:-1} --loglevel ${LOG_LEVEL:-warning}"
+    volumes:
+      - "${REDIS_HOST_DATA_DIR:-./data}:/data"
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"

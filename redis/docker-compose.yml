@@ -1,10 +1,13 @@
-version: '3.7'
+version: '3.8'
 
 services:
   redis:
     # https://hub.docker.com/_/redis
     image: redis:alpine
     container_name: redis
+    command: "redis-server --save ${PERSISTENCE_PERIOD_SEC:-60} ${PERSISTENCE_MIN_OPS:-1} --loglevel ${LOG_LEVEL:-warning}"
+    volumes:
+      - "${HOST_DATA_DIR:-./data}:/data"
     ports:
       - "127.0.0.1:6379:6379/tcp"
     env_file: .env
@@ -14,7 +17,3 @@ services:
       options:
         max-size: "${LOG_MAX_SIZE:-5m}"
         max-file: "${LOG_MAX_FILE:-5}"
-
-#volumes:
-#  redis_data:
-#    name: redis_data
