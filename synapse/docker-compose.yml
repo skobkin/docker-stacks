@@ -29,6 +29,29 @@ services:
         max-size: "${LOG_MAX_SIZE:-5m}"
         max-file: "${LOG_MAX_FILE:-5}"
 
+  sliding-sync:
+    # https://github.com/matrix-org/sliding-sync
+    image: "ghcr.io/matrix-org/sliding-sync:${SS_PROXY_IMAGE_TAG:-latest}"
+    container_name: matrix-ss
+    depends_on:
+      - synapse
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    ports:
+      - "${SS_EXT_ADR:-127.0.0.1}:${SS_EXT_PORT:-8889}:${SS_BIND_PORT:-8889}"
+    environment:
+      # https://github.com/matrix-org/sliding-sync?tab=readme-ov-file#setup
+      - "SYNCV3_SERVER=${SYNCV3_SERVER}"
+      - "SYNCV3_DB=${SYNCV3_DB}"
+      - "SYNCV3_SECRET=${SYNCV3_SECRET}"
+      - "SYNCV3_BINDADDR=${SS_BIND_ADDR:-0.0.0.0}:${SS_BIND_PORT:-8889}"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
 networks:
   matrix:
     external: true
