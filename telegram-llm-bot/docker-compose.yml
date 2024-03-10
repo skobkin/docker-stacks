@@ -1,0 +1,16 @@
+# https://hub.docker.com/r/skobkin/telegram-llm-bot
+version: '3.9'
+
+services:
+  telegram-llm-bot:
+    image: "skobkin/telegram-llm-bot:${IMAGE_VERSION:-latest}"
+    container_name: telegram-llm-bot
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
