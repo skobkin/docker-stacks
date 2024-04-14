@@ -12,7 +12,7 @@ services:
     networks:
       - firefly_iii
     ports:
-      - '${HTTP_BIND_ADDR:-127.0.0.1}:${HTTP_BIND_PORT:-8392}:8080/tcp'
+      - '${WEB_BIND_ADDR:-127.0.0.1}:${WEB_BIND_PORT:-8392}:8080/tcp'
     depends_on:
       - db
 
