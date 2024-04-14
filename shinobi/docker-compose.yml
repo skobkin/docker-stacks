@@ -19,8 +19,6 @@ services:
       - "${VIDEOS_DIR}:/home/Shinobi/videos:rw"
       - "${PLUGINS_DIR}:/home/Shinobi/plugins:rw"
       - "/etc/localtime:/etc/localtime:ro"
-    devices:
-      - "${VIDEO_ACCEL_DEVICE:-/dev/null}:${VIDEO_ACCEL_DEVICE:-/dev/null}"
     env_file: .env
     restart: unless-stopped
     logging:
