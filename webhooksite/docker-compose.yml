@@ -33,6 +33,7 @@ services:
       - "ECHO_ALLOW_ORIGIN=*"
       - "ECHO_ALLOW_METHODS=*"
       - "ECHO_ALLOW_HEADERS=*"
+    restart: unless-stopped
 
   redis:
     image: redis:alpine
