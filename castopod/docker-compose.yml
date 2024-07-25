@@ -1,0 +1,46 @@
+services:
+  castopod:
+    image: 'castopod/castopod:${IMAGE_TAG:-latest}'
+    container_name: 'castopod'
+    volumes:
+      - '${MEDIA_PATH:-./media}:/var/www/castopod/public/media'
+    environment:
+      MYSQL_DATABASE: '${CP_DATABASE_NAME:-castopod}'
+      MYSQL_USER: '${CP_DATABASE_USERNAME:-castopod}'
+      MYSQL_PASSWORD: '${CP_DATABASE_PASSWORD}'
+      CP_BASEURL: "${CP_BASEURL}"
+      CP_ANALYTICS_SALT: '${CP_ANALYTICS_SALT}'
+      CP_CACHE_HANDLER: '${CP_CACHE_HANDLER:-redis}'
+      CP_REDIS_HOST: '${CP_REDIS_HOST:-redis}'
+      CP_REDIS_PASSWORD: '${CP_REDIS_PASSWORD}'
+    env_file: '.env'
+    networks:
+      - castopod
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    ports:
+      - '${EXTERNAL_ADDRESS:-127.0.0.1}:${EXTERNAL_PORT:-8393}:8000'
+    restart: unless-stopped
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'
+
+  redis:
+    image: 'redis:7.2-alpine'
+    container_name: 'castopod-redis'
+    command: '--requirepass ${CP_REDIS_PASSWORD}'
+    volumes:
+      - '${REDIS_DATA_PATH:-./redis_data}:/data'
+    networks:
+      - castopod
+    restart: unless-stopped
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'
+
+networks:
+  castopod:
