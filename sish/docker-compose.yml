@@ -1,0 +1,27 @@
+# https://hub.docker.com/r/antoniomika/sish
+
+services:
+  sish:
+    image: 'antoniomika/sish:${IMAGE_VERSION:-latest}'
+    container_name: sish
+    volumes:
+      - '${PUBKEYS_PATH:-./pubkeys}:/pubkeys'
+    # see https://docs.ssi.sh/getting-started#docker
+    command: |
+      --ssh-address=${SSH_BIND_ADDR:-0.0.0.0}:${SSH_BIND_PORT:-2222}
+      --http-address=:${HTTP_BIND_PORT:-8395}
+      --authentication=true
+      --authentication-keys-directory=/pubkeys
+      --bind-random-ports=false
+      --bind-random-subdomains=false
+      --domain=${BASE_DOMAIN:-si.sh}
+    #network_mode: host
+    ports:
+      - '${SSH_BIND_ADDR:-0.0.0.0}:${SSH_BIND_PORT:-2222}:${SSH_BIND_PORT:-2222}'
+      - '${HTTP_BIND_ADDR:-127.0.0.1}:${HTTP_BIND_PORT:-8395}:${HTTP_BIND_PORT:-8395}'
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
