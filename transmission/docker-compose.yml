@@ -1,0 +1,33 @@
+services:
+  transmission:
+    image: 'lscr.io/linuxserver/transmission:${IMAGE_TAG:-latest}'
+    container_name: 'transmission'
+    environment:
+      - 'PUID=${USER_ID:-1000}'
+      - 'PGID=${GROUP_ID:-1000}'
+      - 'TZ=${TIMEZONE:-Europe/Moscow}'
+      #- TRANSMISSION_WEB_HOME= #optional
+      - 'USER=${AUTH_USER}'
+      - 'PASS=${AUTH_PASSWORD}'
+      #- WHITELIST= #optional
+      - 'PEERPORT=${P2P_PORT:-6882}'
+      #- HOST_WHITELIST= #optional
+    env_file: '.env'
+    volumes:
+      - '${DIR_CONFIG_EXT:-./config}:/config'
+      - '${DIR_DOWNLOAD_EXT:-./downloads}:${DIR_DOWNLOAD_INT:-/downloads}'
+      # Separate download cache directory in case you store unfinished torrents on SSD
+      # Use with `"incomplete-dir-enabled": true` in the settings.json. This is `incomplete-dir` parameter.
+      - '${DIR_TMP_DOWNLOAD_EXT:-/dev/null}:${DIR_TMP_DOWNLOAD_INT:-/dev/null}'
+      - '${DIR_WATCH_EXT:-./watch}:/watch'
+    network_mode: '${NETWORK_MODE:-bridge}'
+    ports:
+      - '${WEB_ADDRESS:-0.0.0.0}:${WEB_PORT:-9091}:${WEB_PORT:-9091}'
+      - '${P2P_PORT:-51413}:${P2P_PORT:-51413}'
+      - '${P2P_PORT:-51413}:${P2P_PORT:-51413}/udp'
+    restart: unless-stopped
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'

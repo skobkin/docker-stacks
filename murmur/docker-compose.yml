@@ -22,4 +22,3 @@ services:
       options:
         max-size: "${LOG_MAX_SIZE:-5m}"
         max-file: "${LOG_MAX_FILE:-5}"
-  # TODO: try to integrate with neilpang/acme.sh
