@@ -1,0 +1,32 @@
+services:
+  hedgedoc:
+    image: 'lscr.io/linuxserver/hedgedoc:${IMAGE_TAG:-latest}'
+    container_name: 'hedgedoc'
+    env_file: '.env'
+    environment:
+      - 'PUID=${USER_ID:-1000}'
+      - 'PGID=${GROUP_ID:-1000}'
+      - 'TZ=${TIMEZONE:-Europe/Moscow}'
+      - 'DB_HOST=${DATABASE_HOST:-host.docker.internal}'
+      - 'DB_PORT=${DATABASE_PORT:-3306}'
+      - 'DB_USER=${DATABASE_USER:-hedgedoc}'
+      - 'DB_PASS=${DATABASE_PASS}'
+      - 'DB_NAME=${DATABASE_NAME:-hedgedoc}'
+      - 'CMD_DOMAIN=${DOMAIN}'
+      #- 'CMD_URL_ADDPORT=false' #optional
+      - 'CMD_PROTOCOL_USESSL=true' #optional
+      - 'CMD_PORT=${WEB_PORT:-8394}' #optional
+      - 'CMD_DB_DIALECT=${DATABASE_DIALECT:-mariadb}' #optional
+      - CMD_ALLOW_ORIGIN=['${DOMAIN}'] #optional
+    volumes:
+      - '${DIR_CONFIG:-./config}:/config'
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    ports:
+      - '${WEB_ADDRESS:-127.0.0.1}:${WEB_PORT:-8394}:${WEB_PORT:-8394}'
+    restart: unless-stopped
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'
