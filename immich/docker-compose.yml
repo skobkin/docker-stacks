@@ -71,6 +71,9 @@ services:
   database:
     container_name: immich_postgres
     image: docker.io/tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
+    extends:
+      file: 'share_db.yaml'
+      service: '${DB_MODE:-internal}' # set to one of [shared, internal]
     environment:
       POSTGRES_PASSWORD: '${DB_PASSWORD}'
       POSTGRES_USER: '${DB_USERNAME}'

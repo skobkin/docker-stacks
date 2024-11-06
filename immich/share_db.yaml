@@ -1,0 +1,6 @@
+services:
+  internal: {}
+
+  shared:
+    ports:
+      - '${DB_EXTERNAL_ADDRESS:-127.0.0.1}:${DB_EXTERNAL_PORT:-5430}:5432'
