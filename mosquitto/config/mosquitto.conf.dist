@@ -1,0 +1,18 @@
+# Mosquitto configuration
+persistence true
+persistence_location /data/
+log_dest file /logs/mosquitto.log
+
+# Default listener for unencrypted connections
+listener 1883
+allow_anonymous false
+
+# Optional TLS listener
+listener 1884
+# Uncomment and configure the following for TLS
+# cafile /etc/mosquitto/ca_certificates/ca.crt
+# certfile /etc/mosquitto/certs/server.crt
+# keyfile /etc/mosquitto/certs/server.key
+
+# Include directory for additional configuration files
+include_dir /etc/mosquitto/conf.d

@@ -1,0 +1,19 @@
+services:
+  mosquitto:
+    image: "iegomez/mosquitto-go-auth:${IMAGE_VERSION:-latest}"
+    container_name: mosquitto
+    hostname: mosquitto
+    volumes:
+      - "${CONFIG_DIR:-./config}:/etc/mosquitto"
+      - "${DATA_DIR:-./data}:/data"
+      - "${LOG_DIR:-./logs}:/logs"
+    ports:
+      - "${BIND_ADDR:-127.0.0.1}:${BIND_PORT_MQTT:-1883}:1883"
+      - "${BIND_ADDR:-127.0.0.1}:${BIND_PORT_WS:-1884}:1884"
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
