@@ -7,6 +7,7 @@ cp config/files/acls.dist config/files/acls
 cp config/files/passwords.dist config/files/passwords
 cp config/files/passwords.dist config/files/passwords
 cp config/mosquitto.conf.dist config/mosquitto.conf
+cp -r config/conf.d.dist config/conf.d
 ```
 
 Edit configuration to suit your needs.
