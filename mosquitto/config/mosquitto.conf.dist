@@ -1,6 +1,6 @@
 # Mosquitto configuration
 persistence true
-persistence_location /data/
+persistence_location /data
 #log_dest file /logs/mosquitto.log
 
 # Default listener for unencrypted connections
