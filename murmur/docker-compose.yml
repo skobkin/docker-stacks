@@ -1,8 +1,6 @@
-version: '3.7'
-
 services:
   murmur:
-    image: registry.gitlab.com/skobkin/docker-murmur:latest
+    image: 'skobkin/murmur:${IMAGE_TAG:-latest}'
     container_name: murmur
     ports:
       - "64738:64738/tcp"
