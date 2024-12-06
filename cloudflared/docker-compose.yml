@@ -1,0 +1,19 @@
+# https://hub.docker.com/r/cloudflare/cloudflared
+services:
+  cloudflared:
+    image: "cloudflare/cloudflared:${IMAGE_VERSION:-latest}"
+    container_name: cloudflared
+    command:
+      - 'tunnel'
+      - '-no-autoupdate'
+      - 'run'
+      - '-token'
+      - '${TUNNEL_TOKEN}'
+    network_mode: '${NETWORK_MODE:-host}'
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
