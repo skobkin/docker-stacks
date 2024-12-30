@@ -1,11 +1,9 @@
-version: '3.7'
-
 services:
   qbittorrent:
     # https://hub.docker.com/r/linuxserver/qbittorrent
     image: linuxserver/qbittorrent:latest
     container_name: qbittorrent
-    #network_mode: "host"
+    network_mode: '${NETWORK_MODE:-host}'
     ports:
       - "${WEBUI_PORT}:${WEBUI_PORT}/tcp"
       - "6881:6881/tcp"
