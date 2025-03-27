@@ -22,3 +22,6 @@ VirtualAddrNetworkIPv4 10.192.0.0/10
 #ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy managed
 #Bridge obfs4 1.2.3.4:1234 ABCD cert=xxx
 #Bridge obfs4 2.3.4.5:2345 BCDE cert=yyy
+
+# Or use Socks proxy (from ShadowSocks stack for example) to connect to Tor
+#Socks5Proxy host.docker.internal:1050
