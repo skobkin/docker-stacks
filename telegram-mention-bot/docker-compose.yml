@@ -1,0 +1,15 @@
+# https://hub.docker.com/r/skobkin/telegram-group-mention-bot
+
+services:
+  telegram-mention-bot:
+    image: "skobkin/telegram-group-mention-bot:${IMAGE_VERSION:-latest}"
+    container_name: telegram-mention-bot
+    volumes:
+      - "${HOST_DATA_DIR:-./data}:/data"
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
