@@ -1,0 +1,45 @@
+# https://hub.docker.com/r/superseriousbusiness/gotosocial
+
+services:
+  gotosocial:
+    image: "superseriousbusiness/gotosocial:${IMAGE_VERSION:-latest}"
+    container_name: gotosocial
+    user: "${UID:-1000}:${GID:-1000}"
+    networks:
+      - gotosocial
+    environment:
+      # Change this to your actual host value
+      GTS_HOST: "${GTS_HOST:-example.org}"
+      GTS_DB_TYPE: "${GTS_DB_TYPE:-sqlite}"
+      # Path in the GtS Docker container where the sqlite.db file will be stored
+      GTS_DB_ADDRESS: "${GTS_DB_ADDRESS:-/gotosocial/storage/sqlite.db}"
+      # Set to false since we're using reverse proxy
+      GTS_LETSENCRYPT_ENABLED: "${GTS_LETSENCRYPT_ENABLED:-false}"
+      # Path for Wazero compilation cache
+      GTS_WAZERO_COMPILATION_CACHE: "/gotosocial/.cache"
+      # For reverse proxy setups
+      GTS_TRUSTED_PROXIES: "${NETWORK_GATEWAY:-172.30.0.1/16}"
+      # Set timezone
+      TZ: "${TZ:-UTC}"
+    ports:
+      # For reverse proxy setups
+      - "${BIND_ADDR:-127.0.0.1}:${BIND_PORT:-8080}:8080"
+    volumes:
+      # Data volume for sqlite.db and media files
+      - "${DATA_PATH:-./data}:/gotosocial/storage"
+      # Wazero compilation cache
+      - "${CACHE_PATH:-./cache}:/gotosocial/.cache"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  gotosocial:
+    ipam:
+      driver: default
+      config:
+        - subnet: "${NETWORK_SUBNET:-172.30.0.0/16}"
+          gateway: "${NETWORK_GATEWAY:-172.30.0.1}"
