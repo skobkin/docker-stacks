@@ -7,20 +7,13 @@ services:
     user: "${UID:-1000}:${GID:-1000}"
     networks:
       - gotosocial
+    env_file:
+      - .env
     environment:
-      # Change this to your actual host value
-      GTS_HOST: "${GTS_HOST:-example.org}"
-      GTS_DB_TYPE: "${GTS_DB_TYPE:-sqlite}"
-      # Path in the GtS Docker container where the sqlite.db file will be stored
-      GTS_DB_ADDRESS: "${GTS_DB_ADDRESS:-/gotosocial/storage/sqlite.db}"
-      # Set to false since we're using reverse proxy
-      GTS_LETSENCRYPT_ENABLED: "${GTS_LETSENCRYPT_ENABLED:-false}"
-      # Path for Wazero compilation cache
+      # Essential GoToSocial configuration
+      GTS_CONFIG_PATH: "/gotosocial/config.yaml"
+      GTS_TRUSTED_PROXIES: "${NETWORK_GATEWAY:-172.30.0.1}"
       GTS_WAZERO_COMPILATION_CACHE: "/gotosocial/.cache"
-      # For reverse proxy setups
-      GTS_TRUSTED_PROXIES: "${NETWORK_GATEWAY:-172.30.0.1/16}"
-      # Set timezone
-      TZ: "${TZ:-UTC}"
     ports:
       # For reverse proxy setups
       - "${BIND_ADDR:-127.0.0.1}:${BIND_PORT:-8080}:8080"
