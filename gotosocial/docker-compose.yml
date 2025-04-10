@@ -12,8 +12,6 @@ services:
     env_file:
       - .env
     environment:
-      # Essential GoToSocial configuration
-      GTS_CONFIG_PATH: "/gotosocial/config.yaml"
       GTS_TRUSTED_PROXIES: "${NETWORK_GATEWAY:-172.30.0.1}"
       GTS_WAZERO_COMPILATION_CACHE: "/gotosocial/.cache"
     ports:
