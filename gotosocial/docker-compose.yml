@@ -4,6 +4,8 @@ services:
   gotosocial:
     image: "superseriousbusiness/gotosocial:${IMAGE_VERSION:-latest}"
     container_name: gotosocial
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     user: "${UID:-1000}:${GID:-1000}"
     networks:
       - gotosocial
