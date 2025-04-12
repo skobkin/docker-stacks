@@ -1,0 +1,16 @@
+# https://hub.docker.com/r/superseriousbusiness/masto-fe-standalone
+
+services:
+  masto-fe:
+    image: "skobkin/masto-fe-gts-forced-instance:${IMAGE_VERSION:-forced-instance}"
+    container_name: masto-fe-gts
+    ports:
+      - "${BIND_ADDR:-127.0.0.1}:${BIND_PORT:-8398}:80"
+    restart: unless-stopped
+    volumes:
+      - './config/config.js:/usr/share/nginx/html/config.js:ro'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
