@@ -1,5 +1,7 @@
 # Home Assistant
 
+[Home Assistant](https://www.home-assistant.io/) is a free and open-source home automation platform that puts local control and privacy first.
+
 ## Using with reverse proxy (like Nginx)
 
 If you're using Home Assistant with reverse proxy, you need to enable it and add trusted proxy address. Otherwise you

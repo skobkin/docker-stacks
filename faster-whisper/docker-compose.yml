@@ -1,0 +1,35 @@
+# https://hub.docker.com/r/linuxserver/faster-whisper
+# https://github.com/linuxserver/docker-faster-whisper
+
+services:
+  faster-whisper:
+    image: "linuxserver/faster-whisper:${IMAGE_TAG:-latest}"
+    container_name: 'faster-whisper'
+    volumes:
+      - "${HOST_DATA_DIR:-./data}:/config"
+    ports:
+      - "${HTTP_BIND_ADDR:-127.0.0.1}:${HTTP_BIND_PORT:-10300}:10300"
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Moscow}
+    # AMD ROCm isn't currently supported:
+    # https://github.com/SYSTRAN/faster-whisper/issues/162
+    # https://github.com/OpenNMT/CTranslate2/issues/1072
+    # devices:
+    #   - "${DEV_DRI:-/dev/dri}:${DEV_DRI:-/dev/dri}"
+    #   - "${DEV_KFD:-/dev/kfd}:${DEV_KFD:-/dev/kfd}"
+    env_file: .env
+    restart: unless-stopped
+    #read_only: true
+    networks:
+      - ai-tools
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  ai-tools:
+    external: true

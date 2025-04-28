@@ -1,0 +1,29 @@
+# https://hub.docker.com/r/linuxserver/piper
+# https://github.com/linuxserver/docker-piper
+
+services:
+  piper:
+    image: 'linuxserver/piper:${IMAGE_TAG:-latest}'
+    container_name: 'piper'
+    volumes:
+      - '${HOST_DATA_DIR:-./data}:/config'
+    ports:
+      - '${HTTP_BIND_ADDR:-127.0.0.1}:${HTTP_BIND_PORT:-10200}:10200'
+    environment:
+      - 'PUID=${PUID:-1000}'
+      - 'PGID=${PGID:-1000}'
+      - 'TZ=${TZ:-Europe/Moscow}'
+      - 'PIPER_VOICE=${PIPER_VOICE:-en_US-lessac-medium}'
+    env_file: .env
+    restart: unless-stopped
+    networks:
+      - ai-tools
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'
+
+networks:
+  ai-tools:
+    external: true
