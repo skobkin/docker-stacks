@@ -7,12 +7,15 @@ services:
     container_name: v2fly
     network_mode: '${NETWORK_MODE:-bridge}'
     ports:
-      - '${BIND_ADDRESS:-0.0.0.0}:${SOCKS_BIND_PORT:-1050}:${INTERNAL_SOCKS_PORT:-1050}/tcp'
-      - '${BIND_ADDRESS:-0.0.0.0}:${TPROXY_BIND_PORT:-12345}:${INTERNAL_TPROXY_PORT:-12345}/tcp'
-      - '${BIND_ADDRESS:-0.0.0.0}:${TPROXY_BIND_PORT:-12345}:${INTERNAL_TPROXY_PORT:-12345}/udp'
+      - '${BIND_ADDRESS:-0.0.0.0}:${SOCKS_BIND_PORT:-1050}:${SOCKS_BIND_PORT:-1050}/tcp'
+      - '${BIND_ADDRESS:-0.0.0.0}:${TPROXY_BIND_PORT:-12345}:${TPROXY_BIND_PORT:-12345}/tcp'
+      - '${BIND_ADDRESS:-0.0.0.0}:${TPROXY_BIND_PORT:-12345}:${TPROXY_BIND_PORT:-12345}/udp'
     volumes:
       - './config/config.json:/etc/v2fly/config.json:ro'
     command: ['run', '-c', '/etc/v2fly/config.json']
+    environment:
+      - 'SOCKS_BIND_PORT=${SOCKS_BIND_PORT:-1050}'
+      - 'TPROXY_BIND_PORT=${TPROXY_BIND_PORT:-12345}'
     env_file: .env
     restart: unless-stopped
     cap_add:
