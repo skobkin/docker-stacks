@@ -5,7 +5,6 @@ services:
     image: 'codeberg.org/forgejo/forgejo:${IMAGE_TAG:-11}'
     container_name: forgejo
     restart: unless-stopped
-    network_mode: '${NETWORK_MODE:-bridge}'
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     ports:
