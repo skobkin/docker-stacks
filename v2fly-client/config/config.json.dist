@@ -1,7 +1,7 @@
 {
   "inbounds": [
     {
-      "port": 1050,
+      "port": "env:SOCKS_BIND_PORT",
       "protocol": "socks",
       "sniffing": {
         "enabled": true,
@@ -12,7 +12,7 @@
       }
     },
     {
-      "port": 12345,
+      "port": "env:TPROXY_BIND_PORT",
       "protocol": "dokodemo-door",
       "settings": {
         "network": "tcp,udp",
@@ -40,7 +40,8 @@
       },
       "streamSettings": {
         "sockopt": {
-          "mark": 255
+          "mark": 255,
+          "tproxy": "tproxy"
         }
       }
     }
