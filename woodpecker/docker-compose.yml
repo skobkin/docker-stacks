@@ -1,0 +1,28 @@
+# https://hub.docker.com/r/woodpeckerci/woodpecker-server
+# https://github.com/woodpecker-ci/woodpecker
+
+services:
+  woodpecker-server:
+    image: 'woodpeckerci/woodpecker-server:${IMAGE_VERSION:-v3}'
+    container_name: woodpecker-server
+    hostname: woodpecker-server
+    extra_hosts:
+      # Not necessary, but allows to access to local database if chosen over SQLite.
+      - 'host.docker.internal:host-gateway'
+    volumes:
+      - '${HOST_DATA_DIR:-./data}:/var/lib/woodpecker'
+    ports:
+      - '${WEBUI_BIND_ADDR:-127.0.0.1}:${WEBUI_BIND_PORT:-8000}:8000'
+    env_file: .env
+    restart: unless-stopped
+    networks:
+      - forge
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'
+
+networks:
+  forge:
+    external: true

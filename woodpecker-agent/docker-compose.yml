@@ -1,0 +1,24 @@
+# https://hub.docker.com/r/woodpeckerci/woodpecker-agent
+
+services:
+  woodpecker-agent:
+    image: 'woodpeckerci/woodpecker-agent:${IMAGE_VERSION:-v3}'
+    container_name: woodpecker-agent
+    command: agent
+    volumes:
+      - '${CONFIG_DIR:-./config}:/etc/woodpecker'
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    env_file: .env
+    restart: unless-stopped
+    networks:
+      - forge
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'
+
+networks:
+  forge:
+    external: true
+
