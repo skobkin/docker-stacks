@@ -11,7 +11,7 @@ services:
       - '${BIND_ADDRESS:-0.0.0.0}:${TPROXY_BIND_PORT:-12345}:${INTERNAL_TPROXY_PORT:-12345}/udp'
     volumes:
       - './config/config.json:/etc/v2fly/config.json:ro'
-    command: ['v2ray', 'run', '-c', '/etc/v2fly/config.json']
+    command: ['run', '-c', '/etc/v2fly/config.json']
     env_file: .env
     restart: unless-stopped
     logging:
