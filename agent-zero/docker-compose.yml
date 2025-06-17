@@ -11,8 +11,6 @@ services:
       - '${HTTP_BIND_ADDR:-127.0.0.1}:${HTTP_BIND_PORT:-8396}:80'
     environment:
       - 'TZ=${TZ:-Europe/Moscow}'
-      # Uncomment to set a password for the web UI
-      # - 'AGENT_ZERO_PASSWORD=${AGENT_ZERO_PASSWORD:-changeme}'
     env_file: .env
     restart: unless-stopped
     logging:
