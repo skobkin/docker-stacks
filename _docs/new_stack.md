@@ -64,16 +64,19 @@ necessary to run the stack:
 2. **Add a `docker-compose.yml`** file:
    - Follow the best practices above.
    - Reference environment variables via `.env`.
-3. **Create a `.env.dist`** file:
+3. **If `docker-compose.yml` references any bound directories, created them**
+   - Populate `.gitignore` files inside to avoid tracking changes in the app data.
+4. **Create a `.env.dist`** file:
    - List all required variables with example values.
    - Add comments for clarity.
-4. **Add a `README.md` only if it's needed**:
+5. **Add a `README.md` only if it's needed**:
    - Describe the stack, setup, and any special notes.
-5. **Add config directories/files** as needed:
+6. **Add config directories/files** as needed:
    - `config/`, `nginx/`, `data/`, etc.
    - Provide `.dist` templates for configs if needed.
-6. **Update the root `README.md`**:
+7. **Update the root `README.md`**:
    - Add the new stack to the table with status, image, description, and links.
-87 **Commit only safe files**:
+   - Stacks should be sorted alphabetically.
+8 **Commit only safe files**:
    - Exclude `.env` and any files with secrets.
    - Include `.env.dist`, config templates, and documentation.
