@@ -25,4 +25,8 @@ This stack runs [Agent Zero](https://github.com/frdel/agent-zero), a general-pur
    ```
 3. Access the web UI at `http://127.0.0.1:50001` (or as configured).
 
-- For more details, see the [root README](../README.md) and the [official documentation](https://github.com/frdel/agent-zero#readme). 
+- For more details, see the [root README](../README.md) and the [official documentation](https://github.com/frdel/agent-zero#readme).
+
+## Customizing configuration
+
+You may find some useful examples of env variables [here](https://github.com/frdel/agent-zero/blob/main/example.env).
