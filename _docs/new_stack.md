@@ -77,3 +77,29 @@ necessary to run the stack:
 87 **Commit only safe files**:
    - Exclude `.env` and any files with secrets.
    - Include `.env.dist`, config templates, and documentation.
+
+---
+
+Example of a simple stack for syntax and semantics reference:
+
+```yaml
+# https://github.com/user/project-repository
+# https://example.org/link-to-docker-image-configuration-reference
+
+services:
+  meshtastic-web:
+    image: 'ghcr.io/something/app-example:${IMAGE_TAG:-latest}'
+    container_name: 'some-app-example'
+    ports:
+      - "${WEBUI_BIND_ADDR:-127.0.0.1}:${WEBUI_BIND_PORT:-8397}:8080"
+    volumes:
+      - "${CONFIG_DIR:-./config}:/config"
+      - "${DATA_DIR:-./data}:/data"
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+```
