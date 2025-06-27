@@ -1,0 +1,17 @@
+# https://github.com/meshtastic/web
+# https://github.com/meshtastic/web/pkgs/container/web
+# https://meshtastic.org/docs/software/web-client/
+
+services:
+  meshtastic-web:
+    image: 'ghcr.io/meshtastic/web:${IMAGE_TAG:-latest}'
+    container_name: meshtastic-web
+    ports:
+      - "${WEBUI_BIND_ADDR:-127.0.0.1}:${WEBUI_BIND_PORT:-8397}:8080"
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
