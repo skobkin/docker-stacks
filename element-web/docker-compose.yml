@@ -3,7 +3,7 @@ version: '3.7'
 
 services:
   element-web:
-    image: vectorim/element-web
+    image: 'vectorim/element-web'
     container_name: element-web
     volumes:
       - "./config/config.json:/app/config.json"
