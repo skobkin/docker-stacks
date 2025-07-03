@@ -2,7 +2,7 @@
 
 services:
   masto-fe:
-    image: "skobkin/masto-fe-gts-forced-instance:${IMAGE_VERSION:-forced-instance}"
+    image: "skobkin/masto-fe-gts-forced-instance:${IMAGE_VERSION:-latest}"
     container_name: masto-fe-gts
     ports:
       - "${BIND_ADDR:-127.0.0.1}:${BIND_PORT:-8398}:80"
