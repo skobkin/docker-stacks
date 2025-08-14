@@ -12,6 +12,16 @@
       }
     },
     {
+      "port": "env:HTTP_BIND_PORT",
+      "protocol": "http",
+      "sniffing": {
+        "enabled": true,
+        "destOverride": ["http", "tls"]
+      },
+      "settings": {
+      }
+    },
+    {
       "port": "env:TPROXY_BIND_PORT",
       "protocol": "dokodemo-door",
       "settings": {
