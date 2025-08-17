@@ -93,3 +93,7 @@ Not every stack is tested to fully work.
 | V2Fly Client            | ✅           | `v2fly/v2fly-core`                           | V2Ray client with SOCKS5 and transparent proxy support.     | [Website](https://www.v2fly.org), [Github](https://github.com/v2fly/v2ray-core), [Configuration](https://guide.v2fly.org/en_US/basics/shadowsocks.html#client-side-configuration)                                           |
 | Watchtower              | ✅           | `containrrr/watchtower`                      | Docker container auto-update daemon.                        | [Website](https://containrrr.dev/watchtower/), [Github](https://github.com/containrrr/watchtower)                                                                                                                           |
 | Webhook.site            |             | `webhooksite/webhook.site`                   | HTTP callback testing tool                                  | [Website](https://webhook.site), [Github](https://github.com/webhooksite/webhook.site)                                                                                                                                      |
+
+## Port Mapping
+
+Port mappings are documented in [PORTS.md](PORTS.md).
