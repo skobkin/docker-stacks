@@ -36,10 +36,10 @@
 
 ### Persistent Data Directory Conventions
 **DO**:
-- Use `./data` pattern for data storage like other stacks
-- Use `./config` pattern for configuration storage
+- Use standard directory names: `./data`, `./config`, `./logs`, `./nginx`
 - Use generic variable names like `HOST_DATA_DIR` unless multiple services need distinction
 - Allow configuration via `.env` file
+- Create directories as needed, not preemptively
 
 **DON'T**:
 - Default to home directory (`~/.service`) unless project requires it
@@ -47,7 +47,7 @@
 ### Environment File Best Practices
 **DO**:
 - Comment out variables that have same default in compose file
-- Always provide default fallback values in `docker-compose.yml` for optional variables
+- Always provide default fallback values in `docker-compose.yml` using `${VAR:-default}` syntax
 - Add alternative configurations as commented examples when useful
 
 ### Port Management
@@ -90,7 +90,6 @@ Before creating a stack:
 ### Image Tag Patterns
 **DO**:
 - Pin versions for critical services (databases, core infrastructure)
-- Include Docker Hub links in comments
 - Use `${IMAGE_TAG:-version}` for configurability
 
 ### Volume Mount Conventions
@@ -113,33 +112,19 @@ Before creating a stack:
 - Include health checks for critical services (databases, web apps)
 - Comment them out by default to avoid startup delays
 
-## File Structure Requirements
-
-### Essential Files
-- `docker-compose.yml` — Main Compose file
-- `.env.dist` — Environment variables template with all required variables
-- `README.md` — Only if root README doesn't cover special requirements (networks, setup)
-
-### Directory Structure
-**DO**:
-- Use standard subdirectories: `config/`, `nginx/`, `data/`, `logs/`
-- Create directories as needed, not preemptively
-
 ### Config File Management
 **DO**:
 - Provide `.dist` versions for template configs requiring user customization
 - Add user-modified versions to local `.gitignore` (in same directory, not root)
 - Place Nginx configs in `nginx/` subdirectory
-- If service exposes HTTP port, provide Nginx config file based on the same principles as already existing stacks do
+- If service exposes HTTP port, provide Nginx config file based on existing stack principles
 - Place application configs in `config/` subdirectory
 
 ## Docker Compose Best Practices
 
 ### Schema and Structure
 **DO**:
-- Reference environment variables via `env_file: .env`, use `environment:` only if needed or if values are 
-  really static (i.e. known service names from the same stack)
-- Use `${VAR:-default}` syntax for environment variables
+- Reference environment variables via `env_file: .env`, use `environment:` only if needed or if values are really static
 - Use `restart: unless-stopped` for most services
 - Add comments with links to official images/documentation
 
@@ -157,15 +142,17 @@ logging:
 
 ### Volume Best Practices
 **DO**:
+- Use parameterized local directories: `${HOST_DIR:-./default}:/container/path`
 - Use named volumes for persistent data
 - Use bind mounts for configuration files
+- Include timezone synchronization when service can use it: `/etc/localtime:/etc/localtime:ro`
 
 ## Step-by-Step Creation Checklist
 
 1. **Create directory** at root level
 2. **Add `docker-compose.yml`** with proper structure and defaults
 3. **Create `.env.dist`** with all variables and comments
-4. **Add `README.md`** only if special requirements exist
+4. **Add `README.md`** only if root README doesn't cover special requirements
 5. **Add config directories** as needed with `.dist` templates
 6. **Update root `README.md`** table with new stack entry
 7. **Commit safe files** (exclude `.env`, include `.env.dist` and templates)
