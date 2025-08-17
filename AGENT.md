@@ -154,7 +154,7 @@ logging:
 3. **Create `.env.dist`** with all variables and comments
 4. **Add `README.md`** only if root README doesn't cover special requirements
 5. **Add config directories** as needed with `.dist` templates
-6. **Update root `README.md`** table with new stack entry
+6. **Update root `README.md`** table with new stack entry, update `PORTS.md` if necessary
 7. **Commit safe files** (exclude `.env`, include `.env.dist` and templates)
 
 ## Version Control Rules
