@@ -112,3 +112,68 @@ Before creating a stack:
 **DO**:
 - Include health checks for critical services (databases, web apps)
 - Comment them out by default to avoid startup delays
+
+## File Structure Requirements
+
+### Essential Files
+- `docker-compose.yml` — Main Compose file
+- `.env.dist` — Environment variables template with all required variables
+- `README.md` — Only if root README doesn't cover special requirements (networks, setup)
+
+### Directory Structure
+**DO**:
+- Use standard subdirectories: `config/`, `nginx/`, `data/`, `logs/`
+- Create directories as needed, not preemptively
+
+### Config File Management
+**DO**:
+- Provide `.dist` versions for template configs requiring user customization
+- Add user-modified versions to local `.gitignore` (in same directory, not root)
+- Place Nginx configs in `nginx/` subdirectory
+- If service exposes HTTP port, provide Nginx config file based on the same principles as already existing stacks do
+- Place application configs in `config/` subdirectory
+
+## Docker Compose Best Practices
+
+### Schema and Structure
+**DO**:
+- Reference environment variables via `env_file: .env`, use `environment:` only if needed or if values are 
+  really static (i.e. known service names from the same stack)
+- Use `${VAR:-default}` syntax for environment variables
+- Use `restart: unless-stopped` for most services
+- Add comments with links to official images/documentation
+
+**DON'T**:
+- Use schema version (deprecated)
+
+### Logging Configuration (Required)
+```yaml
+logging:
+  driver: "json-file"
+  options:
+    max-size: "${LOG_MAX_SIZE:-5m}"
+    max-file: "${LOG_MAX_FILE:-5}"
+```
+
+### Volume Best Practices
+**DO**:
+- Use named volumes for persistent data
+- Use bind mounts for configuration files
+
+## Step-by-Step Creation Checklist
+
+1. **Create directory** at root level
+2. **Add `docker-compose.yml`** with proper structure and defaults
+3. **Create `.env.dist`** with all variables and comments
+4. **Add `README.md`** only if special requirements exist
+5. **Add config directories** as needed with `.dist` templates
+6. **Update root `README.md`** table with new stack entry
+7. **Commit safe files** (exclude `.env`, include `.env.dist` and templates)
+
+## Version Control Rules
+
+**DO**:
+- Commit `.env.dist` and config templates
+
+**DON'T**:
+- Commit `.env` or files containing secrets
