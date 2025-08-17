@@ -1,0 +1,34 @@
+# https://github.com/All-Hands-AI/OpenHands
+# https://docs.all-hands.dev/modules/usage/installation
+
+services:
+  openhands:
+    image: 'docker.all-hands.dev/all-hands-ai/openhands:${IMAGE_TAG:-0.53}'
+    container_name: openhands-app
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - '${HOST_DATA_DIR:-./data}:/.openhands'
+    ports:
+      - '${HTTP_BIND_ADDR:-127.0.0.1}:${HTTP_BIND_PORT:-3000}:3000'
+    environment:
+      - 'SANDBOX_RUNTIME_CONTAINER_IMAGE=${SANDBOX_RUNTIME_IMAGE:-docker.all-hands.dev/all-hands-ai/runtime:0.53-nikolaik}'
+      - 'LOG_ALL_EVENTS=${LOG_ALL_EVENTS:-true}'
+      - 'LLM_MODEL=${LLM_MODEL:-ollama/qwen3-coder:30b}'
+      - 'LLM_BASE_URL=${LLM_BASE_URL:-http://ollama:11434/v1}'
+      - 'LLM_OLLAMA_BASE_URL=${LLM_OLLAMA_BASE_URL:-http://ollama:11434}'
+      - 'LLM_API_KEY=${LLM_API_KEY:-local-llm}'
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    env_file: .env
+    restart: unless-stopped
+    networks:
+      - ai-tools
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  ai-tools:
+    external: true
