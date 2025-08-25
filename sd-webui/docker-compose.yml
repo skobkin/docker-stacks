@@ -1,0 +1,57 @@
+# Stable Diffusion WebUI - AUTOMATIC1111 Web UI
+# https://github.com/AUTOMATIC1111/stable-diffusion-webui
+# Docker image: https://github.com/ai-dock/stable-diffusion-webui
+
+services:
+  stable-diffusion-webui:
+    image: ghcr.io/ai-dock/stable-diffusion-webui:${IMAGE_TAG:-latest-rocm}
+    container_name: ${COMPOSE_PROJECT_NAME:-stable-diffusion-webui}
+    restart: unless-stopped
+    env_file: .env
+    user: "${UID:-1000}:${GID:-1000}"
+    ports:
+      - "${BIND_IP:-127.0.0.1}:${WEBUI_PORT_HOST:-7860}:${WEBUI_PORT_CONTAINER:-7860}"
+      - "${BIND_IP:-127.0.0.1}:${JUPYTER_PORT_HOST:-8888}:${JUPYTER_PORT_CONTAINER:-8888}"
+      - "${BIND_IP:-127.0.0.1}:${SSH_PORT_HOST:-2222}:22"
+    volumes:
+      # Workspace directory
+      - ${WORKSPACE_DIR:-./data/workspace}:/workspace
+
+      # Models directory
+      - ${MODELS_DIR:-./data/models}:/workspace/stable-diffusion-webui/models
+
+      # Outputs directory
+      - ${OUTPUTS_DIR:-./data/outputs}:/workspace/stable-diffusion-webui/outputs
+
+      # Extensions directory
+      - ${EXTENSIONS_DIR:-./data/extensions}:/workspace/stable-diffusion-webui/extensions
+
+      # Config directory
+      - ${CONFIG_DIR:-./config}:/workspace/stable-diffusion-webui/config
+
+      # Cache directories
+      - ${CACHE_DIR:-./data/cache}/huggingface:/home/user/.cache/huggingface
+      - ${CACHE_DIR:-./data/cache}/pip:/home/user/.cache/pip
+
+      # Timezone synchronization
+      - /etc/localtime:/etc/localtime:ro
+
+    devices:
+      - '${DEV_KFD:-/dev/kfd}:${DEV_KFD:-/dev/kfd}'
+      - '${DEV_DRI:-/dev/dri}:${DEV_DRI:-/dev/dri}'
+    group_add:
+      - '${GROUP_VIDEO:-video}'
+      - '${GROUP_RENDER:-render}'
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+    # Health check (commented out by default to avoid startup delays)
+    #healthcheck:
+    #  test: ["CMD", "curl", "-f", "http://localhost:${WEBUI_PORT_CONTAINER:-7860}/"]
+    #  interval: 30s
+    #  timeout: 10s
+    #  retries: 3
+    #  start_period: 60s

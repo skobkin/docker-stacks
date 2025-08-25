@@ -1,0 +1,93 @@
+# Nginx reverse proxy configuration for Stable Diffusion WebUI
+# Copy to your nginx sites directory and adjust as needed
+
+upstream stable-diffusion-backend {
+    server 127.0.0.1:7860;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name sd.example.com;
+
+    # Redirect to HTTPS
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name sd.example.com;
+
+    # SSL configuration (adjust paths as needed)
+    ssl_certificate /etc/letsencrypt/live/sd.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/sd.example.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+
+    # Logging
+    access_log /var/log/nginx/stable-diffusion.access.log;
+    error_log /var/log/nginx/stable-diffusion.error.log;
+
+    # Client upload size (for large models)
+    client_max_body_size 10G;
+    client_body_timeout 3600s;
+
+    # Timeouts for long-running generation
+    proxy_connect_timeout 3600s;
+    proxy_send_timeout 3600s;
+    proxy_read_timeout 3600s;
+    send_timeout 3600s;
+
+    location / {
+        proxy_pass http://stable-diffusion-backend;
+        proxy_http_version 1.1;
+
+        # WebSocket support
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        # Headers
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Port $server_port;
+
+        # Buffering
+        proxy_buffering off;
+        proxy_request_buffering off;
+    }
+
+    # API endpoint (if API is enabled)
+    location /sdapi/ {
+        proxy_pass http://stable-diffusion-backend/sdapi/;
+        proxy_http_version 1.1;
+
+        # Headers
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Disable buffering for streaming responses
+        proxy_buffering off;
+        proxy_request_buffering off;
+
+        # CORS headers (adjust as needed)
+        add_header 'Access-Control-Allow-Origin' '*' always;
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
+        add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type' always;
+
+        if ($request_method = 'OPTIONS') {
+            return 204;
+        }
+    }
+}
