@@ -8,7 +8,7 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME:-stable-diffusion-webui}
     restart: unless-stopped
     env_file: .env
-    user: "${UID:-1000}:${GID:-1000}"
+    user: "${PUID:-1000}:${PGID:-1000}"
     ports:
       - "${BIND_IP:-127.0.0.1}:${WEBUI_PORT_HOST:-7860}:${WEBUI_PORT_CONTAINER:-7860}"
       - "${BIND_IP:-127.0.0.1}:${JUPYTER_PORT_HOST:-8888}:${JUPYTER_PORT_CONTAINER:-8888}"
@@ -48,6 +48,9 @@ services:
       options:
         max-size: "${LOG_MAX_SIZE:-5m}"
         max-file: "${LOG_MAX_FILE:-5}"
+    networks:
+      - ai-tools
+
     # Health check (commented out by default to avoid startup delays)
     #healthcheck:
     #  test: ["CMD", "curl", "-f", "http://localhost:${WEBUI_PORT_CONTAINER:-7860}/"]
@@ -55,3 +58,7 @@ services:
     #  timeout: 10s
     #  retries: 3
     #  start_period: 60s
+
+networks:
+  ai-tools:
+    external: true

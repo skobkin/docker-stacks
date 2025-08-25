@@ -68,6 +68,9 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | sish | sish | 2222 | 2222 | ❌ | TCP | SSH tunneling |
 | sonarr | sonarr | varies | 8989 | ✅ | TCP | TV show management |
 | speedtest | speedtest | 8888 | 80 | ✅ | TCP | Internet speed test |
+| stable-diffusion-webui | stable-diffusion-webui | 7860 | 7860 | ✅ | TCP | AI image generation |
+| stable-diffusion-webui | stable-diffusion-webui | 8899 | 8888 | ✅ | TCP | Jupyter notebook |
+| stable-diffusion-webui | stable-diffusion-webui | 2223 | 22 | ❌ | TCP | SSH access |
 | synapse | synapse | 8008 | 8008 | ✅ | TCP | Matrix server |
 | synapse | sliding-sync | 8889 | 8889 | ✅ | TCP | Matrix sync proxy |
 | syncthing | syncthing | varies | 8384 | ✅ | TCP | File sync UI |
