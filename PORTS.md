@@ -14,6 +14,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | duplicati | duplicati | 8200 | 8200 | ✅ | TCP | Backup software |
 | element-web | element-web | varies | 80 | ✅ | TCP | Matrix client |
 | emby | emby | 8096 | 8096 | ✅ | TCP | Media server |
+| esphome | esphome | 6052 | 6052 | ✅ | TCP | ESP device builder |
 | faster-whisper | faster-whisper | 10300 | 10300 | ✅ | TCP | Speech-to-text API |
 | firefly-iii | firefly-iii | 8392 | 8080 | ✅ | TCP | Personal finance |
 | folding-at-home | foldingathome | varies | 7396 | ✅ | TCP | Distributed computing |
