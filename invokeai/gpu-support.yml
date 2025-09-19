@@ -1,0 +1,28 @@
+# GPU support configurations for InvokeAI
+# Based on ROCm documentation and InvokeAI requirements
+
+services:
+  # AMD GPU support with ROCm
+  rocm:
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    security_opt:
+      - seccomp=unconfined
+    #group_add:
+    #  - video
+    #  - render
+
+  # NVIDIA GPU support with CUDA
+  cuda:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities:
+                - gpu
+                - compute
+                - utility
+    runtime: nvidia

@@ -1,0 +1,28 @@
+# InvokeAI - Stable Diffusion web UI
+# https://github.com/invoke-ai/InvokeAI
+# https://invoke-ai.github.io/InvokeAI/
+
+services:
+  invokeai:
+    container_name: invokeai
+    # Use main-rocm for AMD GPUs, main-cuda for NVIDIA GPUs
+    image: 'ghcr.io/invoke-ai/invokeai:${IMAGE_TAG:-main-rocm}'
+    extends:
+      file: 'gpu-support.yml'
+      service: '${GPU_DRIVER:-rocm}' # set to 'rocm' for AMD GPUs or 'cuda' for NVIDIA GPUs
+    ports:
+      - '${BIND_ADDRESS:-127.0.0.1}:${BIND_PORT:-9090}:9090'
+    volumes:
+      # Main data directory for models, outputs, configs
+      - '${DATA_DIR:-./data}:/invokeai'
+      # HuggingFace cache directory (for downloaded models)
+      - '${HF_CACHE_DIR:-./cache/huggingface}:/invokeai/.cache/huggingface'
+      # Timezone
+      - '/etc/localtime:/etc/localtime:ro'
+    env_file: '.env'
+    restart: unless-stopped
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'
