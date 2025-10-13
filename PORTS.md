@@ -6,6 +6,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 
 | Stack | Service | Default Host Port | Container Port | Is HTTP | Protocol | Notes |
 |-------|---------|-------------------|----------------|---------|----------|-------|
+| amdgputop-web | amdgputop-web | 8399 | 8080 | ✅ | TCP | AMD GPU telemetry UI |
 | ark-server | server | 7777 | 7777 | ❌ | TCP/UDP | Game server |
 | ark-server | server | varies | varies | ❌ | TCP/UDP | Query/RCON ports |
 | castopod | castopod | 8393 | 8000 | ✅ | TCP | Podcast hosting |

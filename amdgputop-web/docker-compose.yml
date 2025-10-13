@@ -1,0 +1,27 @@
+# amdgputop-web - AMD GPU telemetry web UI
+# https://github.com/skobkin/amdgputop-web
+
+services:
+  amdgputop-web:
+    image: 'ghcr.io/skobkin/amdgputop-web:${IMAGE_TAG:-latest}'
+    container_name: 'amdgputop-web'
+    hostname: 'amdgputop-web'
+    ports:
+      - '${BIND_ADDRESS:-127.0.0.1}:${BIND_PORT:-8399}:8080/tcp'
+    env_file: '.env'
+    restart: unless-stopped
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'
+    devices:
+      - '${DRM_DEVICE:-/dev/dri}:/dev/dri'
+      - '${KFD_DEVICE:-/dev/kfd}:/dev/kfd'
+#    group_add:
+#      - '${VIDEO_GROUP_ID}'
+#      - '${RENDER_GROUP_ID}'
+    pid: 'host'
+    cap_add:
+      - 'SYS_PTRACE'
+    user: '${CONTAINER_USER:-root}'
