@@ -8,8 +8,8 @@ services:
       - "${DATA_DIR:-./data}:/data"
       - "${LOG_DIR:-./logs}:/logs"
     ports:
-      - "${BIND_ADDR:-127.0.0.1}:${BIND_PORT_MQTT:-1883}:1883"
-      - "${BIND_ADDR:-127.0.0.1}:${BIND_PORT_WS:-1884}:1884"
+      - "${BIND_ADDR_MQTT:-127.0.0.1}:${BIND_PORT_MQTT:-1883}:1883"
+      - "${BIND_ADDR_WS:-127.0.0.1}:${BIND_PORT_WS:-1884}:1884"
     env_file: .env
     restart: unless-stopped
     logging:
