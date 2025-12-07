@@ -1,10 +1,9 @@
-# https://github.com/containrrr/watchtower
+# https://github.com/nicholas-fedor/watchtower
 
 services:
   watchtower:
-    # https://hub.docker.com/r/containrrr/watchtower
-    # https://containrrr.dev/watchtower/
-    image: containrrr/watchtower:latest
+    # https://github.com/nicholas-fedor/watchtower
+    image: nickfedor/watchtower:latest
     container_name: watchtower
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
