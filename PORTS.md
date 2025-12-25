@@ -47,6 +47,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | mastodon-fe-gts | masto-fe | 8398 | 80 | ✅ | TCP | Mastodon frontend |
 | meshtastic-web | meshtastic-web | 8397 | 8080 | ✅ | TCP | LoRa mesh UI |
 | metube | metube | 8081 | 8081 | ✅ | TCP | YouTube downloader |
+| miniflux | miniflux | 8390 | 8080 | ✅ | TCP | Minimalist RSS reader |
 | mosquitto | mosquitto | 1883 | 1883 | ❌ | TCP | MQTT broker |
 | mosquitto | mosquitto | 1884 | 1884 | ❌ | TCP | WebSocket |
 | murmur | murmur | 64738 | 64738 | ❌ | TCP/UDP | Voice chat |
