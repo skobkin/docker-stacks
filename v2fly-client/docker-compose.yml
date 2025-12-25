@@ -20,6 +20,8 @@ services:
       - 'TPROXY_BIND_PORT=${TPROXY_BIND_PORT:-12345}'
     env_file: .env
     restart: unless-stopped
+    networks:
+      - proxy
     cap_add:
       - NET_ADMIN
     logging:
@@ -27,3 +29,7 @@ services:
       options:
         max-size: '${LOG_MAX_SIZE:-5m}'
         max-file: '${LOG_MAX_FILE:-5}'
+
+networks:
+  proxy:
+    external: true
