@@ -2,7 +2,7 @@
 # https://miniflux.app/docs/configuration.html
 services:
   miniflux:
-    image: "miniflux/miniflux:${IMAGE_TAG:-2.2.15}"
+    image: "miniflux/miniflux:${IMAGE_TAG:latest}"
     container_name: "miniflux"
     hostname: "miniflux"
     extra_hosts:
