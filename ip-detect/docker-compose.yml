@@ -1,0 +1,17 @@
+# ip-detect - Minimal IP address resolver service
+# https://git.skobk.in/skobkin/ip-detect
+
+services:
+  ip-detect:
+    image: 'skobkin/ip-detect:${IMAGE_TAG:-latest}'
+    container_name: 'ip-detect'
+    hostname: 'ip-detect'
+    ports:
+      - '${BIND_ADDRESS:-127.0.0.1}:${BIND_PORT:-8396}:8080/tcp'
+    env_file: '.env'
+    restart: unless-stopped
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'
