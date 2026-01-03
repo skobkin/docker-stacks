@@ -1,0 +1,28 @@
+# https://miniflux.app/docs/docker.html
+# https://miniflux.app/docs/configuration.html
+services:
+  miniflux:
+    image: 'miniflux/miniflux:${IMAGE_TAG:-latest}'
+    container_name: 'miniflux'
+    hostname: 'miniflux'
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    ports:
+      - '${WEB_BIND_ADDRESS:-127.0.0.1}:${WEB_BIND_PORT:-8390}:8080'
+    env_file: '.env'
+    environment:
+      - 'DATABASE_URL=${DATABASE_URL}'
+      - 'RUN_MIGRATIONS=${RUN_MIGRATIONS:-1}'
+      - 'BASE_URL=${BASE_URL}'
+      - 'LISTEN_ADDR=${LISTEN_ADDR:-0.0.0.0:8080}'
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', '/usr/bin/miniflux', '-healthcheck', 'auto']
+      interval: 30s
+      timeout: 2s
+      retries: 3
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'

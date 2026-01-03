@@ -4,6 +4,7 @@
 
 ## Prerequisites
 
-This service requires the `ai-tools` Docker network. Please follow the [network configuration guide](../_docs/ai_tools_network.md) before starting the service.
+This service requires `ai-tools` and `proxy` Docker networks. Please follow [ai-tools](../_docs/ai_tools_network.md) and
+[proxy](../_docs/proxy_network.md) configuration guides before starting the service.
 
 For general setup instructions, please refer to the [root README](../README.md).

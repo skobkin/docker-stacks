@@ -1,6 +1,7 @@
 {
   "inbounds": [
     {
+      "tag": "socks-in",
       "port": "env:SOCKS_BIND_PORT",
       "protocol": "socks",
       "sniffing": {
@@ -10,50 +11,68 @@
       "settings": {
         "auth": "noauth"
       }
-    },
-    {
-      "port": "env:HTTP_BIND_PORT",
-      "protocol": "http",
-      "sniffing": {
-        "enabled": true,
-        "destOverride": ["http", "tls"]
-      },
-      "settings": {
-      }
-    },
-    {
-      "port": "env:TPROXY_BIND_PORT",
-      "protocol": "dokodemo-door",
-      "settings": {
-        "network": "tcp,udp",
-        "followRedirect": true
-      },
-      "sniffing": {
-        "enabled": true,
-        "destOverride": ["http", "tls"]
-      }
     }
   ],
   "outbounds": [
     {
+      "tag": "proxy",
       "protocol": "shadowsocks",
       "settings": {
         "servers": [
           {
-            "address": "serveraddr.com",
-            "method": "aes-128-gcm",
+            "address": "server1.tld",
+            "method": "chacha20-poly1305",
             "ota": false,
-            "password": "sspasswd",
-            "port": 1024
+            "password": "password",
+            "port": 999
+          },
+          {
+            "address": "server2.tld",
+            "method": "chacha20-poly1305",
+            "ota": false,
+            "password": "password",
+            "port": 999
           }
         ]
-      },
-      "streamSettings": {
-        "sockopt": {
-          "mark": 255,
-          "tproxy": "tproxy"
-        }
       }
+    },
+    {
+      "tag": "direct",
+      "protocol": "freedom",
+      "settings": {}
     }
-  ]
+  ],
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "rules": [
+      {
+        "type": "field",
+        "domain": [
+          "domain:host.docker.internal",
+          "domain:localhost",
+          "domain:lan"
+          "domain:ollama"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "ip": [
+          "127.0.0.0/8",
+          "::1/128",
+
+          "10.0.0.0/8",
+          "172.16.0.0/12",
+          "192.168.0.0/16",
+
+          "169.254.0.0/16",
+          "fe80::/10",
+
+          "100.64.0.0/10",
+          "fc00::/7"
+        ],
+        "outboundTag": "direct"
+      }
+    ]
+  }
 }
