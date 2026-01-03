@@ -1,4 +1,4 @@
-[![Build Status](https://ci.skobk.in/api/badges/skobkin/docker-stacks/status.svg)](https://ci.skobk.in/skobkin/docker-stacks)
+[![status-badge](https://ci.skobk.in/api/badges/1/status.svg)](https://ci.skobk.in/repos/1)
 
 # Docker Compose config collection
 
