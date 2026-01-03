@@ -88,8 +88,8 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | v2fly-client            | v2fly             | 1050              | 1050           | ❌       | TCP      | SOCKS proxy              |
 | v2fly-client            | v2fly             | 1080              | 1080           | ❌       | TCP      | HTTP proxy               |
 | v2fly-client            | v2fly             | 12345             | 12345          | ❌       | TCP/UDP  | Transparent proxy        |
-| woodpecker              | woodpecker-server | 8390              | 8000           | ✅       | TCP      | CI web UI                |
-| woodpecker              | woodpecker-server | 9090              | 9000           | ❌       | TCP      | gRPC endpoint for agents |
+| woodpecker              | woodpecker-server | 8400              | 8000           | ✅       | TCP      | CI web UI                |
+| woodpecker              | woodpecker-server | 9400              | 9000           | ❌       | TCP      | gRPC endpoint for agents |
 | webhooksite             | webhook           | varies            | 80             | ✅       | TCP      | Webhook testing          |
 | webhooksite             | echo-server       | 6001              | 6001           | ❌       | TCP      | Echo server              |
 
