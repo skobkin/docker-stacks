@@ -1,0 +1,33 @@
+# https://hub.docker.com/r/woodpeckerci/woodpecker-server
+
+services:
+  woodpecker-server:
+    image: 'woodpeckerci/woodpecker-server:${IMAGE_TAG:-latest}'
+    container_name: woodpecker-server
+    hostname: woodpecker-server
+    volumes:
+      - '${HOST_DATA_DIR:-./data}:/var/lib/woodpecker'
+      # TLS certs directory
+      #- '${HOST_CERT_DIR:-/dev/null}:${HOST_CERT_DIR:-/dev/null}:ro'
+    ports:
+      - '${WEBUI_BIND_ADDR:-127.0.0.1}:${WEBUI_BIND_PORT:-8400}:8000'
+      # gRPC endpoint used by agents
+      - '${GRPC_BIND_ADDR:-127.0.0.1}:${GRPC_BIND_PORT:-9400}:9000'
+    env_file: .env
+    environment:
+      WOODPECKER_SERVER_CERT: ${WOODPECKER_SERVER_CERT:-}
+      WOODPECKER_SERVER_KEY: ${WOODPECKER_SERVER_KEY:-}
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    networks:
+      - forge
+    restart: unless-stopped
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'
+
+networks:
+  forge:
+    external: true
