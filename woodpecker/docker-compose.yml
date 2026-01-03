@@ -8,7 +8,7 @@ services:
     volumes:
       - '${HOST_DATA_DIR:-./data}:/var/lib/woodpecker'
       # TLS certs directory
-      - '${HOST_CERT_DIR:-/dev/null}:${HOST_CERT_DIR:-/dev/null}:ro'
+      #- '${HOST_CERT_DIR:-/dev/null}:${HOST_CERT_DIR:-/dev/null}:ro'
     ports:
       - '${WEBUI_BIND_ADDR:-127.0.0.1}:${WEBUI_BIND_PORT:-8390}:8000'
       # gRPC endpoint used by agents
