@@ -1,10 +1,12 @@
 # [Synapse](https://matrix.org/docs/projects/server/synapse) ([Matrix.org](https://matrix.org/) server)
 
-## Create internal network for Matrix services
+## Create external network for Matrix services
 
 ```shell
-docker network create --internal matrix
+docker network create matrix
 ```
+
+See the detailed guide in `../_docs/matrix_network.md`.
 
 ## Generate server configuration
 

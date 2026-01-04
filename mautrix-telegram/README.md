@@ -1,13 +1,15 @@
 # Telegram Bridge for Matrix
 
-## Create internal network for Matrix services
+## Create external network for Matrix services
 
 You should've created this network while setting up [synapse](../synapse/README.md). But if you didn't, then do it
 before trying to run this stack:
 
 ```shell
-docker network create --internal matrix
+docker network create matrix
 ```
+
+See the detailed guide in `../_docs/matrix_network.md`.
 
 ## Bridge setup documentation
 
