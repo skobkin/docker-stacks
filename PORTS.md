@@ -13,6 +13,11 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | drone                   | drone             | 8386              | 80             | ✅       | TCP      | CI/CD server             |
 | drone-runner            | drone-runner      | 8387              | 3000           | ✅       | TCP      | CI/CD runner             |
 | duplicati               | duplicati         | 8200              | 8200           | ✅       | TCP      | Backup software          |
+| element-call            | element-call      | 8391              | 8080           | ✅       | TCP      | Element Call frontend    |
+| element-call            | lk-jwt-service    | 8401              | 8080           | ✅       | TCP      | MatrixRTC auth service   |
+| element-call            | livekit           | 7880              | 7880           | ✅       | TCP      | LiveKit signalling       |
+| element-call            | livekit           | 7881              | 7881           | ❌       | TCP      | LiveKit RTC (TCP)        |
+| element-call            | livekit           | 50000-50200       | 50000-50200    | ❌       | UDP      | LiveKit RTC (UDP range)  |
 | element-web             | element-web       | varies            | 80             | ✅       | TCP      | Matrix client            |
 | emby                    | emby              | 8096              | 8096           | ✅       | TCP      | Media server             |
 | esphome                 | esphome           | 6052              | 6052           | ✅       | TCP      | ESP device builder       |

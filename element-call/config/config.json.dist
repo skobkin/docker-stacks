@@ -1,0 +1,14 @@
+{
+  "default_server_config": {
+    "m.homeserver": {
+      "base_url": "https://ec.domain.tld",
+      "server_name": "ec.domain.tld"
+    }
+  },
+  "livekit": {
+    "livekit_service_url": "https://ec.domain.tld/livekit/jwt"
+  },
+  "features": {
+    "feature_use_device_session_member_events": true
+  }
+}
