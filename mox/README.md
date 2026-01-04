@@ -42,53 +42,151 @@ docker-compose run --rm mox mox quickstart -existing-webserver you@yourdomain.ex
 ```
 
 When using `-existing-webserver`, you must terminate TLS in Nginx and reverse-proxy
-requests to the Mox web listeners configured in `config/mox.conf`.
+requests to the Mox web listeners configured in `config/mox.conf`. Quickstart will
+also place placeholder TLS certificate paths in `config/mox.conf` for the public
+SMTP/IMAP listener; you must replace them with real cert paths from `acme.sh`.
 
-Example: enable Mox HTTP listeners on localhost and a single port (e.g. 8080) and
-enable `Forwarded` so Mox trusts `X-Forwarded-*` headers from Nginx:
+##### 1.4.1 Choose and understand hostnames
 
-```yaml
+Quickstart prints the DNS records you need. Those records typically include:
+
+- A hostname for SMTP/IMAP (often `mail.example.com`) that becomes your MX host.
+- `mta-sts.example.com` for the MTA-STS policy.
+- `autoconfig.example.com` for mail client auto-configuration.
+
+You can change hostnames in the quickstart output, but make sure you:
+1) create DNS records for them, 2) issue certificates for them, and 3) proxy each
+hostname to the right Mox listener via Nginx.
+
+##### 1.4.2 Update TLS cert paths in `config/mox.conf`
+
+Quickstart writes placeholder paths for the public listener TLS certificates. Replace
+them with the real paths that `acme.sh` writes on your host.
+Use the same certs/keys that Nginx serves for those hostnames.
+
+Example (paths are placeholders, use your actual `acme.sh` locations):
+
+```text
+Listeners:
+	public:
+		TLS:
+			KeyCerts:
+				- CertFile: /etc/ssl/acme/mail.example.com/fullchain.cer
+				  KeyFile: /etc/ssl/acme/mail.example.com/key.pem
+				- CertFile: /etc/ssl/acme/mta-sts.example.com/fullchain.cer
+				  KeyFile: /etc/ssl/acme/mta-sts.example.com/key.pem
+				- CertFile: /etc/ssl/acme/autoconfig.example.com/fullchain.cer
+				  KeyFile: /etc/ssl/acme/autoconfig.example.com/key.pem
+```
+
+If you use a wildcard certificate that covers all of these hostnames, you can point
+all entries at that single cert/key.
+
+##### 1.4.3 Configure Mox internal listeners for proxying
+
+The following is aligned with the upstream quickstart for `-existing-webserver`:
+it keeps all web endpoints on localhost, uses port 1080 for account/admin/webmail,
+and port 81 for autoconfig/MTA-STS/webserver. `Forwarded: true` tells Mox to trust
+`X-Forwarded-*` headers from Nginx.
+
+```text
 Listeners:
 	internal:
 		IPs:
 			- 127.0.0.1
+		Hostname: localhost
 		AdminHTTP:
 			Enabled: true
-			Port: 8080
+			Port: 1080
 			Forwarded: true
 		AccountHTTP:
 			Enabled: true
-			Port: 8080
+			Port: 1080
 			Forwarded: true
 		WebmailHTTP:
 			Enabled: true
-			Port: 8080
+			Port: 1080
 			Forwarded: true
 		WebAPIHTTP:
 			Enabled: true
-			Port: 8080
+			Port: 1080
 			Forwarded: true
+		AutoconfigHTTPS:
+			Enabled: true
+			Port: 81
+			NonTLS: true
+		MTASTSHTTPS:
+			Enabled: true
+			Port: 81
+			NonTLS: true
+		WebserverHTTP:
+			Enabled: true
+			Port: 81
 ```
 
-Then proxy `mail.example.com` to that local listener in Nginx (TLS handled by Nginx):
+Note: Mox config uses tabs for indentation.
+
+##### 1.4.4 Nginx reverse-proxy examples
+
+Mail/web UI host (proxy to port 1080):
 
 ```nginx
 server {
 	listen 80;
-	listen 443 ssl;
+	listen 443 ssl http2;
 	server_name mail.example.com;
 
+	# Optional HTTP->HTTPS redirect
+	# if ($scheme = http) { return 301 https://$host$request_uri; }
+
+	# SSL config from acme.sh (use your local include/snippet)
+	#include ssl-domain.conf;
+
 	location / {
-		proxy_pass http://127.0.0.1:8080;
+		proxy_pass http://127.0.0.1:1080;
 		proxy_set_header Host $host;
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header X-Forwarded-Proto $scheme;
+	}
+
+	# Optional: lock down admin UI
+	#location /admin/ {
+	#	allow 192.168.0.0/16;
+	#	deny all;
+	#	proxy_pass http://127.0.0.1:1080;
+	#	proxy_set_header Host $host;
+	#	proxy_set_header X-Real-IP $remote_addr;
+	#	proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+	#	proxy_set_header X-Forwarded-Proto $scheme;
+	#}
+}
+```
+
+Autoconfig + MTA-STS hostnames (proxy to port 81, plain HTTP to Mox):
+
+```nginx
+server {
+	listen 80;
+	listen 443 ssl http2;
+	server_name autoconfig.example.com mta-sts.example.com;
+
+	# SSL config from acme.sh (use your local include/snippet)
+	#include ssl-domain.conf;
+
+	location / {
+		proxy_pass http://127.0.0.1:81;
+		proxy_set_header Host $host;
+		proxy_set_header X-Real-IP $remote_addr;
 		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 		proxy_set_header X-Forwarded-Proto $scheme;
 	}
 }
 ```
 
-If you only want to expose the admin UI, proxy `/admin/` (and/or `/webmail/`,
-`/webapi/`) instead of the root path, and leave `/` to your main site.
+If you only want to expose webmail or web API, proxy `/webmail/` and/or `/webapi/`
+instead of `/`. If you want admin access private, keep `/admin/` restricted via
+Nginx allow/deny or expose it only on an internal/VPN-only virtual host.
 
 ### 2. Running in production
 
@@ -107,7 +205,7 @@ docker-compose up -d
 
 If you use Nginx on 80/443, keep it there and proxy requests to the Mox web listener
 configured in `config/mox.conf`. Ensure Nginx also handles ACME/TLS for Mox and any
-other sites you serve.
+other sites you serve. See section 1.4 for the full reverse-proxy checklist.
 
 ## Notes
 
