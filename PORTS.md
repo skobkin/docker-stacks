@@ -53,6 +53,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | miniflux                | miniflux          | 8390              | 8080           | ✅       | TCP      | Minimalist RSS reader    |
 | mosquitto               | mosquitto         | 1883              | 1883           | ❌       | TCP      | MQTT broker              |
 | mosquitto               | mosquitto         | 1884              | 1884           | ❌       | TCP      | WebSocket                |
+| mox                     | mox               | *host mode*       | *host mode*    | ✅       | -        | Mail server (host network) |
 | murmur                  | murmur            | 64738             | 64738          | ❌       | TCP/UDP  | Voice chat               |
 | ollama                  | webui             | 3000              | 8080           | ✅       | TCP      | AI chat interface        |
 | ollama                  | ollama            | 11434             | 11434          | ✅       | TCP      | AI API server            |
