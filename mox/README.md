@@ -26,7 +26,7 @@ sudo useradd -m -d "$(pwd)" mox
 Run quickstart to generate config files and DNS instructions:
 
 ```shell
-docker-compose run --rm mox mox quickstart you@yourdomain.example $(id -u mox)
+docker compose run --rm mox mox quickstart you@yourdomain.example $(id -u mox)
 ```
 
 If you run quickstart on a different machine than the final host, add
@@ -38,7 +38,7 @@ If you already run Nginx on ports 80/443, add `-existing-webserver` to quickstar
 so Mox does not try to bind those ports:
 
 ```shell
-docker-compose run --rm mox mox quickstart -existing-webserver you@yourdomain.example $(id -u mox)
+docker compose run --rm mox mox quickstart -existing-webserver you@yourdomain.example $(id -u mox)
 ```
 
 When using `-existing-webserver`, you must terminate TLS in Nginx and reverse-proxy
@@ -198,7 +198,7 @@ printed by quickstart.
 #### 2.2 Start the server
 
 ```shell
-docker-compose up -d
+docker compose up -d
 ```
 
 #### 2.3 Reverse proxy with Nginx (if ports 80/443 are already in use)
@@ -212,4 +212,4 @@ other sites you serve. See section 1.4 for the full reverse-proxy checklist.
 - The `web` directory is optional; it is used for static files served by Mox.
 - If you want Mox to manage ACME and serve the admin UI directly, keep ports 80/443
   available for Mox.
-- See the Mox install docs and docker-compose example for more details.
+- See the Mox install docs and docker compose example for more details.
