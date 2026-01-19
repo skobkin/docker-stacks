@@ -1,7 +1,6 @@
 # https://hub.docker.com/r/gabekangas/owncast
 # https://owncast.online/quickstart/container/
 
-version: '3.7'
 
 services:
   owncast:

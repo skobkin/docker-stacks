@@ -1,5 +1,4 @@
 # https://mau.dev/mautrix/telegram/
-version: '3.7'
 
 services:
   mautrix-telegram:
