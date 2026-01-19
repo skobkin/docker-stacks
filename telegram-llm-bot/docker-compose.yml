@@ -1,5 +1,4 @@
 # https://hub.docker.com/r/skobkin/telegram-llm-bot
-version: '3.9'
 
 services:
   telegram-llm-bot:

@@ -1,5 +1,4 @@
 # https://gitlab.com/Deamos/flask-nginx-rtmp-manager/-/blob/master/docker-compose.yml
-version: '3.7'
 
 services:
   redis:

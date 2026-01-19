@@ -1,5 +1,4 @@
 # https://hub.docker.com/r/webhooksite/webhook.site
-version: '3.8'
 
 services:
   webhook:
