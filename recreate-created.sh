@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# rebuild-created.sh
+# recreate-created.sh
 #
 # Walk stack directories (./<stack>/docker-compose.yml or ./<stack>/compose.yml)
 # and restart ONLY stacks that:
@@ -7,11 +7,11 @@
 #   2) already have at least one container created for that compose project
 #
 # Usage:
-#   ./restart-stacks.sh --dry-run
-#   ./restart-stacks.sh
+#   ./recreate-created.sh --dry-run
+#   ./recreate-created.sh
 #
 # Optional:
-#   STACKS_ROOT=/path/to/stacks ./restart-stacks.sh --dry-run
+#   STACKS_ROOT=/path/to/stacks ./recreate-created.sh --dry-run
 
 set -euo pipefail
 
@@ -20,7 +20,7 @@ VERBOSE=0
 
 usage() {
   cat <<'EOF'
-Usage: restart-stacks.sh [--dry-run] [--verbose] [--help]
+Usage: recreate-created.sh [--dry-run] [--verbose] [--help]
 
 Options:
   --dry-run   Print what would be restarted, do not change anything
