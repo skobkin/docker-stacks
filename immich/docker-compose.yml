@@ -17,6 +17,7 @@ services:
       service: '${HWACCEL_TRANSCODING:-cpu}' # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
     volumes:
       # Do not edit the next line. If you want to change the media storage location on your system, edit the value of UPLOAD_LOCATION in the .env file
+      # TODO: verify if upstream now expects /data instead of /usr/src/app/upload
       - '${UPLOAD_LOCATION:-./upload}:/usr/src/app/upload'
       - '/etc/localtime:/etc/localtime:ro'
     env_file:
@@ -37,12 +38,12 @@ services:
 
   immich-machine-learning:
     container_name: immich_machine_learning
-    # For hardware acceleration, add one of -[armnn, cuda, openvino] to the image tag.
+    # For hardware acceleration, add one of -[armnn, cuda, rocm, openvino, rknn] to the image tag.
     # Example tag: ${IMMICH_VERSION:-release}-cuda
     image: 'ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}'
     extends: # uncomment this section for hardware acceleration - see https://immich.app/docs/features/ml-hardware-acceleration
       file: 'hwaccel.ml.yml'
-      service: '${HWACCEL_ML:-cpu}' # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference - use the `-wsl` version for WSL2 where applicable
+      service: '${HWACCEL_ML:-cpu}' # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference - use the `-wsl` version for WSL2 where applicable
     volumes:
       - '${MODEL_CACHE_LOCATION:-./model-cache}:/cache'
     env_file:
@@ -58,7 +59,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: 'docker.io/redis:6.2-alpine@sha256:2ba50e1ac3a0ea17b736ce9db2b0a9f6f8b85d4c27d5f5accc6a416d8f42c6d5'
+    image: 'docker.io/valkey/valkey:9@sha256:fb8d272e529ea567b9bf1302245796f21a2672b8368ca3fcb938ac334e613c8f'
     healthcheck:
       test: redis-cli ping || exit 1
     restart: unless-stopped
@@ -70,7 +71,11 @@ services:
 
   database:
     container_name: immich_postgres
-    image: 'ghcr.io/immich-app/postgres:14-vectorchord0.4.3@sha256:da52bbead5d818adaa8077c8dcdaad0aaf93038c31ad8348b51f9f0ec1310a4d'
+    # TODO: after upgrading vectorchord, run:
+    #   ALTER EXTENSION vchord UPDATE;
+    #   REINDEX INDEX face_index;
+    #   REINDEX INDEX clip_index;
+    image: 'ghcr.io/immich-app/postgres:14-vectorchord0.5.3@sha256:b42bf6590a43a914a8b4d7a72e1236f2083c98ea40dcae7328422041d3782f69'
     extends:
       file: 'share_db.yaml'
       service: '${DB_MODE:-internal}' # set to one of [shared, internal]
