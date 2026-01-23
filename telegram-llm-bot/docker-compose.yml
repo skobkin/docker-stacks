@@ -13,3 +13,9 @@ services:
       options:
         max-size: "${LOG_MAX_SIZE:-5m}"
         max-file: "${LOG_MAX_FILE:-5}"
+    networks:
+      - ai-tools
+
+networks:
+  ai-tools:
+    external: true
