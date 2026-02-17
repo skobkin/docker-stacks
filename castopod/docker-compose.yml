@@ -1,9 +1,10 @@
 services:
   castopod:
+    # Min version is 1.15.0
     image: 'castopod/castopod:${IMAGE_TAG:-latest}'
     container_name: 'castopod'
     volumes:
-      - '${MEDIA_PATH:-./media}:/var/www/castopod/public/media'
+      - '${MEDIA_PATH:-./media}:/app/public/media'
     environment:
       MYSQL_DATABASE: '${CP_DATABASE_NAME:-castopod}'
       MYSQL_USER: '${CP_DATABASE_USERNAME:-castopod}'
@@ -19,7 +20,7 @@ services:
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     ports:
-      - '${EXTERNAL_ADDRESS:-127.0.0.1}:${EXTERNAL_PORT:-8393}:8000'
+      - '${EXTERNAL_ADDRESS:-127.0.0.1}:${EXTERNAL_PORT:-8393}:8080'
     restart: unless-stopped
     logging:
       driver: 'json-file'
