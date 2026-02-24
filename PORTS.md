@@ -9,6 +9,8 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | amdgputop-web           | amdgputop-web     | 8399              | 8080           | ✅       | TCP      | AMD GPU telemetry UI     |
 | ark-server              | server            | 7777              | 7777           | ❌       | TCP/UDP  | Game server              |
 | ark-server              | server            | varies            | varies         | ❌       | TCP/UDP  | Query/RCON ports         |
+| beszel                  | beszel            | 8391              | 8090           | ✅       | TCP      | Monitoring hub web UI    |
+| beszel-agent            | beszel-agent      | disabled by default | 45876        | ❌       | TCP      | Enable by setting DISABLE_SSH=false |
 | castopod                | castopod          | 8393              | 8000           | ✅       | TCP      | Podcast hosting          |
 | drone                   | drone             | 8386              | 80             | ✅       | TCP      | CI/CD server             |
 | drone-runner            | drone-runner      | 8387              | 3000           | ✅       | TCP      | CI/CD runner             |
