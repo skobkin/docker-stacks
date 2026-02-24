@@ -3,7 +3,7 @@
 
 services:
   beszel-agent:
-    image: "henrygd/beszel-agent:${IMAGE_TAG:-latest}"
+    image: "henrygd/beszel-agent:${IMAGE_TAG:-alpine}"
     container_name: beszel-agent
     network_mode: host
     volumes:
