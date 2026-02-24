@@ -52,9 +52,6 @@ services:
       HUB_URL: "${HUB_URL}"
       TOKEN: "${TOKEN}"
       KEY: "${KEY}"
-      FILESYSTEM: "${FILESYSTEM:-}"
-      DOCKER_HOST: "${DOCKER_HOST:-}"
-      EXTRA_FILESYSTEMS: "${EXTRA_FILESYSTEMS:-}"
     env_file: .env
     restart: unless-stopped
     healthcheck:
