@@ -1,0 +1,69 @@
+# https://github.com/henrygd/beszel
+# https://beszel.dev/guide/agent-installation
+
+services:
+  beszel-agent:
+    image: "henrygd/beszel-agent:${IMAGE_TAG:-latest}"
+    container_name: beszel-agent
+    network_mode: host
+    volumes:
+      - "${HOST_DATA_DIR:-./data}:/var/lib/beszel-agent"
+      - "${DOCKER_SOCK_PATH:-/var/run/docker.sock}:/var/run/docker.sock:ro"
+      - "${SYSTEMD_DBUS_SOCKET:-/var/run/dbus/system_bus_socket}:/var/run/dbus/system_bus_socket:ro"
+      - "${SYSTEMD_PRIVATE_SOCKET:-/dev/null}:/var/run/systemd/private:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "${EXTRA_MOUNT_1:-/dev/null}:${EXTRA_MOUNT_1:-/dev/null}:ro"
+      - "${EXTRA_MOUNT_2:-/dev/null}:${EXTRA_MOUNT_2:-/dev/null}:ro"
+      - "${EXTRA_MOUNT_3:-/dev/null}:${EXTRA_MOUNT_3:-/dev/null}:ro"
+      - "${EXTRA_MOUNT_4:-/dev/null}:${EXTRA_MOUNT_4:-/dev/null}:ro"
+      - "${EXTRA_MOUNT_5:-/dev/null}:${EXTRA_MOUNT_5:-/dev/null}:ro"
+    devices:
+      - "${SMART_DEVICE_1:-/dev/null}:${SMART_DEVICE_1_MAPPED:-/dev/null}"
+      - "${SMART_DEVICE_2:-/dev/null}:${SMART_DEVICE_2_MAPPED:-/dev/null}"
+      - "${SMART_DEVICE_3:-/dev/null}:${SMART_DEVICE_3_MAPPED:-/dev/null}"
+      - "${SMART_DEVICE_4:-/dev/null}:${SMART_DEVICE_4_MAPPED:-/dev/null}"
+      - "${SMART_DEVICE_5:-/dev/null}:${SMART_DEVICE_5_MAPPED:-/dev/null}"
+      - "${SMART_DEVICE_6:-/dev/null}:${SMART_DEVICE_6_MAPPED:-/dev/null}"
+      - "${SMART_DEVICE_7:-/dev/null}:${SMART_DEVICE_7_MAPPED:-/dev/null}"
+      - "${SMART_DEVICE_8:-/dev/null}:${SMART_DEVICE_8_MAPPED:-/dev/null}"
+      - "${SMART_DEVICE_9:-/dev/null}:${SMART_DEVICE_9_MAPPED:-/dev/null}"
+      - "${SMART_DEVICE_10:-/dev/null}:${SMART_DEVICE_10_MAPPED:-/dev/null}"
+      - "${SMART_DEVICE_11:-/dev/null}:${SMART_DEVICE_11_MAPPED:-/dev/null}"
+      - "${SMART_DEVICE_12:-/dev/null}:${SMART_DEVICE_12_MAPPED:-/dev/null}"
+      - "${SMART_DEVICE_13:-/dev/null}:${SMART_DEVICE_13_MAPPED:-/dev/null}"
+      - "${SMART_DEVICE_14:-/dev/null}:${SMART_DEVICE_14_MAPPED:-/dev/null}"
+      - "${SMART_DEVICE_15:-/dev/null}:${SMART_DEVICE_15_MAPPED:-/dev/null}"
+      - "${SMART_DEVICE_16:-/dev/null}:${SMART_DEVICE_16_MAPPED:-/dev/null}"
+      - "${SMART_DEVICE_17:-/dev/null}:${SMART_DEVICE_17_MAPPED:-/dev/null}"
+      - "${SMART_DEVICE_18:-/dev/null}:${SMART_DEVICE_18_MAPPED:-/dev/null}"
+      - "${SMART_DEVICE_19:-/dev/null}:${SMART_DEVICE_19_MAPPED:-/dev/null}"
+      - "${SMART_DEVICE_20:-/dev/null}:${SMART_DEVICE_20_MAPPED:-/dev/null}"
+      - "${GPU_DEVICE_1:-/dev/null}:${GPU_DEVICE_1:-/dev/null}"
+      - "${GPU_DEVICE_2:-/dev/null}:${GPU_DEVICE_2:-/dev/null}"
+      - "${GPU_DEVICE_3:-/dev/null}:${GPU_DEVICE_3:-/dev/null}"
+      - "${GPU_DEVICE_4:-/dev/null}:${GPU_DEVICE_4:-/dev/null}"
+      - "${GPU_DEVICE_5:-/dev/null}:${GPU_DEVICE_5:-/dev/null}"
+    cap_add:
+      - SYS_RAWIO
+      - SYS_ADMIN
+    environment:
+      DISABLE_SSH: "${DISABLE_SSH:-true}"
+      LISTEN: "${LISTEN:-45876}"
+      HUB_URL: "${HUB_URL}"
+      TOKEN: "${TOKEN}"
+      KEY: "${KEY}"
+      FILESYSTEM: "${FILESYSTEM:-}"
+      DOCKER_HOST: "${DOCKER_HOST:-}"
+      EXTRA_FILESYSTEMS: "${EXTRA_FILESYSTEMS:-}"
+    env_file: .env
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "/agent", "health" ]
+      interval: 120s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
