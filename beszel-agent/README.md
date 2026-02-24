@@ -43,9 +43,9 @@ In most home-lab and NAT setups, WebSocket mode is simpler and safer to operate.
 Optional mounts are predeclared in `docker-compose.yml`, so you can enable them in `.env` without editing compose.
 
 - Extra directories/filesystems:
-  - `EXTRA_MOUNT_1..5`
-  - Each value is mounted to the same path inside the container
-  - This keeps path labels consistent between host and Beszel UI
+  - `EXTRA_MOUNT_1..5` for host paths
+  - `EXTRA_MOUNT_1_LABEL..EXTRA_MOUNT_5_LABEL` for in-container label suffixes under `/extra-filesystems/`
+  - Only label suffix is overridden (examples: `sdb1`, `sdc1__Media`)
 
 - GPU devices:
   - `GPU_DEVICE_1..5`
