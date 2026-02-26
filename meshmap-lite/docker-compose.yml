@@ -1,0 +1,19 @@
+# https://git.skobk.in/skobkin/meshmap-lite
+# https://hub.docker.com/r/skobkin/meshmap-lite
+
+services:
+  meshmap-lite:
+    image: 'skobkin/meshmap-lite:${IMAGE_TAG:-latest}'
+    container_name: 'meshmap-lite'
+    ports:
+      - '${HTTP_BIND_ADDR:-127.0.0.1}:${HTTP_BIND_PORT:-8401}:8080'
+    volumes:
+      - '${HOST_DATA_DIR:-./data}:/data'
+    env_file: '.env'
+    restart: unless-stopped
+    user: '${PUID:-1000}:${PGID:-1000}'
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'

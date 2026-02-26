@@ -49,6 +49,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | magneticod              | magneticod        | varies            | varies         | ❌       | UDP      | DHT crawler              |
 | mastodon-fe-gts         | masto-fe          | 8398              | 80             | ✅       | TCP      | Mastodon frontend        |
 | meshtastic-web          | meshtastic-web    | 8397              | 8080           | ✅       | TCP      | LoRa mesh UI             |
+| meshmap-lite            | meshmap-lite      | 8401              | 8080           | ✅       | TCP      | Meshtastic map/chat UI   |
 | metube                  | metube            | 8081              | 8081           | ✅       | TCP      | YouTube downloader       |
 | miniflux                | miniflux          | 8390              | 8080           | ✅       | TCP      | Minimalist RSS reader    |
 | mosquitto               | mosquitto         | 1883              | 1883           | ❌       | TCP      | MQTT broker              |
