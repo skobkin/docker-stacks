@@ -38,6 +38,15 @@ Two connection models are supported:
 
 In most home-lab and NAT setups, WebSocket mode is simpler and safer to operate.
 
+## S.M.A.R.T.
+
+S.M.A.R.T. collection requires `smartctl` inside the agent container.
+
+- This stack defaults to `IMAGE_TAG=alpine` (includes `smartctl`).
+- Pass SMART devices via `SMART_DEVICE_1..20`.
+- Prefer controller paths (`/dev/sda`, `/dev/nvme0`) over partitions (`/dev/sda1`, `/dev/nvme0n1`).
+- If there are problems with NVMe, map partition to controller target (example: `/dev/nvme0n1:/dev/nvme0`).
+
 ## Optional Directory and GPU Mounts
 
 Optional mounts are predeclared in `docker-compose.yml`, so you can enable them in `.env` without editing compose.
