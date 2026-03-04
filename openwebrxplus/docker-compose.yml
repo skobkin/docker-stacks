@@ -10,7 +10,7 @@ services:
     container_name: '${CONTAINER_NAME:-openwebrxplus}'
     devices:
       # USB SDR access (AirSpy Mini works via this default mapping).
-      - '${USB_DEVICE_PATH:-/dev/bus/usb}:/dev/bus/usb'
+      - '${USB_DEVICE_PATH:-/dev/bus/usb}:${USB_DEVICE_PATH:-/dev/bus/usb}'
     volumes:
       # Main OpenWebRX+ config files.
       - '${HOST_ETC_DIR:-./etc}:/etc/openwebrx'
