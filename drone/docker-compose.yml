@@ -1,5 +1,4 @@
 # https://hub.docker.com/r/drone/drone
-version: '3.7'
 
 services:
   drone:

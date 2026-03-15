@@ -1,4 +1,3 @@
-version: '3.9'
 
 services:
   webui:
@@ -45,6 +44,7 @@ services:
     restart: unless-stopped
     networks:
       - ai-tools
+      - proxy
     logging:
       driver: "json-file"
       options:

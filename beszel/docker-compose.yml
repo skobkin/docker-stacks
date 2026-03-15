@@ -1,0 +1,28 @@
+# https://github.com/henrygd/beszel
+# https://beszel.dev/guide/hub-installation
+
+services:
+  beszel:
+    image: "henrygd/beszel:${IMAGE_TAG:-latest}"
+    container_name: beszel
+    ports:
+      - "${HTTP_BIND_ADDR:-127.0.0.1}:${HTTP_BIND_PORT:-8391}:8090"
+    environment:
+      APP_URL: "${APP_URL:-http://localhost:8391}"
+    volumes:
+      - "${HOST_DATA_DIR:-./data}:/beszel_data"
+      - "/etc/localtime:/etc/localtime:ro"
+    env_file: .env
+    restart: unless-stopped
+    healthcheck:
+      # URL is inside container network namespace, not host bind address.
+      test: [ "CMD", "/beszel", "health", "--url", "http://localhost:8090" ]
+      start_period: 5s
+      interval: 120s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"

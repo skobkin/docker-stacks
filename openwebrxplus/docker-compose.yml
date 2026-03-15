@@ -1,0 +1,37 @@
+# OpenWebRX Docker reference (legacy):
+# https://github.com/jketterl/openwebrx/wiki/Setup-Guide#docker (legacy)
+# OpenWebRX+ image docs:
+# https://luarvique.github.io/ppa/#if-you-are-using-docker-
+# https://fms.komkon.org/OWRX/#INSTALL-DOCKER
+
+services:
+  openwebrxplus:
+    image: '${IMAGE_REPOSITORY:-slechev/openwebrxplus-softmbe}:${IMAGE_TAG:-latest}'
+    container_name: '${CONTAINER_NAME:-openwebrxplus}'
+    devices:
+      # USB SDR access (AirSpy Mini works via this default mapping).
+      - '${USB_DEVICE_PATH:-/dev/bus/usb}:${USB_DEVICE_PATH:-/dev/bus/usb}'
+    volumes:
+      # Main OpenWebRX+ config files.
+      - '${HOST_ETC_DIR:-./etc}:/etc/openwebrx'
+      # Runtime database, users, bookmarks and mutable app data.
+      - '${HOST_VAR_DIR:-./var}:/var/lib/openwebrx'
+      # Optional custom plugins/modules.
+      - '${HOST_PLUGINS_DIR:-./plugins}:/opt/openwebrx/plugins'
+    tmpfs:
+      # In-RAM working directory for decoder/temp files.
+      - '${TMPFS_TARGET:-/tmp}:mode=${TMPFS_MODE:-1777},size=${TMPFS_SIZE:-256m}'
+    ports:
+      - '${WEB_BIND_ADDR:-127.0.0.1}:${WEB_BIND_PORT:-8402}:8073'
+    environment:
+      # Deterministic timezone handling: use TZ only, no /etc/localtime bind mount.
+      TZ: '${TZ:-Etc/UTC}'
+      OPENWEBRX_ADMIN_USER: '${OPENWEBRX_ADMIN_USER:-admin}'
+      OPENWEBRX_ADMIN_PASSWORD: '${OPENWEBRX_ADMIN_PASSWORD:-changeme}'
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'

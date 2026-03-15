@@ -1,7 +1,6 @@
 # https://github.com/PurpleI2P/i2pd/blob/openssl/contrib/docker/Dockerfile
 # https://i2pd.readthedocs.io/en/latest/user-guide/configuration/
 
-version: '3.7'
 
 services:
   i2pd:

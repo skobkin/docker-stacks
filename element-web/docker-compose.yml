@@ -1,5 +1,4 @@
 # https://hub.docker.com/r/vectorim/element-web
-version: '3.7'
 
 services:
   element-web:
