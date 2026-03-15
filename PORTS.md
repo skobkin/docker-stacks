@@ -64,6 +64,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | open-streaming-platform | osp               | 1935                | 1935           | ❌       | TCP      | RTMP streaming                      |
 | openvpn                 | openvpn           | 1194                | 1194           | ❌       | UDP      | VPN server                          |
 | owncast                 | owncast           | varies              | 8080           | ✅       | TCP      | Live streaming                      |
+| phanpy                  | phanpy            | 8403                | 80             | ✅       | TCP      | Static Phanpy web UI                |
 | piper                   | piper             | 10200               | 10200          | ✅       | TCP      | Text-to-speech                      |
 | portainer               | portainer         | 9000                | 9000           | ✅       | TCP      | Docker management                   |
 | proxy-mtproto           | proxy             | varies              | varies         | ❌       | TCP      | Telegram proxy                      |
