@@ -1,0 +1,15 @@
+# https://git.skobk.in/skobkin/phanpy-docker
+
+services:
+  phanpy:
+    image: '${IMAGE_REPOSITORY:-ghcr.io/skobkin/phanpy-docker}:${IMAGE_TAG:-latest}'
+    container_name: 'phanpy'
+    hostname: 'phanpy'
+    ports:
+      - '${BIND_ADDRESS:-127.0.0.1}:${BIND_PORT:-8403}:80'
+    restart: unless-stopped
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'
