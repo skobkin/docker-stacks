@@ -1,0 +1,39 @@
+[global]
+server_name = "example.com"
+address = ["0.0.0.0"]
+port = 6167
+database_path = "/var/lib/continuwuity"
+allow_registration = true
+allow_federation = true
+trusted_servers = ["matrix.org"]
+
+# Enable online RocksDB backups only when you want them.
+# database_backup_path = "/var/lib/continuwuity-backups"
+# database_backups_to_keep = 3
+
+# Optional logging example:
+# log = "info"
+
+# Optional support metadata and built-in delegation.
+[global.well_known]
+client = "https://matrix.example.com"
+server = "matrix.example.com:443"
+# support_page = "https://example.com/support"
+# support_email = "admin@example.com"
+# support_mxid = "@admin:example.com"
+
+# Optional TURN configuration for legacy calls.
+# turn_uris = [
+#   "turn:coturn.example.com?transport=udp",
+#   "turn:coturn.example.com?transport=tcp",
+#   "turns:coturn.example.com?transport=udp",
+#   "turns:coturn.example.com?transport=tcp",
+# ]
+# turn_secret_file = "/etc/continuwuity/turn_secret"
+# turn_ttl = 86400
+
+[global.matrix_rtc]
+# Future MatrixRTC / LiveKit example:
+# foci = [
+#   { type = "livekit", livekit_service_url = "https://livekit.example.com" },
+# ]
