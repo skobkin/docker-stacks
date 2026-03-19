@@ -6,6 +6,7 @@ database_path = "/var/lib/continuwuity"
 allow_registration = true
 allow_federation = true
 trusted_servers = ["matrix.org"]
+# max_request_size = 20971520 # Optional; bytes, upstream default is ~20 MiB.
 
 # Enable online RocksDB backups only when you want them.
 # database_backup_path = "/var/lib/continuwuity-backups"

@@ -77,6 +77,7 @@ Static token alternatives exist upstream, but this stack treats them as optional
 - Review your domain settings in `.env` before first real use. `CONTINUWUITY_SERVER_NAME` is effectively permanent once the server has data.
 - Keep `CONTINUWUITY_TRUSTED_SERVERS=["matrix.org"]` unless you have a deliberate reason to change key-server behavior.
 - Add support metadata with the `CONTINUWUITY_WELL_KNOWN__SUPPORT_*` variables or via TOML later.
+- If you raise `CONTINUWUITY_MAX_REQUEST_SIZE`, raise the matching request/body size limit in your reverse proxy too.
 - Enable `CONTINUWUITY_DATABASE_BACKUP_PATH` only when you actually want online RocksDB backups created under `./backups`.
 
 ## User management
