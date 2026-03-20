@@ -85,6 +85,8 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | syncthing               | syncthing         | 22000               | 22000          | ❌       | TCP/UDP  | File sync                           |
 | syncthing               | syncthing         | 21027               | 21027          | ❌       | UDP      | Discovery                           |
 | tor-obfs4-bridge        | tor               | varies              | varies         | ❌       | TCP      | Tor bridge                          |
+| traefik                 | traefik           | 80                  | 80             | ✅       | TCP      | HTTP entrypoint / ACME HTTP-01      |
+| traefik                 | traefik           | 443                 | 443            | ✅       | TCP      | HTTPS entrypoint / dashboard        |
 | tor-privoxy             | tor               | 8118                | 8118           | ❌       | TCP      | HTTP proxy                          |
 | tor-privoxy             | tor               | 9050                | 9050           | ❌       | TCP      | SOCKS proxy                         |
 | tor-privoxy             | tor               | 9040                | 9040           | ❌       | TCP      | Transparent proxy                   |
