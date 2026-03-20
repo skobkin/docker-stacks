@@ -20,7 +20,7 @@ docker compose up -d
 
 The base stack binds only to `127.0.0.1:${HTTP_BIND_PORT:-6167}` and is suitable for host-level Nginx or Caddy.
 
-If you already run Traefik in Docker, switch to `COMPOSE_VARIANT=traefik` and make sure the external Docker network from `TRAEFIK_NETWORK` exists.
+If you already run Traefik in Docker, switch to `COMPOSE_VARIANT=traefik` and make sure the external Docker network from `TRAEFIK_NETWORK` exists. The default network name is `traefik`.
 
 If you hit Docker DNS issues during federation, switch to `COMPOSE_VARIANT=host_resolver` or `traefik_host_resolver` to mount the host `/etc/resolv.conf`, matching the upstream Docker docs.
 

@@ -29,6 +29,6 @@ services:
         max-file: "${LOG_MAX_FILE:-5}"
 
 networks:
-  proxy:
+  traefik:
     external: true
-    name: "${TRAEFIK_NETWORK:-proxy}"
+    name: "${TRAEFIK_NETWORK:-traefik}"

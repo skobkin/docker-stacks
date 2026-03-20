@@ -8,10 +8,10 @@ services:
   traefik:
     networks:
       - default
-      - proxy
+      - traefik
     labels:
       traefik.enable: "true"
-      traefik.docker.network: "${TRAEFIK_NETWORK:-proxy}"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
       traefik.http.routers.continuwuity.rule: >-
         (Host(`${TRAEFIK_MATRIX_HOST:-matrix.example.com}`) ||
         (Host(`${TRAEFIK_WELL_KNOWN_HOST:-example.com}`) &&
@@ -24,12 +24,12 @@ services:
   traefik_host_resolver:
     networks:
       - default
-      - proxy
+      - traefik
     volumes:
       - "/etc/resolv.conf:/etc/resolv.conf:ro"
     labels:
       traefik.enable: "true"
-      traefik.docker.network: "${TRAEFIK_NETWORK:-proxy}"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
       traefik.http.routers.continuwuity.rule: >-
         (Host(`${TRAEFIK_MATRIX_HOST:-matrix.example.com}`) ||
         (Host(`${TRAEFIK_WELL_KNOWN_HOST:-example.com}`) &&
