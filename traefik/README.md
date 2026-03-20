@@ -27,6 +27,8 @@ Reference:
 cp .env.dist .env
 nano -w .env
 install -d data/acme secrets
+cp config/dynamic/dashboard.yml.dist config/dynamic/dashboard.yml
+cp config/dynamic/shared.yml.dist config/dynamic/shared.yml
 install -m 600 /dev/null data/acme/acme.json
 docker run --rm httpd:2.4-alpine htpasswd -nbB admin 'change-me' > secrets/dashboard.htpasswd
 docker compose up -d
@@ -49,6 +51,7 @@ Dashboard basic auth is configured through the file provider, not labels, so cre
 The htpasswd file is expected at:
 
 - `./secrets/dashboard.htpasswd`
+- example format: `./secrets/dashboard.htpasswd.dist`
 
 To rotate credentials, overwrite that file and restart Traefik:
 
@@ -72,6 +75,17 @@ Because the certresolver is attached to the `websecure` entrypoint, most proxied
 
 For wildcard certificates or DNS-based validation later, switch from the default HTTP-01 settings in `.env` to Traefik's DNS challenge variables. The stack keeps that path open and does not hard-code a provider.
 
+## Tracked templates vs local files
+
+This stack keeps example templates in Git and ignores the live local copies you actually edit:
+
+- `config/dynamic/*.yml.dist`: tracked examples
+- `config/dynamic/*.yml`: live file-provider config, ignored by Git
+- `secrets/*.dist`: tracked examples
+- `secrets/*`: live secret files, ignored by Git
+
+Before first start, copy the dynamic config examples from `.dist` to `.yml`. For the dashboard password file, generate a real `dashboard.htpasswd` instead of reusing the example.
+
 ## Reusable file-provider config
 
 The whole `./config` directory is mounted into `/etc/traefik`, and the file provider watches:
@@ -85,6 +99,11 @@ Included reusable objects:
 - `upload-50m@file`
 - `upload-250m@file`
 - `long-lived@file`
+
+The tracked templates live in:
+
+- `config/dynamic/dashboard.yml.dist`
+- `config/dynamic/shared.yml.dist`
 
 Typical uses:
 
