@@ -54,7 +54,7 @@ To change the default delegated layout:
 
 ## First admin user
 
-Bootstrap the first local user with a one-shot command before relying on admin-room commands:
+Bootstrap the first local user with a one-shot command before relying on admin-room commands. Replace `admin` with the local username you want to create:
 
 ```shell
 docker compose run --rm --no-deps continuwuity /sbin/conduwuit --execute "users create-user admin"
@@ -101,7 +101,7 @@ Static token alternatives exist upstream, but this stack treats them as optional
 Two concise paths are intended:
 
 - Container CLI bootstrap for the first user:
-  - `docker compose run --rm --no-deps continuwuity /sbin/conduwuit --execute "users create-user <name>"`
+  - `docker compose run --rm --no-deps continuwuity /sbin/conduwuit --execute "users create-user <username>"`
 - Admin room commands afterwards:
   - `!admin users create-user`
   - `!admin users reset-password`
