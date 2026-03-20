@@ -1,0 +1,22 @@
+http:
+  middlewares:
+    compress-default:
+      compress: {}
+    chain-default:
+      chain:
+        middlewares:
+          - compress-default
+    upload-50m:
+      buffering:
+        maxRequestBodyBytes: 52428800
+        memRequestBodyBytes: 2097152
+    upload-250m:
+      buffering:
+        maxRequestBodyBytes: 262144000
+        memRequestBodyBytes: 4194304
+  serversTransports:
+    long-lived:
+      forwardingTimeouts:
+        dialTimeout: 30s
+        responseHeaderTimeout: 0s
+        idleConnTimeout: 300s

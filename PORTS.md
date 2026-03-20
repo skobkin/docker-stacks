@@ -12,6 +12,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | beszel                  | beszel            | 8391                | 8090           | ✅       | TCP      | Monitoring hub web UI               |
 | beszel-agent            | beszel-agent      | disabled by default | 45876          | ❌       | TCP      | Enable by setting DISABLE_SSH=false |
 | castopod                | castopod          | 8393                | 8000           | ✅       | TCP      | Podcast hosting                     |
+| continuwuity            | continuwuity      | 6167                | 6167           | ✅       | TCP      | Matrix homeserver                   |
 | drone                   | drone             | 8386                | 80             | ✅       | TCP      | CI/CD server                        |
 | drone-runner            | drone-runner      | 8387                | 3000           | ✅       | TCP      | CI/CD runner                        |
 | duplicati               | duplicati         | 8200                | 8200           | ✅       | TCP      | Backup software                     |
@@ -84,6 +85,8 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | syncthing               | syncthing         | 22000               | 22000          | ❌       | TCP/UDP  | File sync                           |
 | syncthing               | syncthing         | 21027               | 21027          | ❌       | UDP      | Discovery                           |
 | tor-obfs4-bridge        | tor               | varies              | varies         | ❌       | TCP      | Tor bridge                          |
+| traefik                 | traefik           | 80                  | 80             | ✅       | TCP      | HTTP entrypoint / ACME HTTP-01      |
+| traefik                 | traefik           | 443                 | 443            | ✅       | TCP      | HTTPS entrypoint / dashboard        |
 | tor-privoxy             | tor               | 8118                | 8118           | ❌       | TCP      | HTTP proxy                          |
 | tor-privoxy             | tor               | 9050                | 9050           | ❌       | TCP      | SOCKS proxy                         |
 | tor-privoxy             | tor               | 9040                | 9040           | ❌       | TCP      | Transparent proxy                   |
