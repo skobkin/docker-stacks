@@ -24,6 +24,8 @@ If you already run Traefik in Docker, switch to `COMPOSE_VARIANT=traefik` and ma
 
 For Traefik, `TRAEFIK_MATRIX_HOST` is the main hostname routed to Continuwuity itself. `TRAEFIK_WELL_KNOWN_HOST` is the hostname routed for `/.well-known/matrix/*`.
 
+If you want federation to use standard HTTPS on port `443` instead of exposing port `8448`, keep `CONTINUWUITY_WELL_KNOWN__SERVER=<your-matrix-host>:443` enabled. With Traefik, set `TRAEFIK_WELL_KNOWN_HOST` to the hostname that should serve `/.well-known/matrix/server`. In strict subdomain-only mode, that usually means using the same hostname as `TRAEFIK_MATRIX_HOST`.
+
 With the current single-router label set:
 
 - delegated default:
@@ -45,7 +47,8 @@ To change the default delegated layout:
 - Matrix subdomain only:
   - set `CONTINUWUITY_SERVER_NAME=matrix.example.com`
   - comment out `CONTINUWUITY_WELL_KNOWN__CLIENT`
-  - comment out `CONTINUWUITY_WELL_KNOWN__SERVER`
+  - keep `CONTINUWUITY_WELL_KNOWN__SERVER=matrix.example.com:443` if federation should use `443`
+  - comment out `CONTINUWUITY_WELL_KNOWN__SERVER` only if you intentionally expose federation on `8448`
 - Apex domain only:
   - keep `CONTINUWUITY_SERVER_NAME=example.com`
   - comment out `CONTINUWUITY_WELL_KNOWN__CLIENT`
