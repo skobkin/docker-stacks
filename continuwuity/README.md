@@ -22,6 +22,22 @@ The base stack binds only to `127.0.0.1:${HTTP_BIND_PORT:-6167}` and is suitable
 
 If you already run Traefik in Docker, switch to `COMPOSE_VARIANT=traefik` and make sure the external Docker network from `TRAEFIK_NETWORK` exists. The default network name is `traefik`.
 
+For Traefik, `TRAEFIK_MATRIX_HOST` is the main hostname routed to Continuwuity itself. `TRAEFIK_WELL_KNOWN_HOST` is the hostname routed for `/.well-known/matrix/*`.
+
+With the current single-router label set:
+
+- delegated default:
+  - `TRAEFIK_MATRIX_HOST=matrix.example.com`
+  - `TRAEFIK_WELL_KNOWN_HOST=example.com`
+- Matrix subdomain only, for example `matrix.example.com`:
+  - `TRAEFIK_MATRIX_HOST=matrix.example.com`
+  - `TRAEFIK_WELL_KNOWN_HOST=matrix.example.com`
+- apex direct:
+  - `TRAEFIK_MATRIX_HOST=example.com`
+  - `TRAEFIK_WELL_KNOWN_HOST=example.com`
+
+That keeps the Traefik rule valid without needing a separate `/.well-known` host. The Continuwuity `CONTINUWUITY_WELL_KNOWN__*` variables are separate: they control the discovery responses served by Continuwuity itself and can be commented out when no delegation is needed.
+
 If you hit Docker DNS issues during federation, switch to `COMPOSE_VARIANT=host_resolver` or `traefik_host_resolver` to mount the host `/etc/resolv.conf`, matching the upstream Docker docs.
 
 To change the default delegated layout:
