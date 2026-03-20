@@ -12,7 +12,7 @@ services:
       - "${DATA_PATH:-./data}:${CONTINUWUITY_DATABASE_PATH:-/var/lib/continuwuity}"
       - "${CONFIG_PATH:-./config}:/etc/continuwuity:ro"
       - "${BACKUPS_PATH:-./backups}:/var/lib/continuwuity-backups"
-    env_file: "${ENV_FILE:-.env}"
+    env_file: ".env"
     environment:
       CONTINUWUITY_DATABASE_PATH: "${CONTINUWUITY_DATABASE_PATH:-/var/lib/continuwuity}"
       CONTINUWUITY_ADDRESS: "${CONTINUWUITY_ADDRESS:-0.0.0.0}"
