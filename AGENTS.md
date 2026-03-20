@@ -1,137 +1,22 @@
-# Agent Guidelines for Creating Docker Stacks
+# Agent Guidelines for Docker Stacks
 
-## Common Mistakes to Avoid
+Keep this file repo-specific. Use general Docker/Compose best practices from normal engineering judgment; only rely on the rules below for conventions that matter in this repository.
 
-### Environment Variable Naming
-**DO**:
-- Use generic names like `IMAGE_TAG`
-- Research actual documentation for variable names
+## Core Rules
 
-**DON'T**:
-- Use service name prefixes like `OPENHANDS_IMAGE_TAG` (unless multiple services in stack)
-- Assume variable names without checking
+- Verify image tags, env var names, and app configuration against official docs, releases, or source. Do not guess versions or variable names.
+- Use standard local directories when applicable: `./data`, `./config`, `./logs`, `./nginx`.
+- Prefer generic variable names such as `IMAGE_TAG`, `HOST_DATA_DIR`, or `BIND_PORT` unless multiple services in the same stack need disambiguation.
+- Parameterize host paths and ports in compose files and provide sane defaults with `${VAR:-default}`.
+- Default published ports to localhost binding where appropriate and update [PORTS.md](PORTS.md) whenever exposed ports change.
+- Use `env_file: .env` by default. Keep `.env.dist` in git, do not commit `.env` or secrets.
+- Add concise comments to `.env.dist` for app-specific variables. Expand comments and add links only when an option is complex, non-obvious, or has dedicated upstream documentation.
 
-### Version Management
-**DO**:
-- Check GitHub releases for latest stable version
-- Use `latest` tag when appropriate unless specific version needed
+## Compose Conventions
 
-**DON'T**:
-- Use arbitrary version numbers without verification
+- Use `restart: unless-stopped` for most long-running services.
+- Use the repo logging convention unless a stack has a strong reason not to:
 
-### Configuration Research
-**DO**:
-- Check project official docs, GitHub issues, source code
-- Look for existing configuration examples in the project
-
-**DON'T**:
-- Guess environment variable names
-
-### Network Configuration
-**DO**:
-- Use service names (e.g., `http://ollama:11434`) when services share a network
-
-**DON'T**:
-- Use `host.docker.internal` unnecessarily when shared network allows direct connections
-
-### Persistent Data Directory Conventions
-**DO**:
-- Use standard directory names: `./data`, `./config`, `./logs`, `./nginx`
-- Use generic variable names like `HOST_DATA_DIR` unless multiple services need distinction
-- Allow configuration via `.env` file
-- Create directories as needed, not preemptively
-
-**DON'T**:
-- Default to home directory (`~/.service`) unless project requires it
-
-### Environment File Best Practices
-**DO**:
-- Comment out variables that have same default in compose file
-- Always provide default fallback values in `docker-compose.yml` using `${VAR:-default}` syntax
-- Add alternative configurations as commented examples when useful
-
-### Port Management
-**DO**:
-- Assign unique external port numbers to avoid conflicts between stacks
-- Default bind to `127.0.0.1` to prevent external access
-- Use environment variables for port configuration: `${BIND_PORT:-DEFAULT}`
-- Document port assignments to prevent overlaps in `PORTS.md`. Update the file when changing stack configuration.
-
-**DON'T**:
-- Use overlapping port ranges between stacks
-
-## Research Checklist
-
-Before creating a stack:
-
-- **Version Check**: Find latest stable release on GitHub
-- **Documentation Review**: Read official docs for environment variables
-- **Model Format**: Verify correct model naming convention
-- **Network Requirements**: Check if external networks are needed
-- **Data Patterns**: Follow existing stack data directory conventions and adapt the app to them
-
-## Validation Steps
-
-1. **Config Test**: Run `docker-compose config` to validate syntax
-2. **Variable Check**: Ensure all environment variables have proper defaults (unless they should be set by the user manually)
-3. **Network Test**: Verify external networks are documented (`_docs/*.md` and optional `README.md` in the stack directory)
-4. **Documentation**: Only create README.md if root README doesn't cover it
-
-### Security Patterns
-**DO**:
-- Use `user: "${UID:-1000}:${GID:-1000}"` for security when image supports that
-- Use LinuxServer.io convention (`PUID`/`PGID`) when applicable
-- Mount Docker socket carefully and only when necessary: `/var/run/docker.sock:/var/run/docker.sock`
-- Use read-only mounts when no writes expected: `/etc/localtime:/etc/localtime:ro`
-
-**DON'T**:
-- Run containers as root unless absolutely necessary (for containers that don't document using UID/GID)
-
-### Image Tag Patterns
-**DO**:
-- Pin versions for critical services (databases, core infrastructure)
-- Use `${IMAGE_TAG:-version}` for configurability
-
-### Volume Mount Conventions
-**DO**:
-- Use parameterized local directories: `${HOST_DIR:-./default}:/container/path`
-- Follow standard directory names: `./data`, `./config`, `./logs`
-- Include timezone synchronization when service can use it: `/etc/localtime:/etc/localtime:ro`
-
-### Multi-Service Stack Patterns
-**DO**:
-- Use custom networks for multi-service stacks when it adds benefits
-- Use `depends_on` for service dependencies
-- Use descriptive container names: `service-component` format
-- Use service-to-service communication over external networking
-
-**DON'T** Add custom networks everywhere
-
-### Health Checks
-**DO**:
-- Include health checks for critical services (databases, web apps)
-- Comment them out by default to avoid startup delays
-
-### Config File Management
-**DO**:
-- Provide `.dist` versions for template configs requiring user customization
-- Add user-modified versions to local `.gitignore` (in same directory, not root)
-- Place Nginx configs in `nginx/` subdirectory
-- If service exposes HTTP port, provide Nginx config file based on existing stack principles
-- Place application configs in `config/` subdirectory
-
-## Docker Compose Best Practices
-
-### Schema and Structure
-**DO**:
-- Reference environment variables via `env_file: .env`, use `environment:` only if needed or if values are really static
-- Use `restart: unless-stopped` for most services
-- Add comments with links to official images/documentation
-
-**DON'T**:
-- Use schema version (deprecated)
-
-### Logging Configuration (Required)
 ```yaml
 logging:
   driver: "json-file"
@@ -140,27 +25,23 @@ logging:
     max-file: "${LOG_MAX_FILE:-5}"
 ```
 
-### Volume Best Practices
-**DO**:
-- Use parameterized local directories: `${HOST_DIR:-./default}:/container/path`
-- Use named volumes for persistent data
-- Use bind mounts for configuration files
-- Include timezone synchronization when service can use it: `/etc/localtime:/etc/localtime:ro`
+- Use non-root execution, UID/GID mapping, LinuxServer `PUID`/`PGID`, and `/etc/localtime:/etc/localtime:ro` when the image supports those patterns.
+- Use service-to-service communication over Docker networking. Do not use `host.docker.internal` when services can talk over a shared network.
+- Add custom networks, `depends_on`, health checks, or extra config mounts only when they provide a clear benefit and the image supports them.
 
-## Step-by-Step Creation Checklist
+## Optional Traefik Support
 
-1. **Create directory** at root level
-2. **Add `docker-compose.yml`** with proper structure and defaults
-3. **Create `.env.dist`** with all variables and comments
-4. **Add `README.md`** only if root README doesn't cover special requirements
-5. **Add config directories** as needed with `.dist` templates
-6. **Update root `README.md`** table with new stack entry, update `PORTS.md` if necessary
-7. **Commit safe files** (exclude `.env`, include `.env.dist` and templates)
+- Do not make reverse proxy integration mandatory for every stack.
+- When HTTP exposure through Traefik is appropriate, follow the existing optional pattern built around `extends`, optional external `traefik` network, and `COMPOSE_VARIANT=traefik`.
+- Use existing stacks as references:
+  `ip-detect` and `element-web` for simple optional Traefik support,
+  `continuwuity` for a more advanced label/routing setup.
+- When creating or changing a stack with optional Traefik support, clarify the expected behavior first:
+  what should be exposed through Traefik, how it should be configured, and whether the simple or advanced pattern fits better.
 
-## Version Control Rules
+## Done Criteria
 
-**DO**:
-- Commit `.env.dist` and config templates
-
-**DON'T**:
-- Commit `.env` or files containing secrets
+- `docker compose config` passes for the stack.
+- Required config templates and local ignore rules are present for user-edited files.
+- Root `README.md` and [PORTS.md](PORTS.md) are updated when stack behavior or exposed ports change.
+- Add a stack-local `README.md` only when the stack is complex, has prerequisites, needs post-install/manual steps, or requires external networking that is not obvious from the root docs.
