@@ -2,6 +2,8 @@
 
 This stack runs [Traefik](https://traefik.io/traefik/) as a shared Docker reverse proxy for stacks in this repository.
 
+For a gradual migration where host Nginx keeps `:80` and `:443` and forwards everything not explicitly handled there to Traefik, see [NGINX.md](./NGINX.md).
+
 It uses:
 
 - the Docker provider for stack labels
