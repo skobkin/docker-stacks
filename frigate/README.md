@@ -31,6 +31,30 @@ The default image tag is `stable-rocm`.
 - For ROCm-based features in the `stable-rocm` image, also pass `/dev/kfd` via `KFD_DEVICE` when needed.
 - If you do not need GPU access, set `DRI_DEVICE=/dev/null` and `KFD_DEVICE=/dev/null` in your local `.env`.
 
+## Optional Traefik support
+
+To publish the authenticated Frigate UI/API through the shared Traefik stack:
+
+- set `COMPOSE_VARIANT=traefik` in `.env`
+- set `TRAEFIK_HOST` to the host name you want to route to Frigate
+- choose `TRAEFIK_ENTRYPOINT=web` for plain HTTP or `TRAEFIK_ENTRYPOINT=websecure` for HTTPS
+- make sure the external Docker network from `TRAEFIK_NETWORK` exists
+
+This only proxies the authenticated UI/API on port `8971`. RTSP/WebRTC traffic on `8554` and `8555`
+still uses direct port mappings.
+
+When you use `websecure`, TLS and ACME certificate handling come from the shared Traefik entrypoint
+configuration. This stack does not override router-level TLS settings.
+
+Current upstream Frigate docs say reverse proxies should target port `8971`. When Traefik terminates TLS
+and forwards plain HTTP to Frigate, set this in `config.yml` to avoid HTTP 400 responses from Frigate's
+built-in TLS listener:
+
+```yaml
+tls:
+  enabled: false
+```
+
 ## Notes
 
 - Review `SHM_SIZE` if you use many cameras or higher resolutions. Frigate may fail with bus errors if shared

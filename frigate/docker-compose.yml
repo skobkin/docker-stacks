@@ -6,6 +6,9 @@
 
 services:
   frigate:
+    extends:
+      file: ./compose.features.yml
+      service: '${COMPOSE_VARIANT:-default}'
     image: 'ghcr.io/blakeblackshear/frigate:${IMAGE_TAG:-stable-rocm}'
     container_name: 'frigate'
     shm_size: '${SHM_SIZE:-512mb}'
@@ -39,3 +42,8 @@ services:
       options:
         max-size: '${LOG_MAX_SIZE:-5m}'
         max-file: '${LOG_MAX_FILE:-5}'
+
+networks:
+  traefik:
+    external: true
+    name: '${TRAEFIK_NETWORK:-traefik}'
