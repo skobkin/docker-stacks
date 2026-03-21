@@ -38,7 +38,8 @@ logging:
   `ip-detect` and `element-web` for simple optional Traefik support,
   `continuwuity` for a more advanced label/routing setup.
 - When creating or changing a stack with optional Traefik support, clarify the expected behavior first:
-  what should be exposed through Traefik, how it should be configured, and whether the simple or advanced pattern fits better.
+  what should be exposed through Traefik, which entrypoint should be used (`web` for local HTTP-only setups or `websecure` for HTTPS/public exposure), how it should be configured, and whether the simple or advanced pattern fits better.
+- When using the shared `websecure` entrypoint, do not add router-level TLS labels unless you intentionally need to override Traefik's entrypoint defaults such as ACME/certresolver behavior.
 
 ## Done Criteria
 
