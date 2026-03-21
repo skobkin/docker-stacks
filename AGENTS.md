@@ -5,6 +5,7 @@ Keep this file repo-specific. Use general Docker/Compose best practices from nor
 ## Core Rules
 
 - Verify image tags, env var names, and app configuration against official docs, releases, or source. Do not guess versions or variable names.
+- Prefer explicit stable image tags over `latest`. For mission-critical stacks such as `forgejo`, use a major-version tag when the image follows SemVer (for example `:12`) so `watchtower` can still apply compatible updates without pulling unexpected breaking changes.
 - Use standard local directories when applicable: `./data`, `./config`, `./logs`, `./nginx`.
 - Prefer generic variable names such as `IMAGE_TAG`, `HOST_DATA_DIR`, or `BIND_PORT` unless multiple services in the same stack need disambiguation.
 - Parameterize host paths and ports in compose files and provide sane defaults with `${VAR:-default}`.
