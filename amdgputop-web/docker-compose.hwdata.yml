@@ -1,0 +1,4 @@
+services:
+  amdgputop-web:
+    volumes:
+      - '${PCI_IDS_PATH:-/usr/share/hwdata/pci.ids}:/usr/share/hwdata/pci.ids:ro'
