@@ -43,7 +43,7 @@ logging:
 
 ## Done Criteria
 
-- `docker compose config` passes for the stack.
-- Required config templates and local ignore rules are present for user-edited files.
+- `docker compose config` passes for the stack after preparing required local env files from tracked templates such as `.env.dist`.
+- Tracked config templates and local ignore rules are required for mandatory user-edited files that are not reasonably created by the app on first start. If the app generates an acceptable initial config, document any first-run review or follow-up steps in the stack README when needed.
 - Root `README.md` and [PORTS.md](PORTS.md) are updated when stack behavior or exposed ports change.
 - Add a stack-local `README.md` only when the stack is complex, has prerequisites, needs post-install/manual steps, or requires external networking that is not obvious from the root docs.
