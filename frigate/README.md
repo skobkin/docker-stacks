@@ -29,6 +29,7 @@ The default image tag is `stable-rocm`.
 - For AMD video decoding, keep `LIBVA_DRIVER_NAME=radeonsi`.
 - For VAAPI decoding, pass `/dev/dri` via `DRI_DEVICE`.
 - For ROCm-based features in the `stable-rocm` image, also pass `/dev/kfd` via `KFD_DEVICE` when needed.
+- On newer AMD GPUs such as `RX 7800 XT` (`gfx1101`), ROCm-based detection/enrichment may also need `HSA_OVERRIDE_GFX_VERSION=11.0.0`.
 - If you do not need GPU access, leave `DRI_DEVICE` and `KFD_DEVICE` unset in your local `.env`.
 
 ## Optional Traefik support
