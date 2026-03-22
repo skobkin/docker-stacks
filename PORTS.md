@@ -24,6 +24,10 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | folding-at-home         | foldingathome     | varies              | 7396           | ✅       | TCP      | Distributed computing               |
 | forgejo                 | forgejo           | 3000                | 3000           | ✅       | TCP      | Git hosting                         |
 | forgejo                 | server            | 222                 | 22             | ❌       | TCP      | SSH Git access                      |
+| frigate                 | frigate           | 8971                | 8971           | ✅       | TCP      | Authenticated UI/API                |
+| frigate                 | frigate           | 8554                | 8554           | ❌       | TCP      | RTSP restream                       |
+| frigate                 | frigate           | 8555                | 8555           | ❌       | TCP      | WebRTC signaling/two-way talk       |
+| frigate                 | frigate           | 8555                | 8555           | ❌       | UDP      | WebRTC media transport              |
 | gatus                   | gatus             | 8080                | 8080           | ✅       | TCP      | Status page                         |
 | gotosocial              | gotosocial        | 8080                | 8080           | ✅       | TCP      | Mastodon-compatible                 |
 | hedgedoc                | hedgedoc          | 8394                | 8394           | ✅       | TCP      | Collaborative editor                |
@@ -63,7 +67,6 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | open-streaming-platform | osp               | 8585                | 80             | ✅       | TCP      | Live streaming                      |
 | open-streaming-platform | osp               | 8553                | 443            | ✅       | TCP      | HTTPS                               |
 | open-streaming-platform | osp               | 1935                | 1935           | ❌       | TCP      | RTMP streaming                      |
-| openvpn                 | openvpn           | 1194                | 1194           | ❌       | UDP      | VPN server                          |
 | owncast                 | owncast           | varies              | 8080           | ✅       | TCP      | Live streaming                      |
 | phanpy                  | phanpy            | 8403                | 80             | ✅       | TCP      | Static Phanpy web UI                |
 | piper                   | piper             | 10200               | 10200          | ✅       | TCP      | Text-to-speech                      |
