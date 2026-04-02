@@ -37,4 +37,4 @@ sed -i \
   -e "s|__CONTROLLER_SECRET__|$(escape_replacement "${CONTROLLER_SECRET}")|g" \
   "${CONFIG_PATH}"
 
-exec mihomo -d "${CONFIG_DIR}"
+exec /mihomo -d "${CONFIG_DIR}" "$@"
