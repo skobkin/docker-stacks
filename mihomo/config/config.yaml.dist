@@ -1,0 +1,44 @@
+# Copy this file to config.yaml.tmpl and edit the local copy.
+# The live config.yaml is generated on container start from the template below.
+
+allow-lan: true
+bind-address: "*"
+mode: rule
+log-level: info
+
+port: __HTTP_CONTAINER_PORT__
+socks-port: __SOCKS_CONTAINER_PORT__
+tproxy-port: __TPROXY_CONTAINER_PORT__
+
+external-controller: 0.0.0.0:__CONTROLLER_CONTAINER_PORT__
+secret: "__CONTROLLER_SECRET__"
+external-controller-cors:
+  allow-origins:
+    - "*"
+  allow-private-network: true
+
+# Replace DIRECT-only defaults with your actual outbound proxies.
+proxies: []
+
+proxy-groups:
+  - name: PROXY
+    type: select
+    proxies:
+      - DIRECT
+
+rules:
+  - DOMAIN,host.docker.internal,DIRECT
+  - DOMAIN,localhost,DIRECT
+  - DOMAIN-SUFFIX,local,DIRECT
+  - DOMAIN-SUFFIX,lan,DIRECT
+  - DOMAIN,ollama,DIRECT
+  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+  - IP-CIDR,169.254.0.0/16,DIRECT,no-resolve
+  - IP-CIDR,100.64.0.0/10,DIRECT,no-resolve
+  - IP-CIDR6,::1/128,DIRECT,no-resolve
+  - IP-CIDR6,fc00::/7,DIRECT,no-resolve
+  - IP-CIDR6,fe80::/10,DIRECT,no-resolve
+  - MATCH,PROXY

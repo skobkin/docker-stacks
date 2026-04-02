@@ -55,7 +55,12 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | mastodon-fe-gts         | masto-fe          | 8398                | 80             | ✅       | TCP      | Mastodon frontend                   |
 | meshtastic-web          | meshtastic-web    | 8397                | 8080           | ✅       | TCP      | LoRa mesh UI                        |
 | meshmap-lite            | meshmap-lite      | 8401                | 8080           | ✅       | TCP      | Meshtastic map/chat UI              |
+| metacubexd              | metacubexd        | 8404                | 80             | ✅       | TCP      | Mihomo web dashboard                |
 | metube                  | metube            | 8081                | 8081           | ✅       | TCP      | YouTube downloader                  |
+| mihomo                  | mihomo            | 1050                | 1050           | ❌       | TCP      | SOCKS proxy, matches v2fly defaults |
+| mihomo                  | mihomo            | 1080                | 1080           | ❌       | TCP      | HTTP proxy, matches v2fly defaults  |
+| mihomo                  | mihomo            | 12345               | 12345          | ❌       | TCP/UDP  | TProxy, matches v2fly defaults      |
+| mihomo                  | mihomo            | 9092                | 9090           | ✅       | TCP      | Mihomo controller API               |
 | miniflux                | miniflux          | 8390                | 8080           | ✅       | TCP      | Minimalist RSS reader               |
 | mosquitto               | mosquitto         | 1883                | 1883           | ❌       | TCP      | MQTT broker                         |
 | mosquitto               | mosquitto         | 1884                | 1884           | ❌       | TCP      | WebSocket                           |

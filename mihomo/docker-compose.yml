@@ -1,0 +1,37 @@
+# https://github.com/MetaCubeX/mihomo
+# https://wiki.metacubex.one/en/config/general/
+
+services:
+  mihomo:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
+    image: "docker.io/metacubex/mihomo:${IMAGE_TAG:-Alpha}"
+    container_name: mihomo
+    hostname: mihomo
+    ports:
+      - "${SOCKS_BIND_ADDRESS:-0.0.0.0}:${SOCKS_HOST_PORT:-1050}:${SOCKS_CONTAINER_PORT:-1050}/tcp"
+      - "${HTTP_BIND_ADDRESS:-0.0.0.0}:${HTTP_HOST_PORT:-1080}:${HTTP_CONTAINER_PORT:-1080}/tcp"
+      - "${TPROXY_BIND_ADDRESS:-0.0.0.0}:${TPROXY_HOST_PORT:-12345}:${TPROXY_CONTAINER_PORT:-12345}/tcp"
+      - "${TPROXY_BIND_ADDRESS:-0.0.0.0}:${TPROXY_HOST_PORT:-12345}:${TPROXY_CONTAINER_PORT:-12345}/udp"
+      - "${CONTROLLER_BIND_ADDRESS:-127.0.0.1}:${CONTROLLER_HOST_PORT:-9092}:${CONTROLLER_CONTAINER_PORT:-9090}/tcp"
+    volumes:
+      - "./config:/root/.config/mihomo"
+      - "./render-config.sh:/usr/local/bin/render-config.sh:ro"
+    entrypoint: ["/bin/sh", "/usr/local/bin/render-config.sh"]
+    env_file: .env
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  proxy:
+    external: true
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"

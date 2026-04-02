@@ -1,0 +1,13 @@
+services:
+  default: {}
+
+  traefik:
+    networks:
+      - default
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.metacubexd.rule: "Host(`${TRAEFIK_HOST:-metacubexd.example.com}`)"
+      traefik.http.routers.metacubexd.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.services.metacubexd.loadbalancer.server.port: "${WEBUI_CONTAINER_PORT:-80}"
