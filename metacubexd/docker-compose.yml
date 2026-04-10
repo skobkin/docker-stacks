@@ -1,0 +1,25 @@
+# https://github.com/MetaCubeX/metacubexd
+
+services:
+  metacubexd:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
+    image: "ghcr.io/metacubex/metacubexd:${IMAGE_TAG:-v1.218.0}"
+    container_name: metacubexd
+    ports:
+      - "${WEBUI_BIND_ADDRESS:-127.0.0.1}:${WEBUI_HOST_PORT:-8404}:${WEBUI_CONTAINER_PORT:-80}/tcp"
+    environment:
+      - "DEFAULT_BACKEND_URL=${DEFAULT_BACKEND_URL:-}"
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"

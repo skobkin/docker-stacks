@@ -1,0 +1,15 @@
+services:
+  default:
+    networks:
+      - proxy
+
+  traefik:
+    networks:
+      - proxy
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.mihomo.rule: "Host(`${TRAEFIK_HOST:-mihomo.example.com}`)"
+      traefik.http.routers.mihomo.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.services.mihomo.loadbalancer.server.port: "${CONTROLLER_CONTAINER_PORT:-9090}"
