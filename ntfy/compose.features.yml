@@ -1,0 +1,15 @@
+services:
+  default: {}
+
+  traefik:
+    networks:
+      - default
+      - traefik
+    environment:
+      NTFY_BEHIND_PROXY: "true"
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.ntfy.rule: "Host(`${TRAEFIK_HOST:-ntfy.example.com}`)"
+      traefik.http.routers.ntfy.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.services.ntfy.loadbalancer.server.port: "${TRAEFIK_SERVICE_PORT:-8080}"

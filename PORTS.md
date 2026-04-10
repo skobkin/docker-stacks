@@ -65,6 +65,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | mosquitto               | mosquitto         | 1883                | 1883           | ❌       | TCP      | MQTT broker                         |
 | mosquitto               | mosquitto         | 1884                | 1884           | ❌       | TCP      | WebSocket                           |
 | murmur                  | murmur            | 64738               | 64738          | ❌       | TCP/UDP  | Voice chat                          |
+| ntfy                    | ntfy              | 8405                | 8080           | ✅       | TCP      | Notification service web UI/API     |
 | ollama                  | webui             | 3000                | 8080           | ✅       | TCP      | AI chat interface                   |
 | ollama                  | ollama            | 11434               | 11434          | ✅       | TCP      | AI API server                       |
 | openhands               | openhands         | 3000                | 3000           | ✅       | TCP      | AI coding assistant                 |
