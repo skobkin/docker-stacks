@@ -47,6 +47,34 @@ docker compose exec ntfy ntfy access
 docker compose exec ntfy ntfy token add admin
 ```
 
+## Limited notifier user
+
+For services that only need to publish messages, create a separate non-admin user and grant it write-only access to a topic prefix:
+
+```shell
+docker compose exec ntfy ntfy user add user-notify
+docker compose exec ntfy ntfy access user-notify 'user-*' write-only
+docker compose exec ntfy ntfy access user-notify
+```
+
+This keeps the account limited to publishing on `user-*` topics while everything else stays denied by default.
+
+For clients that use basic auth, publish with that dedicated username and password:
+
+```shell
+curl -u user-notify:YOUR_PASSWORD \
+  -d "test from curl" \
+  https://ntfy.example.com/user-test
+```
+
+For Shoutrrr-based clients such as Watchtower or Beszel, token auth also works with an empty username and the access token in the password position:
+
+```text
+ntfy://:tk_your_token_here@ntfy.example.com/user-watchtower
+```
+
+That is separate from the limited-user pattern above, which is still useful when you want a dedicated notifier account with narrow topic ACLs instead of reusing an admin token.
+
 ## Reverse proxy and Traefik
 
 The default stack is already suitable for a host-level reverse proxy because it only binds to localhost.
