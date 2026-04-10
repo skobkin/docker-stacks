@@ -20,12 +20,50 @@ external-controller-cors:
 # Replace DIRECT-only defaults with your actual outbound proxies.
 proxies: []
 
+proxy-providers:
+  provider1:
+    type: http
+    # It's better if it's a Clash (YAML) format since plaintext configs could have problems
+    url: "https://some-provider.tld/proxy/pw/key/config/"
+    #path: ./proxy_providers/main-subscription.yaml
+    # Exclude unreliable and outdated protocols like ShadowSocks
+    exclude-type: "ss"
+    interval: 86400
+    # Do not use proxy to upgrade subscription
+    proxy: DIRECT
+    health-check:
+      enable: true
+      url: https://www.gstatic.com/generate_204
+      interval: 300
+      timeout: 5000
+      lazy: true
+      expected-status: 204
+    override:
+      additional-prefix: "[xeovo] "
+    # If provider requires header auth
+    #header:
+    #  Authorization:
+    #    - "Bearer __SUBSCRIPTION_TOKEN__"
+
+# Automatic selection while also allowing to select manually via API (MetaCubeXD for example)
 proxy-groups:
+  - name: AUTO
+    type: url-test
+    use:
+      - provider1
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    lazy: true
+    timeout: 5000
+
   - name: PROXY
     type: select
     proxies:
-      - DIRECT
+      - AUTO
+    use:
+      - provider1
 
+# Routing some traffic directly
 rules:
   - DOMAIN,host.docker.internal,DIRECT
   - DOMAIN,localhost,DIRECT
