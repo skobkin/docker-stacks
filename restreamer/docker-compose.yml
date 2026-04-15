@@ -1,0 +1,30 @@
+# https://hub.docker.com/r/datarhei/restreamer
+# https://raw.githubusercontent.com/datarhei/restreamer/refs/heads/2.x/README.md
+
+services:
+  restreamer:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
+    image: "datarhei/restreamer:${IMAGE_TAG:-2.12.0}"
+    container_name: "restreamer"
+    hostname: "restreamer"
+    ports:
+      - "${HTTP_BIND_ADDR:-127.0.0.1}:${HTTP_BIND_PORT:-8406}:8080/tcp"
+      - "${RTMP_BIND_ADDR:-0.0.0.0}:${RTMP_BIND_PORT:-1935}:1935/tcp"
+      - "${SRT_BIND_ADDR:-0.0.0.0}:${SRT_BIND_PORT:-6000}:6000/udp"
+    volumes:
+      - "${CONFIG_PATH:-./config}:/core/config"
+      - "${DATA_PATH:-./data}:/core/data"
+    env_file: ".env"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"
