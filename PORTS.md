@@ -83,6 +83,9 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | qbittorrent             | qbittorrent       | 6881                | 6881           | ❌       | TCP/UDP  | BitTorrent                          |
 | radarr                  | radarr            | varies              | 7878           | ✅       | TCP      | Movie management                    |
 | redis                   | redis             | 6379                | 6379           | ❌       | TCP      | Database                            |
+| restreamer              | restreamer        | 8406                | 8080           | ✅       | TCP      | Local web UI                        |
+| restreamer              | restreamer        | 1935                | 1935           | ❌       | TCP      | RTMP ingest                         |
+| restreamer              | restreamer        | 6000                | 6000           | ❌       | UDP      | SRT ingest                          |
 | shinobi                 | shinobi           | varies              | 8080           | ✅       | TCP      | Video surveillance                  |
 | sish                    | sish              | 8395                | 8395           | ✅       | TCP      | HTTP tunneling                      |
 | sish                    | sish              | 2222                | 2222           | ❌       | TCP      | SSH tunneling                       |
