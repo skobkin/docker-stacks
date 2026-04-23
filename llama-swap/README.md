@@ -24,7 +24,8 @@ Open WebUI can reach the OpenAI-compatible endpoint at
 1. Copy `.env.dist` to `.env`.
 2. Copy `config/config.yaml.dist` to `config/config.yaml`.
 3. Place your GGUF files in `./models`.
-4. Review the filenames and tuning values in `.env`.
+4. Review the filenames and tuning values in `.env`, including the `MAX`,
+   `MEDIUM`, and `MIN` context-size presets.
 5. Start the stack with `docker compose up -d`.
 
 The config file is watched at runtime, so edits to `config/config.yaml` are

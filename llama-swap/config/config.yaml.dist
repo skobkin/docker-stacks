@@ -15,7 +15,6 @@ macros:
     --host 0.0.0.0
     --port ${PORT}
     --jinja
-    --ctx-size ${env.LLAMA_SERVER_CTX_SIZE}
     --n-gpu-layers ${env.LLAMA_SERVER_N_GPU_LAYERS}
     --threads ${env.LLAMA_SERVER_THREADS}
     --batch-size ${env.LLAMA_SERVER_BATCH_SIZE}
@@ -27,6 +26,7 @@ models:
     description: "Gemma 4 E2B via llama.cpp on the bundled Vulkan backend."
     cmd: |
       ${llama_server}
+      --ctx-size ${env.LLAMA_SERVER_CTX_SIZE_MAX}
       --model ${models_dir}/${env.GEMMA_4_E2B_GGUF}
       # Uncomment if you have the matching projector GGUF for multimodal prompts.
       # --mmproj ${models_dir}/${env.GEMMA_4_E2B_MMPROJ_GGUF}
@@ -36,6 +36,7 @@ models:
     description: "Gemma 4 E4B via llama.cpp on the bundled Vulkan backend."
     cmd: |
       ${llama_server}
+      --ctx-size ${env.LLAMA_SERVER_CTX_SIZE_MAX}
       --model ${models_dir}/${env.GEMMA_4_E4B_GGUF}
       # Uncomment if you have the matching projector GGUF for multimodal prompts.
       # --mmproj ${models_dir}/${env.GEMMA_4_E4B_MMPROJ_GGUF}
@@ -45,6 +46,7 @@ models:
     description: "Gemma 4 26B via llama.cpp on the bundled Vulkan backend."
     cmd: |
       ${llama_server}
+      --ctx-size ${env.LLAMA_SERVER_CTX_SIZE_MEDIUM}
       --model ${models_dir}/${env.GEMMA_4_26B_GGUF}
       # Uncomment if you have the matching projector GGUF for multimodal prompts.
       # --mmproj ${models_dir}/${env.GEMMA_4_26B_MMPROJ_GGUF}
@@ -54,6 +56,7 @@ models:
     description: "Gemma 4 31B via llama.cpp on the bundled Vulkan backend."
     cmd: |
       ${llama_server}
+      --ctx-size ${env.LLAMA_SERVER_CTX_SIZE_MIN}
       --model ${models_dir}/${env.GEMMA_4_31B_GGUF}
       # Uncomment if you have the matching projector GGUF for multimodal prompts.
       # --mmproj ${models_dir}/${env.GEMMA_4_31B_MMPROJ_GGUF}
@@ -63,6 +66,7 @@ models:
     description: "Qwen 3.6 27B via llama.cpp on the bundled Vulkan backend."
     cmd: |
       ${llama_server}
+      --ctx-size ${env.LLAMA_SERVER_CTX_SIZE_MEDIUM}
       --model ${models_dir}/${env.QWEN_3_6_27B_GGUF}
 
   "qwen-3-6-35b":
@@ -70,6 +74,7 @@ models:
     description: "Qwen 3.6 35B via llama.cpp on the bundled Vulkan backend."
     cmd: |
       ${llama_server}
+      --ctx-size ${env.LLAMA_SERVER_CTX_SIZE_MIN}
       --model ${models_dir}/${env.QWEN_3_6_35B_GGUF}
 
   "openwebui-title-generator-270m":
@@ -77,6 +82,7 @@ models:
     description: "Small local helper model for Open WebUI title generation."
     cmd: |
       ${llama_server}
+      --ctx-size ${env.LLAMA_SERVER_CTX_SIZE_MAX}
       --model ${models_dir}/${env.OPENWEBUI_TITLE_GENERATOR_270M_GGUF}
 
   # "gemma-4-e4b-vllm":
