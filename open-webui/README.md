@@ -1,6 +1,7 @@
-# Ollama
+# Open WebUI
 
-[Ollama](https://ollama.com) is a toolkit for running large language models (LLMs) locally. It provides a simple way to download, run, and manage various LLM models.
+[Open WebUI](https://docs.openwebui.com) is a self-hosted web interface for local
+and remote LLM backends.
 
 ## Prerequisites
 
@@ -13,8 +14,7 @@ If you want the container to join the external `proxy` network as well, enable
 
 ## Notes
 
-This stack now runs Ollama only. Open WebUI has been split into the sibling
-[`open-webui`](../open-webui/README.md) stack and should connect to the `ollama`
-container hostname over the shared `ai-tools` network.
+This stack expects a sibling Ollama deployment to be reachable as `ollama` on the
+shared `ai-tools` network.
 
 For general setup instructions, please refer to the [root README](../README.md).
