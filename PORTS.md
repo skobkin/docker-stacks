@@ -50,6 +50,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | kf2-server              | kf2-server        | 20560               | 20560          | ❌       | UDP      | Query port                          |
 | kf2-server              | kf2-server        | 27015               | 27015          | ❌       | UDP      | Steam port                          |
 | lidarr                  | lidarr            | varies              | 8686           | ✅       | TCP      | Music management                    |
+| llama-swap              | llama-swap        | 8011                | 8080           | ✅       | TCP      | OpenAI-compatible model router      |
 | magnetico-web           | magnetico-web     | 8080                | 80             | ✅       | TCP      | Torrent search                      |
 | magneticod              | magneticod        | varies              | varies         | ❌       | UDP      | DHT crawler                         |
 | mastodon-fe-gts         | masto-fe          | 8398                | 80             | ✅       | TCP      | Mastodon frontend                   |
@@ -66,9 +67,9 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | mosquitto               | mosquitto         | 1884                | 1884           | ❌       | TCP      | WebSocket                           |
 | murmur                  | murmur            | 64738               | 64738          | ❌       | TCP/UDP  | Voice chat                          |
 | ntfy                    | ntfy              | 8405                | 8080           | ✅       | TCP      | Notification service web UI/API     |
-| ollama                  | webui             | 3000                | 8080           | ✅       | TCP      | AI chat interface                   |
 | ollama                  | ollama            | 11434               | 11434          | ✅       | TCP      | AI API server                       |
 | openhands               | openhands         | 3000                | 3000           | ✅       | TCP      | AI coding assistant                 |
+| open-webui              | webui             | 8010                | 8080           | ✅       | TCP      | AI chat interface                   |
 | openwebrxplus           | openwebrxplus     | 8402                | 8073           | ✅       | TCP      | WebSDR receiver UI                  |
 | open-streaming-platform | osp               | 8585                | 80             | ✅       | TCP      | Live streaming                      |
 | open-streaming-platform | osp               | 8553                | 443            | ✅       | TCP      | HTTPS                               |
