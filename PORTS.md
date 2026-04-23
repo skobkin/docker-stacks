@@ -50,6 +50,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | kf2-server              | kf2-server        | 20560               | 20560          | ❌       | UDP      | Query port                          |
 | kf2-server              | kf2-server        | 27015               | 27015          | ❌       | UDP      | Steam port                          |
 | lidarr                  | lidarr            | varies              | 8686           | ✅       | TCP      | Music management                    |
+| llama-swap              | llama-swap        | 8011                | 8080           | ✅       | TCP      | OpenAI-compatible model router      |
 | magnetico-web           | magnetico-web     | 8080                | 80             | ✅       | TCP      | Torrent search                      |
 | magneticod              | magneticod        | varies              | varies         | ❌       | UDP      | DHT crawler                         |
 | mastodon-fe-gts         | masto-fe          | 8398                | 80             | ✅       | TCP      | Mastodon frontend                   |

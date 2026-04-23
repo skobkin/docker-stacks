@@ -1,0 +1,29 @@
+services:
+  llama-swap:
+    image: "ghcr.io/mostlygeek/llama-swap:${IMAGE_TAG:-vulkan}"
+    container_name: llama-swap
+    env_file: .env
+    command:
+      - -config
+      - /config/config.yaml
+      - -watch-config
+    ports:
+      - "${HTTP_BIND_ADDR:-127.0.0.1}:${HTTP_BIND_PORT:-8011}:8080"
+    volumes:
+      - "${HOST_CONFIG_DIR:-./config}:/config"
+      - "${HOST_MODELS_DIR:-./models}:/models"
+    devices:
+      - "${DEV_DRI:-/dev/dri}:${DEV_DRI:-/dev/dri}"
+      - "${DEV_KFD:-/dev/kfd}:${DEV_KFD:-/dev/kfd}"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+    networks:
+      - ai-tools
+
+networks:
+  ai-tools:
+    external: true
