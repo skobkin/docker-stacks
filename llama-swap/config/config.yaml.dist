@@ -7,6 +7,8 @@ logLevel: info
 logToStdout: proxy
 startPort: 11080
 globalTTL: 0
+# Uncomment to unload idle models after N seconds by default.
+# globalTTL: 600
 
 macros:
   "models_dir": /models
@@ -37,6 +39,18 @@ models:
     cmd: |
       ${llama_server}
       --ctx-size ${env.LLAMA_SERVER_CTX_SIZE_MAX}
+      --model ${models_dir}/${env.GEMMA_4_E4B_GGUF}
+      # Uncomment if you have the matching projector GGUF for multimodal prompts.
+      # --mmproj ${models_dir}/${env.GEMMA_4_E4B_MMPROJ_GGUF}
+
+  "gemma-4-e4b-noreason":
+    name: "Gemma 4 E4B NoReason"
+    description: "Gemma 4 E4B via llama.cpp with best-effort no-thinking flags."
+    cmd: |
+      ${llama_server}
+      --ctx-size ${env.LLAMA_SERVER_CTX_SIZE_MAX}
+      --reasoning off
+      --chat-template-kwargs {"enable_thinking":false}
       --model ${models_dir}/${env.GEMMA_4_E4B_GGUF}
       # Uncomment if you have the matching projector GGUF for multimodal prompts.
       # --mmproj ${models_dir}/${env.GEMMA_4_E4B_MMPROJ_GGUF}
@@ -84,6 +98,17 @@ models:
       ${llama_server}
       --ctx-size ${env.LLAMA_SERVER_CTX_SIZE_MAX}
       --model ${models_dir}/${env.OPENWEBUI_TITLE_GENERATOR_270M_GGUF}
+
+  # "gemma-4-e4b-ttl-10m":
+  #   name: "Gemma 4 E4B TTL 10m"
+  #   description: "Gemma 4 E4B example with a per-model 10 minute idle unload."
+  #   ttl: 600
+  #   cmd: |
+  #     ${llama_server}
+  #     --ctx-size ${env.LLAMA_SERVER_CTX_SIZE_MAX}
+  #     --model ${models_dir}/${env.GEMMA_4_E4B_GGUF}
+  #     # Uncomment if you have the matching projector GGUF for multimodal prompts.
+  #     # --mmproj ${models_dir}/${env.GEMMA_4_E4B_MMPROJ_GGUF}
 
   # "gemma-4-e4b-vllm":
   #   name: "Gemma 4 E4B vLLM"
