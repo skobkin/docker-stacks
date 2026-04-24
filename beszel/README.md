@@ -4,13 +4,9 @@ This stack runs `henrygd/beszel` (Hub + UI).
 
 ## Traefik
 
-Optional Traefik support uses the simple `COMPOSE_VARIANT` pattern from other stacks in this repo.
+See the [common Traefik guide](../_docs/traefik.md).
 
-Set `COMPOSE_VARIANT=traefik`, make sure the external Docker network from `TRAEFIK_NETWORK` exists, and set `TRAEFIK_HOST` to the hostname Traefik should serve for Beszel.
-
-Keep `APP_URL` aligned with the externally served Beszel URL when you use Traefik, for example `https://beszel.example.com`.
-
-Beszel uses WebSocket connections through the same hostname, so avoid reverse-proxy settings that break `Upgrade` handling.
+When using Traefik, keep `APP_URL` aligned with the externally served Beszel URL.
 
 ## Reset Password (Short)
 

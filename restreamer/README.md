@@ -25,8 +25,6 @@ The stack uses the explicit stable image tag `2.12.0` by default.
 - SRT ingest is published directly on `${SRT_BIND_PORT}/udp`.
 - Built-in HTTPS/Let's Encrypt and RTMPS are intentionally not wired in this v1 stack.
 
-When using Traefik, leave Restreamer's own HTTPS and Let's Encrypt support disabled. Upstream documents reverse proxying the HTTP interface without enabling Restreamer TLS, and the shared `websecure` entrypoint already handles certificates for the UI.
-
 ## First Run
 
 Upstream quick-start docs refer to the default credentials `admin` / `datarhei`. Sign in, then change the password immediately in Restreamer.
@@ -40,14 +38,11 @@ This keeps the stack flexible for the common passthrough/copy-mode case where yo
 
 ## Traefik
 
-To proxy the web UI through the shared Traefik stack:
-
-1. Set `COMPOSE_VARIANT=traefik` in `.env`.
-2. Set `TRAEFIK_HOST` to the desired host name.
-3. Adjust `TRAEFIK_ENTRYPOINT` only if you intentionally want plain HTTP on `web`.
-4. Make sure the external Docker network from `TRAEFIK_NETWORK` exists.
+See the [common Traefik guide](../_docs/traefik.md).
 
 This only proxies the HTTP interface on port `8080`. RTMP and SRT remain direct host ports in this version.
+
+Leave Restreamer's own HTTPS and Let's Encrypt support disabled. Upstream documents reverse proxying the HTTP interface without enabling Restreamer TLS, and the shared `websecure` entrypoint already handles certificates for the UI.
 
 ## Notes
 

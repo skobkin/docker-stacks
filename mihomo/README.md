@@ -31,7 +31,9 @@ By default the controller API is published only to `127.0.0.1:${CONTROLLER_HOST_
 
 ## Traefik
 
-Set `COMPOSE_VARIANT=traefik` in `.env` to publish the controller API through Traefik. This variant exposes only the Mihomo controller HTTP API, not the proxy listener ports.
+See the [common Traefik guide](../_docs/traefik.md).
+
+This variant exposes only the Mihomo controller HTTP API, not the proxy listener ports.
 
 If you publish the controller outside localhost:
 

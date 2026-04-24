@@ -12,6 +12,7 @@ Keep this file repo-specific. Use general Docker/Compose best practices from nor
 - Default published ports to localhost binding where appropriate and update [PORTS.md](PORTS.md) whenever exposed ports change.
 - Use `env_file: .env` by default. Keep `.env.dist` in git, do not commit `.env` or secrets.
 - Add concise comments to `.env.dist` for app-specific variables. Expand comments and add links only when an option is complex, non-obvious, or has dedicated upstream documentation.
+- Keep per-stack `README.md` files focused on stack-specific behavior. When a section would duplicate guidance shared by multiple stacks, move that content into a common doc under [`_docs/`](./_docs/) and link to it from the stack README instead of repeating the full text.
 
 ## Compose Conventions
 
