@@ -113,6 +113,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | woodpecker              | woodpecker-server | 9400                | 9000           | ❌       | TCP      | gRPC endpoint for agents            |
 | webhooksite             | webhook           | varies              | 80             | ✅       | TCP      | Webhook testing                     |
 | webhooksite             | echo-server       | 6001                | 6001           | ❌       | TCP      | Echo server                         |
+| zerotier-one            | zerotier-one      | *host mode*         | *host mode*    | ❌       | UDP/TCP  | ZeroTier control/API, UDP 9993      |
 
 ## Notes for Stack Creators
 

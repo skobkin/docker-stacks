@@ -113,6 +113,7 @@ Not every stack is tested to fully work.
 | Woodpecker Docker Agent | ✅           | `woodpeckerci/woodpecker-agent`               | Docker runner for Woodpecker CI.                            | [Website](https://woodpecker-ci.org), [Github](https://github.com/woodpecker-ci/woodpecker), [Docs](https://woodpecker-ci.org/docs/administration/configuration/agent)                                                      |
 | Watchtower              | ✅           | `nickfedor/watchtower`                        | Docker container auto-update daemon.                        | [Website](https://containrrr.dev/watchtower/), [Github](https://github.com/containrrr/watchtower)                                                                                                                           |
 | Webhook.site            | ✅           | `webhooksite/webhook.site`                    | HTTP callback testing tool                                  | [Website](https://webhook.site), [Github](https://github.com/webhooksite/webhook.site)                                                                                                                                      |
+| ZeroTier One            | ✅           | `zerotier/zerotier`                           | ZeroTier One node using the host network namespace.         | [Website](https://www.zerotier.com), [Docs](https://docs.zerotier.com/docker/), [Image](https://hub.docker.com/r/zerotier/zerotier)                                                                                         |
 
 ## Port Mapping
 
