@@ -1,19 +1,30 @@
-# https://hub.docker.com/r/umputun/remark42
-version: '3.7'
+# https://github.com/umputun/remark42/pkgs/container/remark42
 
 services:
   remark:
-    image: '${IMAGE:-umputun/remark42:latest}'
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
+    image: 'ghcr.io/umputun/remark42:${IMAGE_TAG:-v1.15.0}'
     container_name: 'remark42'
     hostname: 'remark42'
     restart: unless-stopped
     ports:
-      - '${WEBUI_BIND_ADDR:-127.0.0.1}:${WEBUI_BIND_PORT:-8388}:8080'
+      - '${HTTP_BIND_ADDR:-127.0.0.1}:${HTTP_BIND_PORT:-8388}:8080/tcp'
     env_file: .env
+    environment:
+      TZ: '${TIME_ZONE:-UTC}'
+    user: '${APP_UID:-1000}'
     volumes:
       - '${HOST_DATA_DIR:-./data}:/srv/var'
+      - '/etc/localtime:/etc/localtime:ro'
     logging:
       driver: 'json-file'
       options:
         max-size: '${LOG_MAX_SIZE:-5m}'
         max-file: '${LOG_MAX_FILE:-5}'
+
+networks:
+  traefik:
+    external: true
+    name: '${TRAEFIK_NETWORK:-traefik}'
