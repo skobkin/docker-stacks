@@ -35,6 +35,22 @@ Other reverse proxy examples:
 - [Nginx](https://remark42.com/docs/manuals/nginx/)
 - [Reproxy](https://remark42.com/docs/manuals/reproxy/)
 
+## ntfy Notifications
+
+Remark42 can send admin webhook notifications for new comments. The `.env.dist`
+template includes a commented ntfy example using ntfy JSON publishing so the
+Remark42 webhook template can set the `topic`, `title`, `message`, and `click`
+fields in the request body.
+
+For JSON publishing, set `NOTIFY_WEBHOOK_URL` to the ntfy root URL, such as
+`https://ntfy.example.com/`, not a topic URL like `/remark42`. The topic belongs
+inside `NOTIFY_WEBHOOK_TEMPLATE`.
+
+Keep the `Authorization` header unless the target ntfy topic allows anonymous
+writes. The repo's `ntfy` stack defaults to private access, so create a limited
+notifier user or token with write access to the chosen topic before enabling the
+Remark42 webhook.
+
 ## Import From WordPress
 
 Export comments from WordPress using the standard WordPress export flow, then
