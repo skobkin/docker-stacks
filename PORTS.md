@@ -50,6 +50,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | kf2-server              | kf2-server        | 20560               | 20560          | ❌       | UDP      | Query port                          |
 | kf2-server              | kf2-server        | 27015               | 27015          | ❌       | UDP      | Steam port                          |
 | lidarr                  | lidarr            | varies              | 8686           | ✅       | TCP      | Music management                    |
+| llama-swap              | llama-swap        | 8011                | 8080           | ✅       | TCP      | OpenAI-compatible model router      |
 | magnetico-web           | magnetico-web     | 8080                | 80             | ✅       | TCP      | Torrent search                      |
 | magneticod              | magneticod        | varies              | varies         | ❌       | UDP      | DHT crawler                         |
 | mastodon-fe-gts         | masto-fe          | 8398                | 80             | ✅       | TCP      | Mastodon frontend                   |
@@ -67,9 +68,9 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | mox                     | mox               | *host mode*         | *host mode*    | ✅       | -        | Mail server (host network)          |
 | murmur                  | murmur            | 64738               | 64738          | ❌       | TCP/UDP  | Voice chat                          |
 | ntfy                    | ntfy              | 8405                | 8080           | ✅       | TCP      | Notification service web UI/API     |
-| ollama                  | webui             | 3000                | 8080           | ✅       | TCP      | AI chat interface                   |
 | ollama                  | ollama            | 11434               | 11434          | ✅       | TCP      | AI API server                       |
 | openhands               | openhands         | 3000                | 3000           | ✅       | TCP      | AI coding assistant                 |
+| open-webui              | webui             | 8010                | 8080           | ✅       | TCP      | AI chat interface                   |
 | openwebrxplus           | openwebrxplus     | 8402                | 8073           | ✅       | TCP      | WebSDR receiver UI                  |
 | open-streaming-platform | osp               | 8585                | 80             | ✅       | TCP      | Live streaming                      |
 | open-streaming-platform | osp               | 8553                | 443            | ✅       | TCP      | HTTPS                               |
@@ -84,6 +85,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | qbittorrent             | qbittorrent       | 6881                | 6881           | ❌       | TCP/UDP  | BitTorrent                          |
 | radarr                  | radarr            | varies              | 7878           | ✅       | TCP      | Movie management                    |
 | redis                   | redis             | 6379                | 6379           | ❌       | TCP      | Database                            |
+| remark42                | remark            | 8388                | 8080           | ✅       | TCP      | Comment engine                      |
 | restreamer              | restreamer        | 8406                | 8080           | ✅       | TCP      | Local web UI                        |
 | restreamer              | restreamer        | 1935                | 1935           | ❌       | TCP      | RTMP ingest                         |
 | restreamer              | restreamer        | 6000                | 6000           | ❌       | UDP      | SRT ingest                          |
@@ -113,6 +115,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | woodpecker              | woodpecker-server | 9400                | 9000           | ❌       | TCP      | gRPC endpoint for agents            |
 | webhooksite             | webhook           | varies              | 80             | ✅       | TCP      | Webhook testing                     |
 | webhooksite             | echo-server       | 6001                | 6001           | ❌       | TCP      | Echo server                         |
+| zerotier-one            | zerotier-one      | *host mode*         | *host mode*    | ❌       | UDP/TCP  | ZeroTier control/API, UDP 9993      |
 
 ## Notes for Stack Creators
 

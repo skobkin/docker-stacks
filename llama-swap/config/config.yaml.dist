@@ -1,0 +1,135 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mostlygeek/llama-swap/refs/heads/main/config-schema.json
+#
+# Copy this file to config.yaml and adjust the filenames in ../.env as needed.
+
+healthCheckTimeout: 300
+logLevel: info
+logToStdout: proxy
+startPort: 11080
+globalTTL: 0
+# Uncomment to unload idle models after N seconds by default.
+# globalTTL: 600
+
+macros:
+  "models_dir": /models
+  "llama_server": >
+    llama-server
+    --host 0.0.0.0
+    --port ${PORT}
+    --jinja
+    --n-gpu-layers ${env.LLAMA_SERVER_N_GPU_LAYERS}
+    --threads ${env.LLAMA_SERVER_THREADS}
+    --batch-size ${env.LLAMA_SERVER_BATCH_SIZE}
+    --ubatch-size ${env.LLAMA_SERVER_UBATCH_SIZE}
+
+models:
+  "gemma-4-e2b":
+    name: "Gemma 4 E2B"
+    description: "Gemma 4 E2B via llama.cpp on the bundled Vulkan backend."
+    cmd: |
+      ${llama_server}
+      --ctx-size ${env.LLAMA_SERVER_CTX_SIZE_32K}
+      --model ${models_dir}/${env.GEMMA_4_E2B_GGUF}
+      # Uncomment if you have the matching projector GGUF for multimodal prompts.
+      # --mmproj ${models_dir}/${env.GEMMA_4_E2B_MMPROJ_GGUF}
+
+  "gemma-4-e4b":
+    name: "Gemma 4 E4B"
+    description: "Gemma 4 E4B via llama.cpp on the bundled Vulkan backend."
+    cmd: |
+      ${llama_server}
+      --ctx-size ${env.LLAMA_SERVER_CTX_SIZE_128K}
+      --model ${models_dir}/${env.GEMMA_4_E4B_GGUF}
+      # Uncomment if you have the matching projector GGUF for multimodal prompts.
+      # --mmproj ${models_dir}/${env.GEMMA_4_E4B_MMPROJ_GGUF}
+
+  "gemma-4-e4b-noreason":
+    name: "Gemma 4 E4B NoReason"
+    description: "Gemma 4 E4B via llama.cpp with best-effort no-thinking flags."
+    cmd: |
+      ${llama_server}
+      --ctx-size ${env.LLAMA_SERVER_CTX_SIZE_128K}
+      --reasoning off
+      --chat-template-kwargs {"enable_thinking":false}
+      --model ${models_dir}/${env.GEMMA_4_E4B_GGUF}
+      # Uncomment if you have the matching projector GGUF for multimodal prompts.
+      # --mmproj ${models_dir}/${env.GEMMA_4_E4B_MMPROJ_GGUF}
+
+  "gemma-4-26b":
+    name: "Gemma 4 26B"
+    description: "Gemma 4 26B via llama.cpp on the bundled Vulkan backend."
+    cmd: |
+      ${llama_server}
+      --ctx-size ${env.LLAMA_SERVER_CTX_SIZE_32K}
+      --model ${models_dir}/${env.GEMMA_4_26B_GGUF}
+      # Uncomment if you have the matching projector GGUF for multimodal prompts.
+      # --mmproj ${models_dir}/${env.GEMMA_4_26B_MMPROJ_GGUF}
+
+  "gemma-4-31b":
+    name: "Gemma 4 31B"
+    description: "Gemma 4 31B via llama.cpp on the bundled Vulkan backend."
+    cmd: |
+      ${llama_server}
+      --ctx-size ${env.LLAMA_SERVER_CTX_SIZE_32K}
+      --model ${models_dir}/${env.GEMMA_4_31B_GGUF}
+      # Uncomment if you have the matching projector GGUF for multimodal prompts.
+      # --mmproj ${models_dir}/${env.GEMMA_4_31B_MMPROJ_GGUF}
+
+  "qwen-3-6-27b":
+    name: "Qwen 3.6 27B"
+    description: "Qwen 3.6 27B via llama.cpp on the bundled Vulkan backend."
+    cmd: |
+      ${llama_server}
+      --ctx-size ${env.LLAMA_SERVER_CTX_SIZE_32K}
+      --model ${models_dir}/${env.QWEN_3_6_27B_GGUF}
+
+  "qwen-3-6-35b":
+    name: "Qwen 3.6 35B"
+    description: "Qwen 3.6 35B via llama.cpp on the bundled Vulkan backend."
+    cmd: |
+      ${llama_server}
+      --ctx-size ${env.LLAMA_SERVER_CTX_SIZE_32K}
+      --model ${models_dir}/${env.QWEN_3_6_35B_GGUF}
+
+  "openwebui-title-generator-270m":
+    name: "Open WebUI Title Generator 270M"
+    description: "Small local helper model for Open WebUI title generation."
+    cmd: |
+      ${llama_server}
+      --ctx-size ${env.LLAMA_SERVER_CTX_SIZE_8K}
+      --model ${models_dir}/${env.OPENWEBUI_TITLE_GENERATOR_270M_GGUF}
+
+  # "gemma-4-e4b-ttl-10m":
+  #   name: "Gemma 4 E4B TTL 10m"
+  #   description: "Gemma 4 E4B example with a per-model 10 minute idle unload."
+  #   ttl: 600
+  #   cmd: |
+  #     ${llama_server}
+         --ctx-size ${env.LLAMA_SERVER_CTX_SIZE_32K}
+  #     --model ${models_dir}/${env.GEMMA_4_E4B_GGUF}
+  #     # Uncomment if you have the matching projector GGUF for multimodal prompts.
+  #     # --mmproj ${models_dir}/${env.GEMMA_4_E4B_MMPROJ_GGUF}
+
+  # "gemma-4-e4b-vllm":
+  #   name: "Gemma 4 E4B vLLM"
+  #   description: "Optional ROCm vLLM template for Gemma 4 E4B."
+  #   proxy: "http://127.0.0.1:${PORT}"
+  #   cmdStop: docker stop ${MODEL_ID}
+  #   cmd: |
+  #     docker run --init --rm --name ${MODEL_ID}
+  #     --group-add=video
+  #     --cap-add=SYS_PTRACE
+  #     --security-opt seccomp=unconfined
+  #     --device ${env.VLLM_DEV_KFD}:/dev/kfd
+  #     --device ${env.VLLM_DEV_DRI}:/dev/dri
+  #     --ipc=host
+  #     -p ${PORT}:8000
+  #     -v ${env.VLLM_GEMMA_4_E4B_HOST_MODEL_DIR}:/models/gemma-4-e4b-it
+  #     -v ${env.VLLM_HF_CACHE_DIR}:/root/.cache/huggingface
+  #     vllm/vllm-openai-rocm:${env.VLLM_IMAGE_TAG}
+  #     --model /models/gemma-4-e4b-it
+  #     --served-model-name gemma-4-e4b
+  #     --host 0.0.0.0
+  #     --port 8000
+  #     --max-model-len ${env.VLLM_MAX_MODEL_LEN}
+  #     --gpu-memory-utilization ${env.VLLM_GPU_MEMORY_UTILIZATION}

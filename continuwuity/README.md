@@ -20,7 +20,7 @@ docker compose up -d
 
 The base stack binds only to `127.0.0.1:${HTTP_BIND_PORT:-6167}` and is suitable for host-level Nginx or Caddy.
 
-If you already run Traefik in Docker, switch to `COMPOSE_VARIANT=traefik` and make sure the external Docker network from `TRAEFIK_NETWORK` exists. The default network name is `traefik`.
+See the [common Traefik guide](../_docs/traefik.md).
 
 For Traefik, `TRAEFIK_MATRIX_HOST` is the main hostname routed to Continuwuity itself. `TRAEFIK_WELL_KNOWN_HOST` is the hostname routed for `/.well-known/matrix/*`.
 

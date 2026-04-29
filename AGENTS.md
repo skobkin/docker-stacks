@@ -9,9 +9,11 @@ Keep this file repo-specific. Use general Docker/Compose best practices from nor
 - Use standard local directories when applicable: `./data`, `./config`, `./logs`, `./nginx`.
 - Prefer generic variable names such as `IMAGE_TAG`, `HOST_DATA_DIR`, or `BIND_PORT` unless multiple services in the same stack need disambiguation.
 - Parameterize host paths and ports in compose files and provide sane defaults with `${VAR:-default}`.
+- Do not use placeholder values as Compose defaults. Real operational defaults such as `127.0.0.1`, `8080`, `./data`, or `UTC` are fine; fake domains, fake secrets, fake credentials, and other values that only look configured are not. Such variables must be required and without a fallback.
 - Default published ports to localhost binding where appropriate and update [PORTS.md](PORTS.md) whenever exposed ports change.
 - Use `env_file: .env` by default. Keep `.env.dist` in git, do not commit `.env` or secrets.
 - Add concise comments to `.env.dist` for app-specific variables. Expand comments and add links only when an option is complex, non-obvious, or has dedicated upstream documentation.
+- Keep per-stack `README.md` files focused on stack-specific behavior. When a section would duplicate guidance shared by multiple stacks, move that content into a common doc under [`_docs/`](./_docs/) and link to it from the stack README instead of repeating the full text.
 
 ## Compose Conventions
 

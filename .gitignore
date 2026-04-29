@@ -1,5 +1,7 @@
 /.idea
 
+/.codex
+
 # .env files
 /*/.env
 /.claude/settings.local.json

@@ -79,9 +79,9 @@ That is separate from the limited-user pattern above, which is still useful when
 
 The default stack is already suitable for a host-level reverse proxy because it only binds to localhost.
 
-If you already run Traefik in Docker, set `COMPOSE_VARIANT=traefik` in `.env` and make sure the external Docker network from `TRAEFIK_NETWORK` exists. The default shared network name is `traefik`.
+See the [common Traefik guide](../_docs/traefik.md).
 
-This stack assumes one public HTTPS hostname, served through Traefik's shared `websecure` entrypoint:
+This stack assumes one public hostname for the full UI/API surface. Keep these aligned:
 
 - `TRAEFIK_HOST=ntfy.example.com`
 - `NTFY_BASE_URL=https://ntfy.example.com`

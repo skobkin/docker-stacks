@@ -34,18 +34,10 @@ The default image tag is `stable-rocm`.
 
 ## Optional Traefik support
 
-To publish the authenticated Frigate UI/API through the shared Traefik stack:
-
-- set `COMPOSE_VARIANT=traefik` in `.env`
-- set `TRAEFIK_HOST` to the host name you want to route to Frigate
-- choose `TRAEFIK_ENTRYPOINT=web` for plain HTTP or `TRAEFIK_ENTRYPOINT=websecure` for HTTPS
-- make sure the external Docker network from `TRAEFIK_NETWORK` exists
+See the [common Traefik guide](../_docs/traefik.md).
 
 This only proxies the authenticated UI/API on port `8971`. RTSP/WebRTC traffic on `8554` and `8555`
 still uses direct port mappings.
-
-When you use `websecure`, TLS and ACME certificate handling come from the shared Traefik entrypoint
-configuration. This stack does not override router-level TLS settings.
 
 Current upstream Frigate docs say reverse proxies should target port `8971`. When Traefik terminates TLS
 and forwards plain HTTP to Frigate, set this in `config.yml` to avoid HTTP 400 responses from Frigate's
