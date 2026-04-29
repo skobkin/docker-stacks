@@ -46,6 +46,13 @@ For JSON publishing, set `NOTIFY_WEBHOOK_URL` to the ntfy root URL, such as
 `https://ntfy.example.com/`, not a topic URL like `/remark42`. The topic belongs
 inside `NOTIFY_WEBHOOK_TEMPLATE`.
 
+To send original comment Markdown instead of Remark42's rendered HTML, use
+`.Orig` for the message and add the `Markdown:yes` ntfy header, as shown in
+`.env.dist`. This sends raw user-authored Markdown to ntfy. Treat it as
+user-supplied content: notification clients may fetch linked images or expose
+link previews, so Markdown notifications can leak client IPs or other metadata
+to third-party URLs included in comments.
+
 Keep the `Authorization` header unless the target ntfy topic allows anonymous
 writes. The repo's `ntfy` stack defaults to private access, so create a limited
 notifier user or token with write access to the chosen topic before enabling the
