@@ -1,0 +1,13 @@
+services:
+  default: {}
+
+  traefik:
+    networks:
+      - default
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.speedtest.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.speedtest.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.services.speedtest.loadbalancer.server.port: "${TRAEFIK_SERVICE_PORT:-80}"

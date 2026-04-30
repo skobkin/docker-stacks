@@ -1,0 +1,13 @@
+services:
+  default: {}
+
+  traefik:
+    networks:
+      - firefly_iii
+      - traefik
+    labels:
+      traefik.enable: 'true'
+      traefik.docker.network: '${TRAEFIK_NETWORK:-traefik}'
+      traefik.http.routers.firefly-iii.rule: 'Host(`${TRAEFIK_HOST}`)'
+      traefik.http.routers.firefly-iii.entrypoints: '${TRAEFIK_ENTRYPOINT:-websecure}'
+      traefik.http.services.firefly-iii.loadbalancer.server.port: '${TRAEFIK_SERVICE_PORT:-8080}'

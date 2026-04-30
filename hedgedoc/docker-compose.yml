@@ -1,5 +1,8 @@
 services:
   hedgedoc:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     image: 'lscr.io/linuxserver/hedgedoc:${IMAGE_TAG:-latest}'
     container_name: 'hedgedoc'
     env_file: '.env'
@@ -30,3 +33,8 @@ services:
       options:
         max-size: '${LOG_MAX_SIZE:-5m}'
         max-file: '${LOG_MAX_FILE:-5}'
+
+networks:
+  traefik:
+    external: true
+    name: '${TRAEFIK_NETWORK:-traefik}'

@@ -2,6 +2,9 @@
 
 services:
   webhook:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     image: "webhooksite/webhook.site"
     container_name: webhook-site
     command: "php artisan queue:work --daemon --tries=3 --timeout=10"
@@ -46,3 +49,8 @@ services:
       options:
         max-size: "${LOG_MAX_SIZE:-5m}"
         max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"

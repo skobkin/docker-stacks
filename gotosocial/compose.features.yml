@@ -1,0 +1,13 @@
+services:
+  default: {}
+
+  traefik:
+    networks:
+      - gotosocial
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.gotosocial.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.gotosocial.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.services.gotosocial.loadbalancer.server.port: "${TRAEFIK_SERVICE_PORT:-8080}"
