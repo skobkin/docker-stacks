@@ -9,13 +9,17 @@ services:
       - "${HTTP_BIND_ADDR:-0.0.0.0}:${HTTP_BIND_PORT:-80}:80/tcp"
       - "${HTTPS_BIND_ADDR:-0.0.0.0}:${HTTPS_BIND_PORT:-443}:443/tcp"
       - "${MATRIX_FEDERATION_BIND_ADDR:-0.0.0.0}:${MATRIX_FEDERATION_BIND_PORT:-8448}:8448/tcp"
+      - "${GRPC_BIND_ADDR:-0.0.0.0}:${GRPC_BIND_PORT:-9443}:9443/tcp"
     volumes:
       - "${CONFIG_PATH:-./config}:/etc/traefik:ro"
       - "${DATA_PATH:-./data}:/var/lib/traefik"
       - "${SECRETS_PATH:-./secrets}:/run/secrets/traefik:ro"
+      - "${STATIC_FILES_PATH:-./static}:/srv/static:ro"
     env_file: "${ENV_FILE:-.env}"
     environment:
       TRAEFIK_PROVIDERS_DOCKER_NETWORK: "${TRAEFIK_NETWORK:-traefik}"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     labels:
       traefik.enable: "true"
       traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"

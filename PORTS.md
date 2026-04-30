@@ -102,6 +102,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | traefik                 | traefik           | 80                  | 80             | ✅       | TCP      | HTTP entrypoint / ACME HTTP-01      |
 | traefik                 | traefik           | 443                 | 443            | ✅       | TCP      | HTTPS entrypoint / dashboard        |
 | traefik                 | traefik           | 8448                | 8448           | ✅       | TCP      | Matrix federation entrypoint        |
+| traefik                 | traefik           | 9443                | 9443           | ✅       | TCP      | Shared gRPC-over-HTTPS entrypoint   |
 | tor-privoxy             | tor               | 8118                | 8118           | ❌       | TCP      | HTTP proxy                          |
 | tor-privoxy             | tor               | 9050                | 9050           | ❌       | TCP      | SOCKS proxy                         |
 | tor-privoxy             | tor               | 9040                | 9040           | ❌       | TCP      | Transparent proxy                   |
