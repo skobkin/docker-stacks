@@ -10,4 +10,5 @@ services:
       traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
       traefik.http.routers.speedtest.rule: "Host(`${TRAEFIK_HOST}`)"
       traefik.http.routers.speedtest.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.speedtest.middlewares: "chain-default@file,upload-50m@file"
       traefik.http.services.speedtest.loadbalancer.server.port: "${TRAEFIK_SERVICE_PORT:-80}"
