@@ -26,3 +26,12 @@ To use PostgreSQL running on the host machine, use [this](../_docs/access_databa
 ```shell
 docker-compose up -d
 ```
+
+## Optional Traefik
+
+Set `COMPOSE_VARIANT=traefik` and `TRAEFIK_HOST` to expose the main Synapse homeserver through the shared Traefik stack.
+The variant adds routers for both the normal `websecure` entrypoint and Matrix federation on `matrixfederation`.
+
+The shared Traefik stack must publish the `matrixfederation` entrypoint on port `8448`.
+
+See the [common Traefik guide](../_docs/traefik.md).

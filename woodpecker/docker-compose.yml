@@ -2,6 +2,9 @@
 
 services:
   woodpecker-server:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     image: 'woodpeckerci/woodpecker-server:${IMAGE_TAG:-latest}'
     container_name: woodpecker-server
     hostname: woodpecker-server
@@ -31,3 +34,6 @@ services:
 networks:
   forge:
     external: true
+  traefik:
+    external: true
+    name: '${TRAEFIK_NETWORK:-traefik}'

@@ -3,6 +3,9 @@
 
 services:
   meshmap-lite:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     image: 'skobkin/meshmap-lite:${IMAGE_TAG:-latest}'
     container_name: 'meshmap-lite'
     ports:
@@ -17,3 +20,8 @@ services:
       options:
         max-size: '${LOG_MAX_SIZE:-5m}'
         max-file: '${LOG_MAX_FILE:-5}'
+
+networks:
+  traefik:
+    external: true
+    name: '${TRAEFIK_NETWORK:-traefik}'

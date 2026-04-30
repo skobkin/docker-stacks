@@ -1,5 +1,8 @@
 services:
   server:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     image: 'codeberg.org/forgejo/forgejo:${IMAGE_TAG:-1.21}'
     container_name: forgejo
     restart: unless-stopped
@@ -24,3 +27,6 @@ services:
 networks:
   forge:
     external: true
+  traefik:
+    external: true
+    name: '${TRAEFIK_NETWORK:-traefik}'

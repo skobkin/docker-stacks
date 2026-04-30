@@ -1,6 +1,9 @@
 
 services:
   app:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     image: 'fireflyiii/core:${IMAGE_TAG:-latest}'
     hostname: app
     container_name: firefly_iii_core
@@ -47,3 +50,6 @@ services:
 networks:
   firefly_iii:
     driver: bridge
+  traefik:
+    external: true
+    name: '${TRAEFIK_NETWORK:-traefik}'

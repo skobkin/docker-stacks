@@ -1,0 +1,18 @@
+services:
+  default: {}
+
+  traefik:
+    networks:
+      - default
+      - matrix
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.synapse.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.synapse.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.synapse.service: "synapse"
+      traefik.http.routers.synapse-federation.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.synapse-federation.entrypoints: "${TRAEFIK_FEDERATION_ENTRYPOINT:-matrixfederation}"
+      traefik.http.routers.synapse-federation.service: "synapse"
+      traefik.http.services.synapse.loadbalancer.server.port: "${TRAEFIK_SERVICE_PORT:-8008}"

@@ -2,6 +2,9 @@
 
 services:
   gotosocial:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     image: "superseriousbusiness/gotosocial:${IMAGE_VERSION:-latest}"
     container_name: gotosocial
     extra_hosts:
@@ -36,3 +39,6 @@ networks:
       config:
         - subnet: "${NETWORK_SUBNET:-172.30.0.0/16}"
           gateway: "${NETWORK_GATEWAY:-172.30.0.1}"
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"

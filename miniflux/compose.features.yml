@@ -1,0 +1,13 @@
+services:
+  default: {}
+
+  traefik:
+    networks:
+      - default
+      - traefik
+    labels:
+      traefik.enable: 'true'
+      traefik.docker.network: '${TRAEFIK_NETWORK:-traefik}'
+      traefik.http.routers.miniflux.rule: 'Host(`${TRAEFIK_HOST}`)'
+      traefik.http.routers.miniflux.entrypoints: '${TRAEFIK_ENTRYPOINT:-websecure}'
+      traefik.http.services.miniflux.loadbalancer.server.port: '${TRAEFIK_SERVICE_PORT:-8080}'

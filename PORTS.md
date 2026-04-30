@@ -94,13 +94,14 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | sonarr                  | sonarr            | varies              | 8989           | ✅       | TCP      | TV show management                  |
 | speedtest               | speedtest         | 8888                | 80             | ✅       | TCP      | Internet speed test                 |
 | synapse                 | synapse           | 8008                | 8008           | ✅       | TCP      | Matrix server                       |
-| synapse                 | sliding-sync      | 8889                | 8889           | ✅       | TCP      | Matrix sync proxy                   |
 | syncthing               | syncthing         | varies              | 8384           | ✅       | TCP      | File sync UI                        |
 | syncthing               | syncthing         | 22000               | 22000          | ❌       | TCP/UDP  | File sync                           |
 | syncthing               | syncthing         | 21027               | 21027          | ❌       | UDP      | Discovery                           |
 | tor-obfs4-bridge        | tor               | varies              | varies         | ❌       | TCP      | Tor bridge                          |
 | traefik                 | traefik           | 80                  | 80             | ✅       | TCP      | HTTP entrypoint / ACME HTTP-01      |
 | traefik                 | traefik           | 443                 | 443            | ✅       | TCP      | HTTPS entrypoint / dashboard        |
+| traefik                 | traefik           | 8448                | 8448           | ✅       | TCP      | Matrix federation entrypoint        |
+| traefik                 | traefik           | 9443                | 9443           | ✅       | TCP      | Shared gRPC-over-HTTPS entrypoint   |
 | tor-privoxy             | tor               | 8118                | 8118           | ❌       | TCP      | HTTP proxy                          |
 | tor-privoxy             | tor               | 9050                | 9050           | ❌       | TCP      | SOCKS proxy                         |
 | tor-privoxy             | tor               | 9040                | 9040           | ❌       | TCP      | Transparent proxy                   |
