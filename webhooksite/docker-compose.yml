@@ -19,6 +19,9 @@ services:
         max-file: "${LOG_MAX_FILE:-5}"
 
   laravel-echo-server:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}_echo"
     image: "webhooksite/laravel-echo-server"
     depends_on:
       - redis
