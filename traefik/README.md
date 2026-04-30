@@ -43,6 +43,9 @@ The dashboard will then be available on the host name from `TRAEFIK_DASHBOARD_HO
 - `TRAEFIK_DASHBOARD_HOST`: dashboard/API host name.
 - `TRAEFIK_CERTIFICATESRESOLVERS_DEFAULT_ACME_EMAIL`: email used for Let's Encrypt registration and expiry notices.
 - `HTTP_BIND_PORT` and `HTTPS_BIND_PORT`: change these if you need to run Traefik beside another web server during migration or testing.
+- `MATRIX_FEDERATION_BIND_PORT`: optional Matrix federation entrypoint port, defaulting to `8448`.
+- `GRPC_BIND_PORT`: optional shared gRPC-over-HTTPS entrypoint port, defaulting to `9443`.
+- `STATIC_FILES_PATH`: host directory mounted read-only into Traefik at `/srv/static` for `statiq` static-file routers.
 - `TRAEFIK_ENTRYPOINTS_WEB_FORWARDEDHEADERS_TRUSTEDIPS` and `TRAEFIK_ENTRYPOINTS_WEBSECURE_FORWARDEDHEADERS_TRUSTEDIPS`: set these when Traefik is behind another reverse proxy, load balancer, or Cloudflare. Use the published IP ranges of that upstream and do not trust arbitrary sources.
 - `TRAEFIK_LOG_LEVEL` and `TRAEFIK_ACCESSLOG`: useful when debugging routing, ACME, or upstream behavior.
 
@@ -68,10 +71,12 @@ This stack defaults to:
 
 - `web` on port `80`
 - `websecure` on port `443`
+- `matrixfederation` on port `8448`
+- `grpcsecure` on port `9443`
 - automatic HTTP to HTTPS redirect
 - a default `websecure` certresolver named `default`
 
-Because the certresolver is attached to the `websecure` entrypoint, most proxied services do not need their own `tls.certresolver` label.
+Because the certresolver is attached to TLS entrypoints, most proxied services do not need their own `tls.certresolver` label.
 
 `acme.json` is stored under `./data/acme/acme.json` and should stay private with mode `600`.
 
@@ -106,6 +111,7 @@ The tracked templates live in:
 
 - `config/dynamic/dashboard.yml.dist`
 - `config/dynamic/shared.yml.dist`
+- `config/dynamic/static-files.yml.dist`
 
 Typical uses:
 
@@ -114,6 +120,33 @@ Typical uses:
 - long-lived or streaming backends: set `traefik.http.services.<name>.loadbalancer.serversTransport=long-lived@file`
 
 WebSocket upgrades do not need a dedicated Traefik switch. Normal HTTP routers work as long as the backend itself supports them.
+
+## Serving static files
+
+Static file catalogs use the `statiq` plugin through Traefik's file provider.
+
+`STATIC_FILES_PATH` from `.env` is mounted read-only into the Traefik container at `/srv/static`. By default, this is `./static` inside this stack directory.
+
+Create one subdirectory per public catalog host:
+
+```shell
+install -d static/f.example.com
+install -d static/i.example.com
+```
+
+Put the files for each catalog into its matching subdirectory. For example, files under `./static/f.example.com` are served by a router whose `statiq.root` is `/srv/static/f.example.com`.
+
+Use `config/dynamic/static-files.yml.dist` as the starting point for each catalog:
+
+```shell
+cp config/dynamic/static-files.yml.dist config/dynamic/f.example.com.yml
+```
+
+Then edit the live `.yml` file and change:
+
+- router and middleware names, so they are unique
+- `rule`, to match the public host names
+- `root`, to match the catalog subdirectory under `/srv/static`
 
 ## Adding another stack behind Traefik
 
@@ -137,7 +170,6 @@ services:
       traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
       traefik.http.routers.app.rule: "Host(`app.example.com`)"
       traefik.http.routers.app.entrypoints: "websecure"
-      traefik.http.routers.app.tls: "true"
       traefik.http.routers.app.middlewares: "chain-default@file"
       traefik.http.services.app.loadbalancer.server.port: "8080"
 
