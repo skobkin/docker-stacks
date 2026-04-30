@@ -94,7 +94,6 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | sonarr                  | sonarr            | varies              | 8989           | ✅       | TCP      | TV show management                  |
 | speedtest               | speedtest         | 8888                | 80             | ✅       | TCP      | Internet speed test                 |
 | synapse                 | synapse           | 8008                | 8008           | ✅       | TCP      | Matrix server                       |
-| synapse                 | sliding-sync      | 8889                | 8889           | ✅       | TCP      | Matrix sync proxy                   |
 | syncthing               | syncthing         | varies              | 8384           | ✅       | TCP      | File sync UI                        |
 | syncthing               | syncthing         | 22000               | 22000          | ❌       | TCP/UDP  | File sync                           |
 | syncthing               | syncthing         | 21027               | 21027          | ❌       | UDP      | Discovery                           |

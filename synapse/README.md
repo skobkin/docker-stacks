@@ -33,6 +33,5 @@ Set `COMPOSE_VARIANT=traefik` and `TRAEFIK_HOST` to expose the main Synapse home
 The variant adds routers for both the normal `websecure` entrypoint and Matrix federation on `matrixfederation`.
 
 The shared Traefik stack must publish the `matrixfederation` entrypoint on port `8448`.
-Sliding sync (`matrix-ss`) is not exposed by this variant.
 
 See the [common Traefik guide](../_docs/traefik.md).
