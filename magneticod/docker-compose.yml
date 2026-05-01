@@ -21,3 +21,9 @@ services:
       options:
         max-size: "${LOG_MAX_SIZE:-5m}"
         max-file: "${LOG_MAX_FILE:-5}"
+    networks:
+      - databases
+
+networks:
+  databases:
+    external: true
