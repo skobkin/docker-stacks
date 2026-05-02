@@ -48,7 +48,7 @@ The dashboard will then be available on the host name from `TRAEFIK_DASHBOARD_HO
 - `GRPC_BIND_PORT`: optional shared gRPC-over-HTTPS entrypoint port, defaulting to `9443`.
 - `STATIC_FILES_PATH`: host directory mounted read-only into Traefik at `/srv/static` for `statiq` static-file routers.
 - `TRAEFIK_ENTRYPOINTS_WEB_FORWARDEDHEADERS_TRUSTEDIPS` and `TRAEFIK_ENTRYPOINTS_WEBSECURE_FORWARDEDHEADERS_TRUSTEDIPS`: set these when Traefik is behind another reverse proxy, load balancer, or Cloudflare. Use the published IP ranges of that upstream and do not trust arbitrary sources.
-- `TRAEFIK_LOG_LEVEL` and `TRAEFIK_ACCESSLOG`: useful when debugging routing, ACME, or upstream behavior.
+- `TRAEFIK_LOG_LEVEL` and `TRAEFIK_ACCESSLOG`: useful when debugging routing, ACME, or upstream behavior. Access logs are disabled by default.
 
 ## Dashboard authentication
 
@@ -85,6 +85,30 @@ HTTP/3 is enabled for routers that use the TLS-enabled `websecure` entrypoint. T
 `acme.json` is stored under `./data/acme/acme.json` and should stay private with mode `600`.
 
 For wildcard certificates or DNS-based validation later, switch from the default HTTP-01 settings in `.env` to Traefik's DNS challenge variables. The stack keeps that path open and does not hard-code a provider.
+
+## Access logs
+
+Traefik access logs are disabled by default. To enable them, uncomment this in `.env`:
+
+```dotenv
+TRAEFIK_ACCESSLOG=true
+```
+
+Without `TRAEFIK_ACCESSLOG_FILEPATH`, Traefik writes access logs to stdout, so Docker stores them together with the regular Traefik container logs. Retention is size/count based through the existing Docker log settings:
+
+```dotenv
+LOG_MAX_SIZE=5m
+LOG_MAX_FILE=5
+```
+
+That keeps roughly `LOG_MAX_SIZE * LOG_MAX_FILE` of combined Traefik logs for the container. You can also use Traefik's optional access-log settings, for example:
+
+```dotenv
+TRAEFIK_ACCESSLOG_FORMAT=json
+TRAEFIK_ACCESSLOG_BUFFERINGSIZE=100
+```
+
+Avoid setting `TRAEFIK_ACCESSLOG_FILEPATH` unless you also configure host log rotation for that file. Docker's `json-file` limits only apply to stdout/stderr container logs, not to files Traefik writes inside a mounted directory.
 
 ## Tracked templates vs local files
 
@@ -206,5 +230,6 @@ This is still not the same as a fully isolated control plane. Anyone who can ful
 - API and dashboard: https://doc.traefik.io/traefik/reference/install-configuration/api-dashboard/
 - EntryPoints: https://doc.traefik.io/traefik/reference/install-configuration/entrypoints/
 - HTTP/3 entrypoint settings: https://doc.traefik.io/traefik/routing/entrypoints/#http3
+- Logs and access logs: https://doc.traefik.io/traefik/reference/install-configuration/observability/logs-and-accesslogs/
 - ACME: https://doc.traefik.io/traefik/reference/install-configuration/tls/certificate-resolvers/acme/
 - Middlewares: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/overview/
