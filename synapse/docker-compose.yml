@@ -34,6 +34,9 @@ services:
 networks:
   matrix:
     external: true
+  databases:
+    external: true
+    name: "${DATABASES_NETWORK:-databases}"
   traefik:
     external: true
     name: "${TRAEFIK_NETWORK:-traefik}"

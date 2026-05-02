@@ -1,6 +1,9 @@
 
 services:
   magneticod:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     image: boramalper/magneticod:latest
     container_name: magneticod
     # Using host mode to be able to simply apply firewall rules to disable connection tracking
@@ -21,9 +24,8 @@ services:
       options:
         max-size: "${LOG_MAX_SIZE:-5m}"
         max-file: "${LOG_MAX_FILE:-5}"
-    networks:
-      - databases
 
 networks:
   databases:
     external: true
+    name: "${DATABASES_NETWORK:-databases}"

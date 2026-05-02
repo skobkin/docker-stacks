@@ -1,10 +1,27 @@
 services:
   default: {}
 
+  databases:
+    networks:
+      - castopod
+      - databases
+
   traefik:
     networks:
       - castopod
       - traefik
+    labels:
+      traefik.enable: 'true'
+      traefik.docker.network: '${TRAEFIK_NETWORK:-traefik}'
+      traefik.http.routers.castopod.rule: 'Host(`${TRAEFIK_HOST}`)'
+      traefik.http.routers.castopod.entrypoints: '${TRAEFIK_ENTRYPOINT:-websecure}'
+      traefik.http.services.castopod.loadbalancer.server.port: '${TRAEFIK_SERVICE_PORT:-8080}'
+
+  traefik_databases:
+    networks:
+      - castopod
+      - traefik
+      - databases
     labels:
       traefik.enable: 'true'
       traefik.docker.network: '${TRAEFIK_NETWORK:-traefik}'

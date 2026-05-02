@@ -23,10 +23,9 @@ docker-compose logs -f
 Some services may require additional configuration. Check for additional `README.md` files
 or comments in the `docker-compose.yml` files or `.env.dist` templates.
 
-## Using a database server on the host from the container
+## Using a database server from a container
 
-You need to change your database configuration to be able to do that. Check 
-[this](_docs/access_database_on_host_from_docker.md) documentation.
+Use the optional external [`databases`](_docs/databases_network.md) Docker network for bare-metal databases running on the Docker host and for shared database containers.
 
 ## Is it working?
 
