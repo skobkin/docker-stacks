@@ -1,6 +1,9 @@
 
 services:
   app:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     # https://hub.docker.com/r/miroslavsckaya/tg-rss-bot
     image: 'miroslavsckaya/tg-rss-bot:${IMAGE_VERSION:-latest}'
     env_file: .env
@@ -31,3 +34,8 @@ services:
       options:
         max-size: "${LOG_MAX_SIZE:-5m}"
         max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  databases:
+    external: true
+    name: "${DATABASES_NETWORK:-databases}"
