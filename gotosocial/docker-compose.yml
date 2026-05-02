@@ -10,8 +10,6 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     user: "${UID:-1000}:${GID:-1000}"
-    networks:
-      - gotosocial
     env_file:
       - .env
     environment:
@@ -33,12 +31,6 @@ services:
         max-file: "${LOG_MAX_FILE:-5}"
 
 networks:
-  gotosocial:
-    ipam:
-      driver: default
-      config:
-        - subnet: "${NETWORK_SUBNET:-172.30.0.0/16}"
-          gateway: "${NETWORK_GATEWAY:-172.30.0.1}"
   databases:
     external: true
     name: "${DATABASES_NETWORK:-databases}"
