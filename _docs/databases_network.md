@@ -9,7 +9,7 @@ This network lets application containers reach PostgreSQL, MySQL, or MariaDB run
 For bare-metal databases on the Docker host, prefer a fixed subnet and gateway so the database can listen on a stable host-side bridge IP:
 
 ```shell
-docker network create --subnet 172.30.10.0/24 --gateway 172.30.10.1 databases
+docker network create --subnet 10.10.10.0/24 --gateway 10.10.10.1 databases
 ```
 
 If you only use shared database containers and do not need a stable host-side bridge IP, a plain network is enough:
