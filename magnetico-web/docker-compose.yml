@@ -1,5 +1,8 @@
 services:
   magnetico-web:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     image: 'skobkin/magnetico-web:${IMAGE_VERSION:-latest}'
     container_name: 'magnetico-web'
     hostname: 'magnetico-web'
@@ -17,9 +20,8 @@ services:
       options:
         max-size: '${LOG_MAX_SIZE:-5m}'
         max-file: '${LOG_MAX_FILE:-5}'
-    networks:
-      - databases
 
 networks:
   databases:
     external: true
+    name: '${DATABASES_NETWORK:-databases}'

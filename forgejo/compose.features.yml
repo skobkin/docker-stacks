@@ -1,9 +1,24 @@
 services:
   default: {}
 
+  databases:
+    networks:
+      - databases
+
   traefik:
     networks:
       - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.forgejo.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.forgejo.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.services.forgejo.loadbalancer.server.port: "${TRAEFIK_SERVICE_PORT:-3000}"
+
+  traefik_databases:
+    networks:
+      - traefik
+      - databases
     labels:
       traefik.enable: "true"
       traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"

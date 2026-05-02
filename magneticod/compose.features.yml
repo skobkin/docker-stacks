@@ -1,0 +1,6 @@
+services:
+  default: {}
+
+  databases:
+    networks:
+      - databases
