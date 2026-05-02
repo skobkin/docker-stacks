@@ -3,12 +3,10 @@ services:
 
   databases:
     networks:
-      - gotosocial
       - databases
 
   traefik:
     networks:
-      - gotosocial
       - traefik
     labels:
       traefik.enable: "true"
@@ -20,7 +18,6 @@ services:
 
   traefik_databases:
     networks:
-      - gotosocial
       - traefik
       - databases
     labels:
