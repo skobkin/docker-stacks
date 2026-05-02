@@ -40,6 +40,8 @@ HTTP_BIND_ADDR=127.0.0.1
 HTTP_BIND_PORT=8080
 HTTPS_BIND_ADDR=127.0.0.1
 HTTPS_BIND_PORT=8443
+HTTPS_UDP_BIND_ADDR=0.0.0.0
+HTTPS_UDP_BIND_PORT=443
 ```
 
 Then recreate the stack:
@@ -52,6 +54,7 @@ With this setup:
 
 - Nginx keeps listening on public `80` and `443`
 - Traefik listens only on `127.0.0.1:8080` and `127.0.0.1:8443`
+- Traefik still publishes UDP `:443` directly for HTTP/3, unless you disable or rebind `HTTPS_UDP_BIND_*`
 - Traefik routers, entrypoints, and ACME settings stay unchanged inside the container
 
 ## 2. HTTP fallback from Nginx to Traefik
@@ -168,6 +171,8 @@ With that layout:
 
 This requires Nginx with the `stream` module and `ssl_preread` support. On Debian and Ubuntu, verify that before you start; some smaller package variants do not include the needed module set by default.
 
+The SNI split above handles TCP only. HTTP/3 uses UDP, so the default Traefik stack publishes UDP `:443` directly to Traefik. If you need Nginx or another service to own public UDP `:443`, disable HTTP/3 locally or move `HTTPS_UDP_BIND_PORT` and set `TRAEFIK_ENTRYPOINTS_WEBSECURE_HTTP3_ADVERTISEDPORT` to the public UDP port clients should use.
+
 ## 4. ACME and forwarded headers
 
 This hybrid layout keeps Traefik's default HTTP-01 flow workable because unknown requests on public `:80` are forwarded to Traefik's `web` entrypoint on `127.0.0.1:8080`.
@@ -194,6 +199,7 @@ Use this pattern to move one host at a time:
 ## References
 
 - Traefik entrypoints: https://doc.traefik.io/traefik/reference/install-configuration/entrypoints/
+- Traefik HTTP/3 entrypoint settings: https://doc.traefik.io/traefik/routing/entrypoints/#http3
 - Traefik ACME: https://doc.traefik.io/traefik/reference/install-configuration/tls/certificate-resolvers/acme/
 - Nginx `proxy_pass`: https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_pass
 - Nginx `stream` module: https://nginx.org/en/docs/stream/ngx_stream_core_module.html

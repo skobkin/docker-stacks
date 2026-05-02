@@ -1,3 +1,17 @@
+## 2026-05-02 - Traefik HTTP/3 enabled
+
+### Affected stacks
+
+- `traefik`
+
+### Explanation
+
+The shared Traefik `websecure` entrypoint now enables HTTP/3 by default and publishes UDP on the HTTPS port. Existing TCP HTTP and HTTPS behavior is unchanged.
+
+### Migration
+
+Allow UDP traffic to `HTTPS_UDP_BIND_PORT` if clients should use HTTP/3. If another service already owns that UDP port, change `HTTPS_UDP_BIND_PORT` or disable HTTP/3 in the local Traefik environment before recreating the stack.
+
 ## 2026-05-02 - Optional shared on-host database network added
 
 ### Affected stacks

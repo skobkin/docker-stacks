@@ -32,6 +32,7 @@ Most of these stacks:
 ## Notes
 
 - With the shared `websecure` entrypoint, stacks usually rely on Traefik's entrypoint-level TLS and certificate resolver defaults instead of setting router-level TLS labels.
+- The shared `websecure` entrypoint enables HTTP/3 by default when the Traefik stack can receive UDP traffic on its HTTPS UDP bind port.
 - The shared `grpcsecure` entrypoint listens on port `9443` by default. Multiple gRPC services can reuse it with different `Host(...)` rules.
 - WebSocket upgrades usually work through the same HTTP router without extra Traefik switches, as long as the backend and any applied middlewares do not break `Upgrade` handling.
 - If a stack README has extra Traefik notes, those are stack-specific requirements and override this generic pattern.
