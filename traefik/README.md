@@ -43,11 +43,12 @@ The dashboard will then be available on the host name from `TRAEFIK_DASHBOARD_HO
 - `TRAEFIK_DASHBOARD_HOST`: dashboard/API host name.
 - `TRAEFIK_CERTIFICATESRESOLVERS_DEFAULT_ACME_EMAIL`: email used for Let's Encrypt registration and expiry notices.
 - `HTTP_BIND_PORT` and `HTTPS_BIND_PORT`: change these if you need to run Traefik beside another web server during migration or testing.
+- `HTTPS_UDP_BIND_PORT`: UDP host port for HTTP/3 on the `websecure` entrypoint, defaulting to `443`.
 - `MATRIX_FEDERATION_BIND_PORT`: optional Matrix federation entrypoint port, defaulting to `8448`.
 - `GRPC_BIND_PORT`: optional shared gRPC-over-HTTPS entrypoint port, defaulting to `9443`.
 - `STATIC_FILES_PATH`: host directory mounted read-only into Traefik at `/srv/static` for `statiq` static-file routers.
 - `TRAEFIK_ENTRYPOINTS_WEB_FORWARDEDHEADERS_TRUSTEDIPS` and `TRAEFIK_ENTRYPOINTS_WEBSECURE_FORWARDEDHEADERS_TRUSTEDIPS`: set these when Traefik is behind another reverse proxy, load balancer, or Cloudflare. Use the published IP ranges of that upstream and do not trust arbitrary sources.
-- `TRAEFIK_LOG_LEVEL` and `TRAEFIK_ACCESSLOG`: useful when debugging routing, ACME, or upstream behavior.
+- `TRAEFIK_LOG_LEVEL` and `TRAEFIK_ACCESSLOG`: useful when debugging routing, ACME, or upstream behavior. Access logs are disabled by default.
 
 ## Dashboard authentication
 
@@ -71,6 +72,7 @@ This stack defaults to:
 
 - `web` on port `80`
 - `websecure` on port `443`
+- HTTP/3 on `websecure` via UDP port `443`
 - `matrixfederation` on port `8448`
 - `grpcsecure` on port `9443`
 - automatic HTTP to HTTPS redirect
@@ -78,9 +80,35 @@ This stack defaults to:
 
 Because the certresolver is attached to TLS entrypoints, most proxied services do not need their own `tls.certresolver` label.
 
+HTTP/3 is enabled for routers that use the TLS-enabled `websecure` entrypoint. The host firewall and any upstream network firewall must allow UDP traffic to `HTTPS_UDP_BIND_PORT`. If the public UDP port differs from Traefik's internal `:443` entrypoint, set `TRAEFIK_ENTRYPOINTS_WEBSECURE_HTTP3_ADVERTISEDPORT` so clients receive the correct `alt-svc` port.
+
 `acme.json` is stored under `./data/acme/acme.json` and should stay private with mode `600`.
 
 For wildcard certificates or DNS-based validation later, switch from the default HTTP-01 settings in `.env` to Traefik's DNS challenge variables. The stack keeps that path open and does not hard-code a provider.
+
+## Access logs
+
+Traefik access logs are disabled by default. To enable them, uncomment this in `.env`:
+
+```dotenv
+TRAEFIK_ACCESSLOG=true
+```
+
+Without `TRAEFIK_ACCESSLOG_FILEPATH`, Traefik writes access logs to stdout, so Docker stores them together with the regular Traefik container logs. Retention is size/count based through the existing Docker log settings:
+
+```dotenv
+LOG_MAX_SIZE=5m
+LOG_MAX_FILE=5
+```
+
+That keeps roughly `LOG_MAX_SIZE * LOG_MAX_FILE` of combined Traefik logs for the container. You can also use Traefik's optional access-log settings, for example:
+
+```dotenv
+TRAEFIK_ACCESSLOG_FORMAT=json
+TRAEFIK_ACCESSLOG_BUFFERINGSIZE=100
+```
+
+Avoid setting `TRAEFIK_ACCESSLOG_FILEPATH` unless you also configure host log rotation for that file. Docker's `json-file` limits only apply to stdout/stderr container logs, not to files Traefik writes inside a mounted directory.
 
 ## Tracked templates vs local files
 
@@ -201,5 +229,7 @@ This is still not the same as a fully isolated control plane. Anyone who can ful
 - File provider: https://doc.traefik.io/traefik/reference/install-configuration/providers/others/file/
 - API and dashboard: https://doc.traefik.io/traefik/reference/install-configuration/api-dashboard/
 - EntryPoints: https://doc.traefik.io/traefik/reference/install-configuration/entrypoints/
+- HTTP/3 entrypoint settings: https://doc.traefik.io/traefik/routing/entrypoints/#http3
+- Logs and access logs: https://doc.traefik.io/traefik/reference/install-configuration/observability/logs-and-accesslogs/
 - ACME: https://doc.traefik.io/traefik/reference/install-configuration/tls/certificate-resolvers/acme/
 - Middlewares: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/overview/
