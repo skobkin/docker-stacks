@@ -1,6 +1,11 @@
 /.idea
-
 /.codex
+
+/*.md
+!/AGENTS.md
+!/PORTS.md
+!/README.md
+!/UPGRADE.md
 
 # .env files
 /*/.env
