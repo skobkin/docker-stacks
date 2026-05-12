@@ -2,6 +2,9 @@
 
 services:
   homeassistant:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     container_name: homeassistant
     image: 'ghcr.io/home-assistant/home-assistant:${IMAGE_TAG:-stable}'
     volumes:

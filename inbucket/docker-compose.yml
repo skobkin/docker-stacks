@@ -1,6 +1,9 @@
 
 services:
   inbucket:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     image: inbucket/inbucket:latest
     container_name: inbucket
     ports:
@@ -12,3 +15,8 @@ services:
       - ./data:/data/
     env_file: .env
     restart: unless-stopped
+
+networks:
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"

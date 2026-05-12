@@ -1,0 +1,18 @@
+services:
+  default: {}
+
+  traefik:
+    networks:
+      - default
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.amdgputop-web.rule: "Host(`${TRAEFIK_HOST:-amdgputop-web}`)"
+      traefik.http.routers.amdgputop-web.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.services.amdgputop-web.loadbalancer.server.port: "${TRAEFIK_SERVICE_PORT:-8080}"
+
+networks:
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"

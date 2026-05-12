@@ -1,0 +1,9 @@
+services:
+  default: {}
+
+  traefik:
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.esphome.rule: 'Host(`${TRAEFIK_HOST}`)'
+      traefik.http.routers.esphome.entrypoints: '${TRAEFIK_ENTRYPOINT:-websecure}'
+      traefik.http.services.esphome.loadbalancer.server.port: '${TRAEFIK_SERVICE_PORT:-6052}'

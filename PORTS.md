@@ -22,7 +22,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | esphome                 | esphome           | 6052                | 6052           | ✅       | TCP      | ESP device builder                  |
 | faster-whisper          | faster-whisper    | 10300               | 10300          | ✅       | TCP      | Speech-to-text API                  |
 | firefly-iii             | firefly-iii       | 8392                | 8080           | ✅       | TCP      | Personal finance                    |
-| folding-at-home         | foldingathome     | varies              | 7396           | ✅       | TCP      | Distributed computing               |
+| folding-at-home         | foldingathome     | 7396                | 7396           | ✅       | TCP      | Distributed computing               |
 | forgejo                 | forgejo           | 3000                | 3000           | ✅       | TCP      | Git hosting                         |
 | forgejo                 | server            | 222                 | 22             | ❌       | TCP      | SSH Git access                      |
 | frigate                 | frigate           | 8971                | 8971           | ✅       | TCP      | Authenticated UI/API                |
@@ -81,9 +81,9 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | portainer               | portainer         | 9000                | 9000           | ✅       | TCP      | Docker management                   |
 | proxy-mtproto           | proxy             | varies              | varies         | ❌       | TCP      | Telegram proxy                      |
 | proxy-socks5            | proxy             | 2080                | 1080           | ❌       | TCP      | SOCKS5 proxy                        |
-| qbittorrent             | qbittorrent       | varies              | varies         | ✅       | TCP      | Torrent client web UI               |
+| qbittorrent             | qbittorrent       | 8090                | varies         | ✅       | TCP      | Torrent client web UI               |
 | qbittorrent             | qbittorrent       | 6881                | 6881           | ❌       | TCP/UDP  | BitTorrent                          |
-| radarr                  | radarr            | varies              | 7878           | ✅       | TCP      | Movie management                    |
+| radarr                  | radarr            | 7878                | 7878           | ✅       | TCP      | Movie management                    |
 | redis                   | redis             | 6379                | 6379           | ❌       | TCP      | Database                            |
 | remark42                | remark            | 8388                | 8080           | ✅       | TCP      | Comment engine                      |
 | restreamer              | restreamer        | 8406                | 8080           | ✅       | TCP      | Local web UI                        |
@@ -92,10 +92,10 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | shinobi                 | shinobi           | varies              | 8080           | ✅       | TCP      | Video surveillance                  |
 | sish                    | sish              | 8395                | 8395           | ✅       | TCP      | HTTP tunneling                      |
 | sish                    | sish              | 2222                | 2222           | ❌       | TCP      | SSH tunneling                       |
-| sonarr                  | sonarr            | varies              | 8989           | ✅       | TCP      | TV show management                  |
+| sonarr                  | sonarr            | 8989                | 8989           | ✅       | TCP      | TV show management                  |
 | speedtest               | speedtest         | 8888                | 80             | ✅       | TCP      | Internet speed test                 |
 | synapse                 | synapse           | 8008                | 8008           | ✅       | TCP      | Matrix server                       |
-| syncthing               | syncthing         | varies              | 8384           | ✅       | TCP      | File sync UI                        |
+| syncthing               | syncthing         | 8384                | 8384           | ✅       | TCP      | File sync UI                        |
 | syncthing               | syncthing         | 22000               | 22000          | ❌       | TCP/UDP  | File sync                           |
 | syncthing               | syncthing         | 21027               | 21027          | ❌       | UDP      | Discovery                           |
 | tor-obfs4-bridge        | tor               | varies              | varies         | ❌       | TCP      | Tor bridge                          |

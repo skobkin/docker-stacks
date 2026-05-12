@@ -6,6 +6,12 @@ Self-hosted book collection manager with reader and sync.
 
 BookLore UI is available at `http://127.0.0.1:6060`. First-run admin credentials are `admin@admin.com` / `admin`.
 
+Requires an external MariaDB or MySQL database. See `.env.dist` for configuration variables and set `DB_PASSWORD` before deploying.
+
+## Databases network
+
+BookLore connects to an external database via the shared `databases` network documented in [_docs/databases_network.md](../_docs/databases_network.md). The `databases` network is always attached to the BookLore container.
+
 ## Traefik integration
 
 Enable Traefik routing by setting `COMPOSE_VARIANT=traefik` in `.env`. BookLore exposes a private HTTP router for LAN access. For public HTTPS access as well, set `COMPOSE_VARIANT=traefik_dual` and set `TRAEFIK_HOST_PUBLIC` to your domain.

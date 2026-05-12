@@ -4,6 +4,9 @@
 
 services:
   i2pd:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     image: purplei2p/i2pd
     container_name: i2pd
     volumes:

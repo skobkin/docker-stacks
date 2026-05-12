@@ -1,3 +1,45 @@
+## 2026-05-13 - qBittorrent networking simplified
+
+### Affected stacks
+
+- `qbittorrent`
+
+### Explanation
+
+`network_mode` is now hardcoded to `host`. The overridable `NETWORK_MODE` variable was removed. Host networking is required for qBittorrent to discover local peers properly.
+
+### Migration
+
+Remove `NETWORK_MODE=bridge` from your local `.env` if present. The stack now always runs with `network_mode: host`.
+
+## 2026-05-12 - ESPHome networking hardened to host mode
+
+### Affected stacks
+
+- `esphome`
+
+### Explanation
+
+`network_mode` is now hardcoded to `host` and the overridable `NETWORK_MODE` variable has been removed. The container must always run in host networking mode to properly look for devices in the same network.
+
+### Migration
+
+Existing `.env` files that set `NETWORK_MODE=bridge` will silently be ignored — the stack now runs with `network_mode: host` regardless. Remove the `NETWORK_MODE` line from your local `.env` if present.
+
+## 2026-05-12 - Emby WEBUI_BIND_ADDR now defaults to 127.0.0.1
+
+### Affected stacks
+
+- `emby`
+
+### Explanation
+
+`WEBUI_BIND_ADDR` default changed from `0.0.0.0` to `127.0.0.1`. The web UI will no longer bind to all interfaces on first start unless explicitly configured otherwise.
+
+### Migration
+
+To retain the old behavior, set `WEBUI_BIND_ADDR=0.0.0.0` in your local `.env`. If you plan to use Traefik with `COMPOSE_VARIANT=traefik`, the `127.0.0.1` default is recommended and no change is needed.
+
 ## 2026-05-02 - Traefik HTTP/3 enabled
 
 ### Affected stacks

@@ -1,5 +1,8 @@
 services:
   llama-swap:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     image: "ghcr.io/mostlygeek/llama-swap:${IMAGE_TAG:-vulkan}"
     container_name: llama-swap
     env_file: .env
@@ -27,3 +30,6 @@ services:
 networks:
   ai-tools:
     external: true
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"

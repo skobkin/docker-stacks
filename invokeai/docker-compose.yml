@@ -4,12 +4,12 @@
 
 services:
   invokeai:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     container_name: invokeai
     # Use main-rocm for AMD GPUs, main-cuda for NVIDIA GPUs
     image: 'ghcr.io/invoke-ai/invokeai:${IMAGE_TAG:-main-rocm}'
-    extends:
-      file: 'gpu-support.yml'
-      service: '${GPU_DRIVER:-rocm}' # set to 'rocm' for AMD GPUs or 'cuda' for NVIDIA GPUs
     ports:
       - '${BIND_ADDRESS:-127.0.0.1}:${BIND_PORT:-9090}:9090'
     volumes:
@@ -26,3 +26,8 @@ services:
       options:
         max-size: '${LOG_MAX_SIZE:-5m}'
         max-file: '${LOG_MAX_FILE:-5}'
+
+networks:
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"
