@@ -1,6 +1,9 @@
 
 services:
   syncthing:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     image: lscr.io/linuxserver/syncthing
     container_name: syncthing
     #hostname: syncthing #optional
@@ -8,7 +11,7 @@ services:
       - "./config:/config"
       - "${HOST_DATA_DIR}:/data"
     ports:
-      - "${WEBUI_BIND_ADDR}:${WEBUI_BIND_PORT}:8384"
+      - "${HTTP_BIND_ADDR:-127.0.0.1}:${HTTP_BIND_PORT:-8384}:8384"
       - "22000:22000/tcp"
       - "22000:22000/udp"
       - "21027:21027/udp"
@@ -19,3 +22,8 @@ services:
       options:
         max-size: "${LOG_MAX_SIZE:-5m}"
         max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"
