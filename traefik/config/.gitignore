@@ -1,0 +1,3 @@
+dynamic/*.yml
+!dynamic/*.yml.dist
+!dynamic/.gitignore

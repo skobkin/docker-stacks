@@ -1,0 +1,9 @@
+http:
+  middlewares:
+    dashboard-auth:
+      basicAuth:
+        usersFile: /run/secrets/traefik/dashboard.htpasswd
+    dashboard-chain:
+      chain:
+        middlewares:
+          - dashboard-auth

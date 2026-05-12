@@ -1,0 +1,24 @@
+# https://docs.zerotier.com/docker/
+# https://hub.docker.com/r/zerotier/zerotier
+
+services:
+  zerotier-one:
+    image: "zerotier/zerotier:${IMAGE_TAG:-1.14.2}"
+    container_name: zerotier-one
+    network_mode: host
+    devices:
+      - "/dev/net/tun:/dev/net/tun"
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    volumes:
+      - "${HOST_DATA_DIR:-./data}:/var/lib/zerotier-one"
+      - "/etc/localtime:/etc/localtime:ro"
+    command: ["${NETWORK_ID}"]
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"

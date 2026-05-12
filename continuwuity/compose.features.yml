@@ -1,0 +1,38 @@
+services:
+  default: {}
+
+  host_resolver:
+    volumes:
+      - "/etc/resolv.conf:/etc/resolv.conf:ro"
+
+  traefik:
+    networks:
+      - default
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.continuwuity.rule: >-
+        (Host(`${TRAEFIK_MATRIX_HOST:-matrix.example.com}`) ||
+        (Host(`${TRAEFIK_WELL_KNOWN_HOST:-example.com}`) &&
+        PathPrefix(`/.well-known/matrix`)))
+      traefik.http.routers.continuwuity.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.continuwuity.service: "continuwuity"
+      traefik.http.services.continuwuity.loadbalancer.server.port: "${CONTINUWUITY_PORT:-6167}"
+
+  traefik_host_resolver:
+    networks:
+      - default
+      - traefik
+    volumes:
+      - "/etc/resolv.conf:/etc/resolv.conf:ro"
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.continuwuity.rule: >-
+        (Host(`${TRAEFIK_MATRIX_HOST:-matrix.example.com}`) ||
+        (Host(`${TRAEFIK_WELL_KNOWN_HOST:-example.com}`) &&
+        PathPrefix(`/.well-known/matrix`)))
+      traefik.http.routers.continuwuity.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.continuwuity.service: "continuwuity"
+      traefik.http.services.continuwuity.loadbalancer.server.port: "${CONTINUWUITY_PORT:-6167}"

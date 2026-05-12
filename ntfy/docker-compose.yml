@@ -1,0 +1,40 @@
+# https://hub.docker.com/r/binwiederhier/ntfy
+# https://docs.ntfy.sh/install/
+# https://docs.ntfy.sh/config/
+
+services:
+  ntfy:
+    image: "binwiederhier/ntfy:${IMAGE_TAG:-v2}"
+    container_name: ntfy
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
+    command: ["serve"]
+    ports:
+      - "${HTTP_BIND_ADDR:-127.0.0.1}:${HTTP_BIND_PORT:-8405}:${NTFY_LISTEN_PORT:-8080}"
+    env_file: .env
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    volumes:
+      - "${HOST_DATA_DIR:-./data}:/var/lib/ntfy"
+      - "${HOST_CACHE_DIR:-./data/cache}:/var/cache/ntfy"
+      - "/etc/localtime:/etc/localtime:ro"
+    restart: unless-stopped
+    init: true
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - "wget -q -T 5 -O /dev/null http://127.0.0.1:${NTFY_LISTEN_PORT:-8080}/v1/health || exit 1"
+      interval: 120s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"

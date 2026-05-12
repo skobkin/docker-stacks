@@ -2,6 +2,12 @@
 
 This stack runs `henrygd/beszel` (Hub + UI).
 
+## Traefik
+
+See the [common Traefik guide](../_docs/traefik.md).
+
+When using Traefik, keep `APP_URL` aligned with the externally served Beszel URL.
+
 ## Reset Password (Short)
 
 If you lose access, reset the PocketBase superuser password from the container:

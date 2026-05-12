@@ -6,8 +6,12 @@ when:
     - master
 
 steps:
-  - name: validate
+  - name: check-policy
+    image: alpine/git:2.49.1
+    commands:
+      - sh .woodpecker/scripts/check-policy.sh
+
+  - name: validate-compose
     image: dockette/docker:latest
     commands:
-      - for DIR in */ ; do if [[ $(expr match "$DIR" "_.*") != 0 ]] ; then echo "SKIPPING $DIR" && continue; fi && test -f $DIR/.env.dist && cp $DIR/.env.dist $DIR/.env ; done
-      - for DIR in */ ; do if [[ $(expr match "$DIR" "_.*") != 0 ]] ; then echo "SKIPPING $DIR" && continue; fi && echo $DIR && cd $DIR && docker compose config && cd .. ; done
+      - sh .woodpecker/scripts/validate-compose.sh

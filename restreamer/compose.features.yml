@@ -1,0 +1,14 @@
+services:
+  default: {}
+
+  traefik:
+    networks:
+      - default
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.restreamer.rule: "Host(`${TRAEFIK_HOST:-restreamer.example.com}`)"
+      traefik.http.routers.restreamer.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.restreamer.middlewares: "chain-default@file"
+      traefik.http.services.restreamer.loadbalancer.server.port: "8080"

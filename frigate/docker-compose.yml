@@ -1,0 +1,49 @@
+# Frigate Docker reference:
+# https://docs.frigate.video/frigate/installation/#docker
+#
+# AMD GPU video decoding:
+# https://docs.frigate.video/configuration/hardware_acceleration_video/#amdati-gpus-radeon-hd-2000-and-newer-gpus-via-libva-mesa-driver
+
+services:
+  frigate:
+    extends:
+      file: ./compose.features.yml
+      service: '${COMPOSE_VARIANT:-default}'
+    image: 'ghcr.io/blakeblackshear/frigate:${IMAGE_TAG:-stable-rocm}'
+    container_name: 'frigate'
+    shm_size: '${SHM_SIZE:-512mb}'
+    volumes:
+      # Frigate config and default SQLite DB location.
+      - '${HOST_CONFIG_DIR:-./config}:/config'
+      # Main recordings/clips/exports storage.
+      - '${HOST_MEDIA_DIR:-./media}:/media/frigate'
+      # Optional dedicated fast storage for DB if config points to this path.
+      - '${HOST_DB_DIR:-./db}:${DB_MOUNT_TARGET:-/frigate-db}'
+    tmpfs:
+      # In-memory recording segment cache, recommended by upstream docs.
+      - '${TMPFS_TARGET:-/tmp/cache}:mode=${TMPFS_MODE:-1777},size=${TMPFS_SIZE:-1g}'
+    devices:
+      - '${DRI_DEVICE:-/dev/null}:${DRI_DEVICE_MAPPED:-/dev/null}'
+      - '${KFD_DEVICE:-/dev/null}:${KFD_DEVICE_MAPPED:-/dev/null}'
+    ports:
+      - '${WEB_BIND_ADDR:-127.0.0.1}:${WEB_BIND_PORT:-8971}:8971/tcp'
+      - '${RTSP_BIND_ADDR:-127.0.0.1}:${RTSP_BIND_PORT:-8554}:8554/tcp'
+      - '${WEBRTC_BIND_ADDR:-127.0.0.1}:${WEBRTC_BIND_PORT:-8555}:8555/tcp'
+      - '${WEBRTC_BIND_ADDR:-127.0.0.1}:${WEBRTC_BIND_PORT:-8555}:8555/udp'
+      # Internal unauthenticated API/UI port, keep disabled by default.
+      # - '${INTERNAL_API_BIND_ADDR:-127.0.0.1}:${INTERNAL_API_BIND_PORT:-5000}:5000/tcp'
+    environment:
+      TZ: '${TZ:-Etc/UTC}'
+      LIBVA_DRIVER_NAME: '${LIBVA_DRIVER_NAME:-radeonsi}'
+    env_file: '.env'
+    restart: unless-stopped
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'
+
+networks:
+  traefik:
+    external: true
+    name: '${TRAEFIK_NETWORK:-traefik}'

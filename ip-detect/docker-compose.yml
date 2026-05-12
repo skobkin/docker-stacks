@@ -3,6 +3,9 @@
 
 services:
   ip-detect:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     image: 'skobkin/ip-detect:${IMAGE_TAG:-latest}'
     container_name: 'ip-detect'
     hostname: 'ip-detect'
@@ -15,3 +18,8 @@ services:
       options:
         max-size: '${LOG_MAX_SIZE:-5m}'
         max-file: '${LOG_MAX_FILE:-5}'
+
+networks:
+  traefik:
+    external: true
+    name: '${TRAEFIK_NETWORK:-traefik}'

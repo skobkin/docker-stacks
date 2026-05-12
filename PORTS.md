@@ -10,8 +10,10 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | ark-server              | server            | 7777                | 7777           | ❌       | TCP/UDP  | Game server                         |
 | ark-server              | server            | varies              | varies         | ❌       | TCP/UDP  | Query/RCON ports                    |
 | beszel                  | beszel            | 8391                | 8090           | ✅       | TCP      | Monitoring hub web UI               |
+| BookLore                | booklore          | 6060                | 6060           | ✅       | TCP      | Book collection manager               |
 | beszel-agent            | beszel-agent      | disabled by default | 45876          | ❌       | TCP      | Enable by setting DISABLE_SSH=false |
 | castopod                | castopod          | 8393                | 8000           | ✅       | TCP      | Podcast hosting                     |
+| continuwuity            | continuwuity      | 6167                | 6167           | ✅       | TCP      | Matrix homeserver                   |
 | drone                   | drone             | 8386                | 80             | ✅       | TCP      | CI/CD server                        |
 | drone-runner            | drone-runner      | 8387                | 3000           | ✅       | TCP      | CI/CD runner                        |
 | duplicati               | duplicati         | 8200                | 8200           | ✅       | TCP      | Backup software                     |
@@ -23,6 +25,10 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | folding-at-home         | foldingathome     | varies              | 7396           | ✅       | TCP      | Distributed computing               |
 | forgejo                 | forgejo           | 3000                | 3000           | ✅       | TCP      | Git hosting                         |
 | forgejo                 | server            | 222                 | 22             | ❌       | TCP      | SSH Git access                      |
+| frigate                 | frigate           | 8971                | 8971           | ✅       | TCP      | Authenticated UI/API                |
+| frigate                 | frigate           | 8554                | 8554           | ❌       | TCP      | RTSP restream                       |
+| frigate                 | frigate           | 8555                | 8555           | ❌       | TCP      | WebRTC signaling/two-way talk       |
+| frigate                 | frigate           | 8555                | 8555           | ❌       | UDP      | WebRTC media transport              |
 | gatus                   | gatus             | 8080                | 8080           | ✅       | TCP      | Status page                         |
 | gotosocial              | gotosocial        | 8080                | 8080           | ✅       | TCP      | Mastodon-compatible                 |
 | hedgedoc                | hedgedoc          | 8394                | 8394           | ✅       | TCP      | Collaborative editor                |
@@ -45,24 +51,30 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | kf2-server              | kf2-server        | 20560               | 20560          | ❌       | UDP      | Query port                          |
 | kf2-server              | kf2-server        | 27015               | 27015          | ❌       | UDP      | Steam port                          |
 | lidarr                  | lidarr            | varies              | 8686           | ✅       | TCP      | Music management                    |
+| llama-swap              | llama-swap        | 8011                | 8080           | ✅       | TCP      | OpenAI-compatible model router      |
 | magnetico-web           | magnetico-web     | 8080                | 80             | ✅       | TCP      | Torrent search                      |
 | magneticod              | magneticod        | varies              | varies         | ❌       | UDP      | DHT crawler                         |
 | mastodon-fe-gts         | masto-fe          | 8398                | 80             | ✅       | TCP      | Mastodon frontend                   |
 | meshtastic-web          | meshtastic-web    | 8397                | 8080           | ✅       | TCP      | LoRa mesh UI                        |
 | meshmap-lite            | meshmap-lite      | 8401                | 8080           | ✅       | TCP      | Meshtastic map/chat UI              |
+| metacubexd              | metacubexd        | 8404                | 80             | ✅       | TCP      | Mihomo web dashboard                |
 | metube                  | metube            | 8081                | 8081           | ✅       | TCP      | YouTube downloader                  |
+| mihomo                  | mihomo            | 1050                | 1050           | ❌       | TCP      | SOCKS proxy, matches v2fly defaults |
+| mihomo                  | mihomo            | 1080                | 1080           | ❌       | TCP      | HTTP proxy, matches v2fly defaults  |
+| mihomo                  | mihomo            | 12345               | 12345          | ❌       | TCP/UDP  | TProxy, matches v2fly defaults      |
+| mihomo                  | mihomo            | 9092                | 9090           | ✅       | TCP      | Mihomo controller API               |
 | miniflux                | miniflux          | 8390                | 8080           | ✅       | TCP      | Minimalist RSS reader               |
 | mosquitto               | mosquitto         | 1883                | 1883           | ❌       | TCP      | MQTT broker                         |
 | mosquitto               | mosquitto         | 1884                | 1884           | ❌       | TCP      | WebSocket                           |
 | murmur                  | murmur            | 64738               | 64738          | ❌       | TCP/UDP  | Voice chat                          |
-| ollama                  | webui             | 3000                | 8080           | ✅       | TCP      | AI chat interface                   |
+| ntfy                    | ntfy              | 8405                | 8080           | ✅       | TCP      | Notification service web UI/API     |
 | ollama                  | ollama            | 11434               | 11434          | ✅       | TCP      | AI API server                       |
 | openhands               | openhands         | 3000                | 3000           | ✅       | TCP      | AI coding assistant                 |
+| open-webui              | webui             | 8010                | 8080           | ✅       | TCP      | AI chat interface                   |
 | openwebrxplus           | openwebrxplus     | 8402                | 8073           | ✅       | TCP      | WebSDR receiver UI                  |
 | open-streaming-platform | osp               | 8585                | 80             | ✅       | TCP      | Live streaming                      |
 | open-streaming-platform | osp               | 8553                | 443            | ✅       | TCP      | HTTPS                               |
 | open-streaming-platform | osp               | 1935                | 1935           | ❌       | TCP      | RTMP streaming                      |
-| openvpn                 | openvpn           | 1194                | 1194           | ❌       | UDP      | VPN server                          |
 | owncast                 | owncast           | varies              | 8080           | ✅       | TCP      | Live streaming                      |
 | phanpy                  | phanpy            | 8403                | 80             | ✅       | TCP      | Static Phanpy web UI                |
 | piper                   | piper             | 10200               | 10200          | ✅       | TCP      | Text-to-speech                      |
@@ -73,17 +85,25 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | qbittorrent             | qbittorrent       | 6881                | 6881           | ❌       | TCP/UDP  | BitTorrent                          |
 | radarr                  | radarr            | varies              | 7878           | ✅       | TCP      | Movie management                    |
 | redis                   | redis             | 6379                | 6379           | ❌       | TCP      | Database                            |
+| remark42                | remark            | 8388                | 8080           | ✅       | TCP      | Comment engine                      |
+| restreamer              | restreamer        | 8406                | 8080           | ✅       | TCP      | Local web UI                        |
+| restreamer              | restreamer        | 1935                | 1935           | ❌       | TCP      | RTMP ingest                         |
+| restreamer              | restreamer        | 6000                | 6000           | ❌       | UDP      | SRT ingest                          |
 | shinobi                 | shinobi           | varies              | 8080           | ✅       | TCP      | Video surveillance                  |
 | sish                    | sish              | 8395                | 8395           | ✅       | TCP      | HTTP tunneling                      |
 | sish                    | sish              | 2222                | 2222           | ❌       | TCP      | SSH tunneling                       |
 | sonarr                  | sonarr            | varies              | 8989           | ✅       | TCP      | TV show management                  |
 | speedtest               | speedtest         | 8888                | 80             | ✅       | TCP      | Internet speed test                 |
 | synapse                 | synapse           | 8008                | 8008           | ✅       | TCP      | Matrix server                       |
-| synapse                 | sliding-sync      | 8889                | 8889           | ✅       | TCP      | Matrix sync proxy                   |
 | syncthing               | syncthing         | varies              | 8384           | ✅       | TCP      | File sync UI                        |
 | syncthing               | syncthing         | 22000               | 22000          | ❌       | TCP/UDP  | File sync                           |
 | syncthing               | syncthing         | 21027               | 21027          | ❌       | UDP      | Discovery                           |
 | tor-obfs4-bridge        | tor               | varies              | varies         | ❌       | TCP      | Tor bridge                          |
+| traefik                 | traefik           | 80                  | 80             | ✅       | TCP      | HTTP entrypoint / ACME HTTP-01      |
+| traefik                 | traefik           | 443                 | 443            | ✅       | TCP      | HTTPS entrypoint / dashboard        |
+| traefik                 | traefik           | 443                 | 443            | ✅       | UDP      | HTTP/3 on HTTPS entrypoint          |
+| traefik                 | traefik           | 8448                | 8448           | ✅       | TCP      | Matrix federation entrypoint        |
+| traefik                 | traefik           | 9443                | 9443           | ✅       | TCP      | Shared gRPC-over-HTTPS entrypoint   |
 | tor-privoxy             | tor               | 8118                | 8118           | ❌       | TCP      | HTTP proxy                          |
 | tor-privoxy             | tor               | 9050                | 9050           | ❌       | TCP      | SOCKS proxy                         |
 | tor-privoxy             | tor               | 9040                | 9040           | ❌       | TCP      | Transparent proxy                   |
@@ -97,6 +117,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | woodpecker              | woodpecker-server | 9400                | 9000           | ❌       | TCP      | gRPC endpoint for agents            |
 | webhooksite             | webhook           | varies              | 80             | ✅       | TCP      | Webhook testing                     |
 | webhooksite             | echo-server       | 6001                | 6001           | ❌       | TCP      | Echo server                         |
+| zerotier-one            | zerotier-one      | *host mode*         | *host mode*    | ❌       | UDP/TCP  | ZeroTier control/API, UDP 9993      |
 
 ## Notes for Stack Creators
 

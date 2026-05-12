@@ -1,0 +1,9 @@
+services:
+  default:
+    networks:
+      - ai-tools
+
+  proxy:
+    networks:
+      - ai-tools
+      - proxy

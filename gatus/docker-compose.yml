@@ -1,5 +1,8 @@
 services:
   gatus:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     image: twinproduction/gatus:latest
     container_name: gatus
     ports:

@@ -2,9 +2,15 @@
 networks:
   forgejo:
     external: false
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"
 
 services:
   server:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     image: "codeberg.org/forgejo/forgejo:${IMAGE_TAG:-1.21}"
     container_name: forgejo
     depends_on:
