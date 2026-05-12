@@ -12,6 +12,20 @@
 
 Existing `.env` files that set `NETWORK_MODE=bridge` will silently be ignored — the stack now runs with `network_mode: host` regardless. Remove the `NETWORK_MODE` line from your local `.env` if present.
 
+## 2026-05-12 - Emby WEBUI_BIND_ADDR now defaults to 127.0.0.1
+
+### Affected stacks
+
+- `emby`
+
+### Explanation
+
+`WEBUI_BIND_ADDR` default changed from `0.0.0.0` to `127.0.0.1`. The web UI will no longer bind to all interfaces on first start unless explicitly configured otherwise.
+
+### Migration
+
+To retain the old behavior, set `WEBUI_BIND_ADDR=0.0.0.0` in your local `.env`. If you plan to use Traefik with `COMPOSE_VARIANT=traefik`, the `127.0.0.1` default is recommended and no change is needed.
+
 ## 2026-05-02 - Traefik HTTP/3 enabled
 
 ### Affected stacks
