@@ -3,6 +3,9 @@
 
 services:
   openhands:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     image: 'docker.all-hands.dev/all-hands-ai/openhands:${IMAGE_TAG:-0.53}'
     container_name: openhands-app
     volumes:
@@ -32,3 +35,6 @@ services:
 networks:
   ai-tools:
     external: true
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"
