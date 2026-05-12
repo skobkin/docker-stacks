@@ -7,5 +7,5 @@ services:
     labels:
       traefik.enable: 'true'
       traefik.http.routers.openhands.rule: 'Host(`${TRAEFIK_HOST}`)'
-      traefik.http.routers.openhands.entrypoints: '${TRAEFIK_ENTRYPOINT:-websecure}'
+      traefik.http.routers.openhands.entrypoints: '${TRAEFIK_ENTRYPOINTS:-websecure}'
       traefik.http.services.openhands.loadbalancer.server.port: '${TRAEFIK_SERVICE_PORT:-3000}'
