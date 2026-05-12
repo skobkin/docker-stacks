@@ -1,12 +1,15 @@
 
 services:
   radarr:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     # https://hub.docker.com/r/linuxserver/radarr
     image: linuxserver/radarr:latest
     container_name: radarr
     #network_mode: "host"
     ports:
-      - "${EXT_PORT}:7878/tcp"
+      - "${HTTP_BIND_ADDR:-127.0.0.1}:${HTTP_BIND_PORT:-7878}:7878/tcp"
     env_file: .env
     volumes:
       - "${CONFIG_PATH}:/config"
@@ -18,3 +21,8 @@ services:
       options:
         max-size: "${LOG_MAX_SIZE:-5m}"
         max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"

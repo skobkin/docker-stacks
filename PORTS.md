@@ -83,7 +83,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | proxy-socks5            | proxy             | 2080                | 1080           | ❌       | TCP      | SOCKS5 proxy                        |
 | qbittorrent             | qbittorrent       | varies              | varies         | ✅       | TCP      | Torrent client web UI               |
 | qbittorrent             | qbittorrent       | 6881                | 6881           | ❌       | TCP/UDP  | BitTorrent                          |
-| radarr                  | radarr            | varies              | 7878           | ✅       | TCP      | Movie management                    |
+| radarr                  | radarr            | 7878                | 7878           | ✅       | TCP      | Movie management                    |
 | redis                   | redis             | 6379                | 6379           | ❌       | TCP      | Database                            |
 | remark42                | remark            | 8388                | 8080           | ✅       | TCP      | Comment engine                      |
 | restreamer              | restreamer        | 8406                | 8080           | ✅       | TCP      | Local web UI                        |
