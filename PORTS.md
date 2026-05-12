@@ -10,6 +10,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | ark-server              | server            | 7777                | 7777           | ❌       | TCP/UDP  | Game server                         |
 | ark-server              | server            | varies              | varies         | ❌       | TCP/UDP  | Query/RCON ports                    |
 | beszel                  | beszel            | 8391                | 8090           | ✅       | TCP      | Monitoring hub web UI               |
+| BookLore                | booklore          | 6060                | 6060           | ✅       | TCP      | Book collection manager               |
 | beszel-agent            | beszel-agent      | disabled by default | 45876          | ❌       | TCP      | Enable by setting DISABLE_SSH=false |
 | castopod                | castopod          | 8393                | 8000           | ✅       | TCP      | Podcast hosting                     |
 | continuwuity            | continuwuity      | 6167                | 6167           | ✅       | TCP      | Matrix homeserver                   |
