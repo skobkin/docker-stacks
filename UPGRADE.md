@@ -1,3 +1,17 @@
+## 2026-05-12 - ESPHome networking hardened to host mode
+
+### Affected stacks
+
+- `esphome`
+
+### Explanation
+
+`network_mode` is now hardcoded to `host` and the overridable `NETWORK_MODE` variable has been removed. The container must always run in host networking mode to properly look for devices in the same network.
+
+### Migration
+
+Existing `.env` files that set `NETWORK_MODE=bridge` will silently be ignored — the stack now runs with `network_mode: host` regardless. Remove the `NETWORK_MODE` line from your local `.env` if present.
+
 ## 2026-05-02 - Traefik HTTP/3 enabled
 
 ### Affected stacks
