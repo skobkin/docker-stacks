@@ -3,6 +3,9 @@
 
 services:
   amdgputop-web:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     image: 'ghcr.io/skobkin/amdgputop-web:${IMAGE_TAG:-latest}'
     container_name: 'amdgputop-web'
     hostname: 'amdgputop-web'
@@ -25,3 +28,9 @@ services:
     cap_add:
       - 'SYS_PTRACE'
     user: '${CONTAINER_USER:-root}'
+
+networks:
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"
+
