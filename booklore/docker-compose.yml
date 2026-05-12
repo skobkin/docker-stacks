@@ -6,17 +6,16 @@ services:
     image: 'ghcr.io/booklore-app/booklore:${IMAGE_TAG:-latest}'
     container_name: booklore
     hostname: booklore
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     environment:
-      - USER_ID=${APP_USER_ID}
-      - GROUP_ID=${APP_GROUP_ID}
-      - TZ=${TZ}
-      - DATABASE_URL=jdbc:mariadb://mariadb:3306/${MYSQL_DATABASE}
-      - DATABASE_USERNAME=${DB_USER}
-      - DATABASE_PASSWORD=${DB_PASSWORD}
-      - DISK_TYPE=${DISK_TYPE}
-    depends_on:
-      mariadb:
-        condition: service_healthy
+      - 'USER_ID=${APP_USER_ID}'
+      - 'GROUP_ID=${APP_GROUP_ID}'
+      - 'TZ=${TZ}'
+      - 'DATABASE_URL=jdbc:mariadb://${DATABASE_HOST:-host.docker.internal}:${DATABASE_PORT:-3306}/${DB_NAME}'
+      - 'DATABASE_USERNAME=${DB_USER}'
+      - 'DATABASE_PASSWORD=${DB_PASSWORD}'
+      - 'DISK_TYPE=${DISK_TYPE}'
     ports:
       - '${WEBUI_BIND_ADDR:-127.0.0.1}:${WEBUI_BIND_PORT:-6060}:6060/tcp'
     volumes:
@@ -29,33 +28,14 @@ services:
       options:
         max-size: '${LOG_MAX_SIZE:-5m}'
         max-file: '${LOG_MAX_FILE:-5}'
-
-  mariadb:
-    image: 'lscr.io/linuxserver/mariadb:${MARIADB_VERSION:-11.4.5}'
-    container_name: mariadb
-    environment:
-      - PUID=${DB_USER_ID}
-      - PGID=${DB_GROUP_ID}
-      - TZ=${TZ}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${DB_USER}
-      - MYSQL_PASSWORD=${DB_PASSWORD}
-    volumes:
-      - '${HOST_MARIADB_DIR:-./mariadb}:/config'
-    restart: unless-stopped
-    healthcheck:
-      test: ['CMD', 'mariadb-admin', 'ping', '-h', 'localhost']
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    logging:
-      driver: 'json-file'
-      options:
-        max-size: '${LOG_MAX_SIZE:-5m}'
-        max-file: '${LOG_MAX_FILE:-5}'
+    networks:
+      - default
+      - databases
 
 networks:
+  databases:
+    external: true
+    name: '${DATABASES_NETWORK:-databases}'
   traefik:
     external: true
     name: '${TRAEFIK_NETWORK:-traefik}'
