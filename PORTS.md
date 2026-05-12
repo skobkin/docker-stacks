@@ -22,7 +22,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | esphome                 | esphome           | 6052                | 6052           | ✅       | TCP      | ESP device builder                  |
 | faster-whisper          | faster-whisper    | 10300               | 10300          | ✅       | TCP      | Speech-to-text API                  |
 | firefly-iii             | firefly-iii       | 8392                | 8080           | ✅       | TCP      | Personal finance                    |
-| folding-at-home         | foldingathome     | varies              | 7396           | ✅       | TCP      | Distributed computing               |
+| folding-at-home         | foldingathome     | 7396                | 7396           | ✅       | TCP      | Distributed computing               |
 | forgejo                 | forgejo           | 3000                | 3000           | ✅       | TCP      | Git hosting                         |
 | forgejo                 | server            | 222                 | 22             | ❌       | TCP      | SSH Git access                      |
 | frigate                 | frigate           | 8971                | 8971           | ✅       | TCP      | Authenticated UI/API                |
