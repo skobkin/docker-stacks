@@ -8,6 +8,32 @@ services:
     labels:
       traefik.enable: 'true'
       traefik.docker.network: '${TRAEFIK_NETWORK:-traefik}'
-      traefik.http.routers.booklore.rule: 'Host(`${TRAEFIK_HOST}`)'
-      traefik.http.routers.booklore.entrypoints: '${TRAEFIK_ENTRYPOINT:-websecure}'
-      traefik.http.services.booklore.loadbalancer.server.port: '${BOOKLORE_PORT:-6060}'
+
+      # Private router - HTTP via 'web' entrypoint
+      traefik.http.routers.booklore-private.rule: 'Host(`${TRAEFIK_HOST_PRIVATE:-booklore.lan}`)'
+      traefik.http.routers.booklore-private.entrypoints: '${TRAEFIK_ENTRYPOINTS_PRIVATE:-web}'
+      traefik.http.routers.booklore-private.service: booklore
+
+      # Shared service definition
+      traefik.http.services.booklore.loadbalancer.server.port: '${TRAEFIK_SERVICE_PORT:-6060}'
+
+  traefik_dual:
+    networks:
+      - default
+      - traefik
+    labels:
+      traefik.enable: 'true'
+      traefik.docker.network: '${TRAEFIK_NETWORK:-traefik}'
+
+      # Private router - HTTP via 'web' entrypoint
+      traefik.http.routers.booklore-private.rule: 'Host(`${TRAEFIK_HOST_PRIVATE:-booklore.lan}`)'
+      traefik.http.routers.booklore-private.entrypoints: '${TRAEFIK_ENTRYPOINTS_PRIVATE:-web}'
+      traefik.http.routers.booklore-private.service: booklore
+
+      # Public router - HTTPS via 'websecure' entrypoint
+      traefik.http.routers.booklore-public.rule: 'Host(`${TRAEFIK_HOST_PUBLIC}`)'
+      traefik.http.routers.booklore-public.entrypoints: '${TRAEFIK_ENTRYPOINTS_PUBLIC:-websecure}'
+      traefik.http.routers.booklore-public.service: booklore
+
+      # Shared service definition
+      traefik.http.services.booklore.loadbalancer.server.port: '${TRAEFIK_SERVICE_PORT:-6060}'
