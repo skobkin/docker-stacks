@@ -1,11 +1,14 @@
 
 services:
   portainer:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     # https://hub.docker.com/r/portainer/portainer
     image: portainer/portainer
     container_name: portainer
     ports:
-      - "127.0.0.1:9000:9000/tcp"
+      - "${HTTP_BIND_ADDR:-127.0.0.1}:${HTTP_BIND_PORT:-9000}:9000/tcp"
       #- "127.0.0.1:8000:8000/tcp"
     volumes:
       # Persistent data volume
@@ -19,6 +22,11 @@ services:
       options:
         max-size: "${LOG_MAX_SIZE:-5m}"
         max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"
 
 volumes:
   portainer_data:

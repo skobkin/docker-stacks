@@ -1,0 +1,11 @@
+services:
+  default: {}
+
+  traefik:
+    networks:
+      - traefik
+    labels:
+      traefik.enable: 'true'
+      traefik.http.routers.portainer.rule: 'Host(`${TRAEFIK_HOST}`)'
+      traefik.http.routers.portainer.entrypoints: '${TRAEFIK_ENTRYPOINTS:-websecure}'
+      traefik.http.services.portainer.loadbalancer.server.port: '${TRAEFIK_SERVICE_PORT:-9000}'
