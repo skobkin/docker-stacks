@@ -92,7 +92,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | shinobi                 | shinobi           | varies              | 8080           | ✅       | TCP      | Video surveillance                  |
 | sish                    | sish              | 8395                | 8395           | ✅       | TCP      | HTTP tunneling                      |
 | sish                    | sish              | 2222                | 2222           | ❌       | TCP      | SSH tunneling                       |
-| sonarr                  | sonarr            | varies              | 8989           | ✅       | TCP      | TV show management                  |
+| sonarr                  | sonarr            | 8989                | 8989           | ✅       | TCP      | TV show management                  |
 | speedtest               | speedtest         | 8888                | 80             | ✅       | TCP      | Internet speed test                 |
 | synapse                 | synapse           | 8008                | 8008           | ✅       | TCP      | Matrix server                       |
 | syncthing               | syncthing         | varies              | 8384           | ✅       | TCP      | File sync UI                        |
