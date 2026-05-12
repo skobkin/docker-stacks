@@ -10,11 +10,11 @@ name: immich
 
 services:
   immich-server:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     container_name: immich_server
     image: 'ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}'
-    extends:
-      file: 'hwaccel.transcoding.yml'
-      service: '${HWACCEL_TRANSCODING:-cpu}' # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
     volumes:
       # Do not edit the next line. If you want to change the media storage location on your system, edit the value of UPLOAD_LOCATION in the .env file
       - '${UPLOAD_LOCATION:-./upload}:/usr/src/app/upload'
@@ -90,3 +90,8 @@ services:
       options:
         max-size: '${LOG_MAX_SIZE:-5m}'
         max-file: '${LOG_MAX_FILE:-5}'
+
+networks:
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"
