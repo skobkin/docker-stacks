@@ -1,0 +1,3 @@
+*
+!.gitignore
+!mariadb.cnf.dist
