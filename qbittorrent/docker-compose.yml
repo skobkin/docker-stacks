@@ -1,9 +1,12 @@
 services:
   qbittorrent:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     # https://hub.docker.com/r/linuxserver/qbittorrent
     image: linuxserver/qbittorrent:latest
     container_name: qbittorrent
-    network_mode: '${NETWORK_MODE:-host}'
+    network_mode: host
     ports:
       - "${WEBUI_PORT}:${WEBUI_PORT}/tcp"
       - "6881:6881/tcp"

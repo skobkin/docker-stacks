@@ -81,7 +81,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | portainer               | portainer         | 9000                | 9000           | ✅       | TCP      | Docker management                   |
 | proxy-mtproto           | proxy             | varies              | varies         | ❌       | TCP      | Telegram proxy                      |
 | proxy-socks5            | proxy             | 2080                | 1080           | ❌       | TCP      | SOCKS5 proxy                        |
-| qbittorrent             | qbittorrent       | varies              | varies         | ✅       | TCP      | Torrent client web UI               |
+| qbittorrent             | qbittorrent       | 8090                | varies         | ✅       | TCP      | Torrent client web UI               |
 | qbittorrent             | qbittorrent       | 6881                | 6881           | ❌       | TCP/UDP  | BitTorrent                          |
 | radarr                  | radarr            | 7878                | 7878           | ✅       | TCP      | Movie management                    |
 | redis                   | redis             | 6379                | 6379           | ❌       | TCP      | Database                            |

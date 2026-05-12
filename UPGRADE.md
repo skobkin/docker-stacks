@@ -1,3 +1,17 @@
+## 2026-05-13 - qBittorrent networking simplified
+
+### Affected stacks
+
+- `qbittorrent`
+
+### Explanation
+
+`network_mode` is now hardcoded to `host`. The overridable `NETWORK_MODE` variable was removed. Host networking is required for qBittorrent to discover local peers properly.
+
+### Migration
+
+Remove `NETWORK_MODE=bridge` from your local `.env` if present. The stack now always runs with `network_mode: host`.
+
 ## 2026-05-12 - ESPHome networking hardened to host mode
 
 ### Affected stacks
