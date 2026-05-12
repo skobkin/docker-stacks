@@ -1,0 +1,26 @@
+services:
+  mariadb:
+    image: "mariadb:${IMAGE_TAG:-lts}"
+    container_name: mariadb
+    hostname: mariadb
+    env_file: .env
+    environment:
+      TZ: "${TZ:-UTC}"
+    ports:
+      - "${BIND_ADDR:-127.0.0.1}:${BIND_PORT:-3306}:3306/tcp"
+    volumes:
+      - "${HOST_DATA_DIR:-./data}:/var/lib/mysql"
+      - "${HOST_CONFIG_DIR:-./config}:/etc/mysql/conf.d"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+    networks:
+      - databases
+
+networks:
+  databases:
+    external: true
+    name: "${DATABASES_NETWORK:-databases}"

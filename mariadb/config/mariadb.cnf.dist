@@ -1,0 +1,20 @@
+[mariadb]
+# Network access modes:
+# - Keep 0.0.0.0 for container-to-container access on the shared databases network.
+# - Set 127.0.0.1 for host-only access.
+# - Set the fixed gateway IP of the databases network if you only want to expose the
+#   server on the Docker bridge, for example 172.30.10.1.
+bind-address = 0.0.0.0
+
+# 12 GB RAM / NVMe baseline:
+# Keep the buffer pool conservative for a shared host, then let InnoDB retain hot pages
+# across restarts and tune flushing for fast SSD-backed storage.
+innodb_buffer_pool_size = 8G
+innodb_log_file_size = 512M
+innodb_flush_method = O_DIRECT
+innodb_flush_neighbors = 0
+innodb_io_capacity = 1000
+innodb_io_capacity_max = 4000
+innodb_buffer_pool_dump_at_shutdown = ON
+innodb_buffer_pool_load_at_startup = ON
+max_connections = 50
