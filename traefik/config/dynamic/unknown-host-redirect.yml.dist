@@ -2,7 +2,8 @@
 # specific Docker or file-provider router.
 #
 # Copy this file to unknown-host-redirect.yml, then replace the redirect target
-# with the canonical URL for this Traefik instance.
+# with the canonical URL for this Traefik instance. Keep this redirect temporary
+# so browsers do not cache redirects for hostnames you may add later.
 
 http:
   routers:
@@ -21,4 +22,4 @@ http:
       redirectRegex:
         regex: "^https?://.*"
         replacement: "https://traefik.example.com/"
-        permanent: true
+        permanent: false
