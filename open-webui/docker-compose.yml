@@ -34,3 +34,6 @@ networks:
   proxy:
     external: true
     name: "${PROXY_NETWORK:-proxy}"
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"
