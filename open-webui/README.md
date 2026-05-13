@@ -12,6 +12,12 @@ If you want the container to join the external `proxy` network as well, enable
 `COMPOSE_VARIANT=proxy` in `.env` and create the network as documented in
 [proxy](../_docs/proxy_network.md).
 
+To expose Open WebUI through the shared Traefik stack, enable
+`COMPOSE_VARIANT=traefik` and set `TRAEFIK_HOST` in `.env`. Use
+`COMPOSE_VARIANT=traefik_proxy` when you need both Traefik exposure and outbound
+proxy networking. See the shared [Traefik](../_docs/traefik.md) guide for access
+policy and file-provider setup.
+
 ## Notes
 
 This stack expects sibling AI backends on the shared `ai-tools` network:
