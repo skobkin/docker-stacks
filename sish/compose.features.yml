@@ -10,4 +10,5 @@ services:
       traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
       traefik.http.routers.sish.rule: "HostRegexp(`${TRAEFIK_HOST_REGEXP}`)"
       traefik.http.routers.sish.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.sish.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
       traefik.http.services.sish.loadbalancer.server.port: "${TRAEFIK_SERVICE_PORT:-8395}"

@@ -17,6 +17,7 @@ services:
         (Host(`${TRAEFIK_WELL_KNOWN_HOST:-example.com}`) &&
         PathPrefix(`/.well-known/matrix`)))
       traefik.http.routers.continuwuity.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.continuwuity.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
       traefik.http.routers.continuwuity.service: "continuwuity"
       traefik.http.services.continuwuity.loadbalancer.server.port: "${CONTINUWUITY_PORT:-6167}"
 
@@ -34,5 +35,6 @@ services:
         (Host(`${TRAEFIK_WELL_KNOWN_HOST:-example.com}`) &&
         PathPrefix(`/.well-known/matrix`)))
       traefik.http.routers.continuwuity.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.continuwuity.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
       traefik.http.routers.continuwuity.service: "continuwuity"
       traefik.http.services.continuwuity.loadbalancer.server.port: "${CONTINUWUITY_PORT:-6167}"

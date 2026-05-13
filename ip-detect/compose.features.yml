@@ -10,4 +10,5 @@ services:
       traefik.docker.network: '${TRAEFIK_NETWORK:-traefik}'
       traefik.http.routers.ip-detect.rule: 'Host(`${TRAEFIK_HOST:-ip.example.com}`)'
       traefik.http.routers.ip-detect.entrypoints: '${TRAEFIK_ENTRYPOINT:-websecure}'
+      traefik.http.routers.ip-detect.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
       traefik.http.services.ip-detect.loadbalancer.server.port: '${TRAEFIK_SERVICE_PORT:-8080}'

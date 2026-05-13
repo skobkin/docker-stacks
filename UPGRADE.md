@@ -1,3 +1,20 @@
+## 2026-05-13 - Traefik default access policy added
+
+### Affected stacks
+
+- `traefik`
+- all stacks using `COMPOSE_VARIANT=traefik` or a combined Traefik variant
+
+### Explanation
+
+Traefik routers now apply `${TRAEFIK_ACCESS_POLICY:-default-access@file}` before their stack-specific middlewares. This centralizes the default private/public access decision in the Traefik file-provider config while still allowing per-stack overrides such as `TRAEFIK_ACCESS_POLICY=public-access@file`.
+
+### Migration
+
+Copy `traefik/config/dynamic/default-access.yml.dist` to `traefik/config/dynamic/default-access.yml`, then edit the live file and leave exactly one `default-access` definition uncommented. Use the private LAN allow-list example for private-by-default routing, or the public example if your existing routers should remain reachable from any IPv4 or IPv6 source.
+
+For a stack that should be public while the shared default stays private, copy `traefik/config/dynamic/public-access.yml.dist` to `traefik/config/dynamic/public-access.yml` and set `TRAEFIK_ACCESS_POLICY=public-access@file` in that stack's `.env`.
+
 ## 2026-05-13 - qBittorrent networking simplified
 
 ### Affected stacks

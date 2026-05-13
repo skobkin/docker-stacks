@@ -1,0 +1,22 @@
+# Choose exactly one default-access definition below and uncomment it.
+
+# Private-by-default example. Replace the LAN subnet with your own trusted ranges.
+#http:
+#  middlewares:
+#    default-access:
+#      ipAllowList:
+#        sourceRange:
+#          - "192.168.1.0/24"
+#          # Add more trusted networks when needed:
+#          # - "10.0.0.0/8"
+#          # - "172.16.0.0/12"
+
+# Public example. Use this only when all routers using default-access@file
+# should accept traffic from any IPv4 or IPv6 source.
+#http:
+#  middlewares:
+#    default-access:
+#      ipAllowList:
+#        sourceRange:
+#          - "0.0.0.0/0"
+#          - "::/0"

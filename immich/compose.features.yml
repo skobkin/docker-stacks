@@ -12,24 +12,8 @@ services:
       traefik.enable: 'true'
       traefik.docker.network: '${TRAEFIK_NETWORK:-traefik}'
       traefik.http.routers.immich.rule: 'Host(`${TRAEFIK_HOST}`)'
-      traefik.http.routers.immich.entrypoints: '${TRAEFIK_ENTRYPOINTS:-websecure}'
-      traefik.http.services.immich.loadbalancer.server.port: '${TRAEFIK_SERVICE_PORT:-2283}'
-
-  traefik_dual:
-    extends:
-      file: 'hwaccel.transcoding.yml'
-      service: '${HWACCEL_TRANSCODING:-cpu}'
-    networks:
-      - default
-      - traefik
-    labels:
-      traefik.enable: 'true'
-      traefik.docker.network: '${TRAEFIK_NETWORK:-traefik}'
-      traefik.http.routers.immich-private.rule: 'Host(`${TRAEFIK_HOST_PRIVATE:-immich.lan}`)'
-      traefik.http.routers.immich-private.entrypoints: '${TRAEFIK_ENTRYPOINTS_PRIVATE:-web}'
-      traefik.http.routers.immich-private.service: immich
-      traefik.http.routers.immich.rule: 'Host(`${TRAEFIK_HOST_PUBLIC}`)'
-      traefik.http.routers.immich.entrypoints: '${TRAEFIK_ENTRYPOINTS_PUBLIC:-websecure}'
+      traefik.http.routers.immich.entrypoints: '${TRAEFIK_ENTRYPOINT:-websecure}'
+      traefik.http.routers.immich.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
       traefik.http.routers.immich.service: immich
       traefik.http.services.immich.loadbalancer.server.port: '${TRAEFIK_SERVICE_PORT:-2283}'
 

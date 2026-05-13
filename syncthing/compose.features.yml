@@ -9,4 +9,5 @@ services:
       traefik.enable: 'true'
       traefik.http.routers.syncthing.rule: 'Host(`${TRAEFIK_HOST}`)'
       traefik.http.routers.syncthing.entrypoints: '${TRAEFIK_ENTRYPOINT:-websecure}'
+      traefik.http.routers.syncthing.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
       traefik.http.services.syncthing.loadbalancer.server.port: '${TRAEFIK_SERVICE_PORT:-8384}'

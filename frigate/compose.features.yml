@@ -10,5 +10,5 @@ services:
       traefik.docker.network: '${TRAEFIK_NETWORK:-traefik}'
       traefik.http.routers.frigate.rule: 'Host(`${TRAEFIK_HOST:-frigate.example.com}`)'
       traefik.http.routers.frigate.entrypoints: '${TRAEFIK_ENTRYPOINT:-websecure}'
-      traefik.http.routers.frigate.middlewares: 'chain-default@file'
+      traefik.http.routers.frigate.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file},chain-default@file"
       traefik.http.services.frigate.loadbalancer.server.port: '8971'

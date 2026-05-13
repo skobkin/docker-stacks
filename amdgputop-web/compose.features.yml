@@ -10,6 +10,7 @@ services:
       traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
       traefik.http.routers.amdgputop-web.rule: "Host(`${TRAEFIK_HOST:-amdgputop-web}`)"
       traefik.http.routers.amdgputop-web.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.amdgputop-web.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
       traefik.http.services.amdgputop-web.loadbalancer.server.port: "${TRAEFIK_SERVICE_PORT:-8080}"
 
 networks:
