@@ -46,6 +46,14 @@ TRAEFIK_ACCESS_POLICY=public-access@file
 
 Use this override intentionally. It affects all Traefik routers in that stack, including secondary routers such as sockets, federation, or gRPC routes.
 
+## Unknown Host Redirect
+
+By default, Traefik returns its normal not-found response when a request host does not match any Docker-label router or file-provider router.
+
+To redirect unmatched hostnames to a canonical URL, copy `traefik/config/dynamic/unknown-host-redirect.yml.dist` to `traefik/config/dynamic/unknown-host-redirect.yml`, then edit the live file and replace `https://traefik.example.com/` with the target URL.
+
+The example defines a low-priority catch-all router on `web` and `websecure`. More specific stack routers keep winning; the catch-all only handles requests left unmatched by other routers.
+
 ## Notes
 
 - With the shared `websecure` entrypoint, stacks usually rely on Traefik's entrypoint-level TLS and certificate resolver defaults instead of setting router-level TLS labels.

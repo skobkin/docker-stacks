@@ -121,7 +121,7 @@ This stack keeps example templates in Git and ignores the live local copies you 
 - `secrets/*.dist`: tracked examples
 - `secrets/*`: live secret files, ignored by Git
 
-Before first start, copy `dashboard.yml.dist`, `shared.yml.dist`, and `default-access.yml.dist` from `.dist` to `.yml`. Copy `public-access.yml.dist` only when you intentionally use `TRAEFIK_ACCESS_POLICY=public-access@file`. For the dashboard password file, generate a real `dashboard.htpasswd` instead of reusing the example.
+Before first start, copy `dashboard.yml.dist`, `shared.yml.dist`, and `default-access.yml.dist` from `.dist` to `.yml`. Copy `public-access.yml.dist` only when you intentionally use `TRAEFIK_ACCESS_POLICY=public-access@file`. Copy `unknown-host-redirect.yml.dist` only when you want unmatched hostnames to redirect to a canonical URL. For the dashboard password file, generate a real `dashboard.htpasswd` instead of reusing the example.
 
 ## Reusable file-provider config
 
@@ -133,6 +133,7 @@ Included reusable objects:
 
 - `default-access@file`: default access policy middleware that every Traefik-enabled stack router uses unless overridden
 - `public-access@file`: optional all-sources access policy for stacks that set `TRAEFIK_ACCESS_POLICY=public-access@file`
+- `unknown-host-redirect@file`: optional catch-all redirect router and middleware for hostnames not matched by more specific routers
 - `dashboard-chain@file`: dashboard auth chain
 - `chain-default@file`: light shared middleware chain
 - `upload-50m@file`
@@ -146,11 +147,13 @@ The tracked templates live in:
 - `config/dynamic/public-access.yml.dist`
 - `config/dynamic/shared.yml.dist`
 - `config/dynamic/static-files.yml.dist`
+- `config/dynamic/unknown-host-redirect.yml.dist`
 
 Typical uses:
 
 - default stack access policy: copy `default-access.yml.dist` to `default-access.yml` and choose the private or public definition
 - public single-stack override: copy `public-access.yml.dist` to `public-access.yml`, then set `TRAEFIK_ACCESS_POLICY=public-access@file` in that stack
+- unmatched host redirect: copy `unknown-host-redirect.yml.dist` to `unknown-host-redirect.yml`, then replace `https://traefik.example.com/` with the canonical URL for requests whose host does not match any stack or dynamic router
 - larger uploads: add `upload-250m@file` to the router middleware list
 - common compression: add `chain-default@file`
 - long-lived or streaming backends: set `traefik.http.services.<name>.loadbalancer.serversTransport=long-lived@file`
