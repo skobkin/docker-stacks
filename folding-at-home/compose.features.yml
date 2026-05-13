@@ -9,4 +9,5 @@ services:
       traefik.enable: 'true'
       traefik.http.routers.folding-at-home.rule: 'Host(`${TRAEFIK_HOST}`)'
       traefik.http.routers.folding-at-home.entrypoints: '${TRAEFIK_ENTRYPOINT:-websecure}'
+      traefik.http.routers.folding-at-home.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
       traefik.http.services.folding-at-home.loadbalancer.server.port: '${TRAEFIK_SERVICE_PORT:-7396}'

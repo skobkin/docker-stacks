@@ -15,4 +15,5 @@ services:
       traefik.enable: 'true'
       traefik.http.routers.invokeai.rule: 'Host(`${TRAEFIK_HOST}`)'
       traefik.http.routers.invokeai.entrypoints: '${TRAEFIK_ENTRYPOINT:-websecure}'
+      traefik.http.routers.invokeai.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
       traefik.http.services.invokeai.loadbalancer.server.port: '${TRAEFIK_SERVICE_PORT:-9090}'

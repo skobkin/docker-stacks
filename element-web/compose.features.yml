@@ -10,4 +10,5 @@ services:
       traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
       traefik.http.routers.element-web.rule: "Host(`${TRAEFIK_HOST:-element.example.com}`)"
       traefik.http.routers.element-web.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.element-web.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
       traefik.http.services.element-web.loadbalancer.server.port: "${TRAEFIK_SERVICE_PORT:-80}"

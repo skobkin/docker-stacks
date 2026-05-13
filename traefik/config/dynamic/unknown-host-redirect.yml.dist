@@ -1,0 +1,24 @@
+# Optional catch-all redirect for hostnames that are not matched by any more
+# specific Docker or file-provider router.
+#
+# Copy this file to unknown-host-redirect.yml, then replace the redirect target
+# with the canonical URL for this Traefik instance.
+
+http:
+  routers:
+    unknown-host-redirect:
+      entryPoints:
+        - web
+        - websecure
+      rule: "HostRegexp(`^.+$`)"
+      priority: 1
+      middlewares:
+        - unknown-host-redirect
+      service: noop@internal
+
+  middlewares:
+    unknown-host-redirect:
+      redirectRegex:
+        regex: "^https?://.*"
+        replacement: "https://traefik.example.com/"
+        permanent: true

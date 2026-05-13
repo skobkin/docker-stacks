@@ -6,4 +6,5 @@ services:
       traefik.enable: 'true'
       traefik.http.routers.esphome.rule: 'Host(`${TRAEFIK_HOST}`)'
       traefik.http.routers.esphome.entrypoints: '${TRAEFIK_ENTRYPOINT:-websecure}'
+      traefik.http.routers.esphome.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
       traefik.http.services.esphome.loadbalancer.server.port: '${TRAEFIK_SERVICE_PORT:-6052}'

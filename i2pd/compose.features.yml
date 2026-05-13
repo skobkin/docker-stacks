@@ -6,4 +6,5 @@ services:
       traefik.enable: 'true'
       traefik.http.routers.i2pd.rule: 'Host(`${TRAEFIK_HOST}`)'
       traefik.http.routers.i2pd.entrypoints: '${TRAEFIK_ENTRYPOINTS:-websecure}'
+      traefik.http.routers.i2pd.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
       traefik.http.services.i2pd.loadbalancer.server.port: '${TRAEFIK_SERVICE_PORT:-7070}'

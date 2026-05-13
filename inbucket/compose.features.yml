@@ -9,6 +9,7 @@ services:
       traefik.enable: 'true'
       traefik.http.routers.inbucket.rule: 'Host(`${TRAEFIK_HOST}`)'
       traefik.http.routers.inbucket.entrypoints: '${TRAEFIK_ENTRYPOINT:-websecure}'
+      traefik.http.routers.inbucket.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
       traefik.http.services.inbucket.loadbalancer.server.port: '${TRAEFIK_SERVICE_PORT:-9000}'
 
 networks:

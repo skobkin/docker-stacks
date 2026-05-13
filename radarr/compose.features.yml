@@ -9,4 +9,5 @@ services:
       traefik.enable: 'true'
       traefik.http.routers.radarr.rule: 'Host(`${TRAEFIK_HOST}`)'
       traefik.http.routers.radarr.entrypoints: '${TRAEFIK_ENTRYPOINT:-websecure}'
+      traefik.http.routers.radarr.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
       traefik.http.services.radarr.loadbalancer.server.port: '${TRAEFIK_SERVICE_PORT:-7878}'

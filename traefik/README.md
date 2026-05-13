@@ -31,16 +31,18 @@ nano -w .env
 install -d data/acme secrets
 cp config/dynamic/dashboard.yml.dist config/dynamic/dashboard.yml
 cp config/dynamic/shared.yml.dist config/dynamic/shared.yml
+cp config/dynamic/default-access.yml.dist config/dynamic/default-access.yml
 install -m 600 /dev/null data/acme/acme.json
 docker run --rm httpd:2.4-alpine htpasswd -nbB admin 'change-me' > secrets/dashboard.htpasswd
 docker compose up -d
 ```
 
-The dashboard will then be available on the host name from `TRAEFIK_DASHBOARD_HOST`, over HTTPS on `HTTPS_BIND_PORT`.
+Before starting Traefik, edit `config/dynamic/default-access.yml` and keep exactly one `default-access` definition uncommented. The dashboard will then be available on the host name from `TRAEFIK_DASHBOARD_HOST`, over HTTPS on `HTTPS_BIND_PORT`.
 
 ## Most important settings
 
 - `TRAEFIK_DASHBOARD_HOST`: dashboard/API host name.
+- `TRAEFIK_ACCESS_POLICY`: dashboard access middleware, defaulting to `default-access@file`.
 - `TRAEFIK_CERTIFICATESRESOLVERS_DEFAULT_ACME_EMAIL`: email used for Let's Encrypt registration and expiry notices.
 - `HTTP_BIND_PORT` and `HTTPS_BIND_PORT`: change these if you need to run Traefik beside another web server during migration or testing.
 - `HTTPS_UDP_BIND_PORT`: UDP host port for HTTP/3 on the `websecure` entrypoint, defaulting to `443`.
@@ -119,7 +121,7 @@ This stack keeps example templates in Git and ignores the live local copies you 
 - `secrets/*.dist`: tracked examples
 - `secrets/*`: live secret files, ignored by Git
 
-Before first start, copy the dynamic config examples from `.dist` to `.yml`. For the dashboard password file, generate a real `dashboard.htpasswd` instead of reusing the example.
+Before first start, copy `dashboard.yml.dist`, `shared.yml.dist`, and `default-access.yml.dist` from `.dist` to `.yml`. Copy `public-access.yml.dist` only when you intentionally use `TRAEFIK_ACCESS_POLICY=public-access@file`. Copy `unknown-host-redirect.yml.dist` only when you want unmatched hostnames to redirect to a canonical URL. For the dashboard password file, generate a real `dashboard.htpasswd` instead of reusing the example.
 
 ## Reusable file-provider config
 
@@ -129,6 +131,9 @@ The whole `./config` directory is mounted into `/etc/traefik`, and the file prov
 
 Included reusable objects:
 
+- `default-access@file`: default access policy middleware that every Traefik-enabled stack router uses unless overridden
+- `public-access@file`: optional all-sources access policy for stacks that set `TRAEFIK_ACCESS_POLICY=public-access@file`
+- `unknown-host-redirect@file`: optional catch-all redirect router and middleware for hostnames not matched by more specific routers
 - `dashboard-chain@file`: dashboard auth chain
 - `chain-default@file`: light shared middleware chain
 - `upload-50m@file`
@@ -138,11 +143,17 @@ Included reusable objects:
 The tracked templates live in:
 
 - `config/dynamic/dashboard.yml.dist`
+- `config/dynamic/default-access.yml.dist`
+- `config/dynamic/public-access.yml.dist`
 - `config/dynamic/shared.yml.dist`
 - `config/dynamic/static-files.yml.dist`
+- `config/dynamic/unknown-host-redirect.yml.dist`
 
 Typical uses:
 
+- default stack access policy: copy `default-access.yml.dist` to `default-access.yml` and choose the private or public definition
+- public single-stack override: copy `public-access.yml.dist` to `public-access.yml`, then set `TRAEFIK_ACCESS_POLICY=public-access@file` in that stack
+- unmatched host redirect: copy `unknown-host-redirect.yml.dist` to `unknown-host-redirect.yml`, then replace `https://traefik.example.com/` with the canonical URL for requests whose host does not match any stack or dynamic router
 - larger uploads: add `upload-250m@file` to the router middleware list
 - common compression: add `chain-default@file`
 - long-lived or streaming backends: set `traefik.http.services.<name>.loadbalancer.serversTransport=long-lived@file`
@@ -198,7 +209,7 @@ services:
       traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
       traefik.http.routers.app.rule: "Host(`app.example.com`)"
       traefik.http.routers.app.entrypoints: "websecure"
-      traefik.http.routers.app.middlewares: "chain-default@file"
+      traefik.http.routers.app.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file},chain-default@file"
       traefik.http.services.app.loadbalancer.server.port: "8080"
 
 networks:
@@ -211,6 +222,8 @@ Add service-specific extras only when needed:
 
 - uploads: `...,upload-250m@file`
 - long-lived upstreams: `traefik.http.services.app.loadbalancer.serversTransport=long-lived@file`
+
+For shared Traefik usage across stacks in this repository, see [Common Traefik Usage](../_docs/traefik.md).
 
 ## Docker socket compromise
 
