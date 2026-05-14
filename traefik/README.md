@@ -136,6 +136,7 @@ Included reusable objects:
 - `unknown-host-redirect@file`: optional catch-all redirect router and middleware for hostnames not matched by more specific routers
 - `dashboard-chain@file`: dashboard auth chain
 - `chain-default@file`: light shared middleware chain
+- `redirect-to-https@file`: shared router-level HTTP to HTTPS redirect middleware
 - `upload-50m@file`
 - `upload-250m@file`
 - `long-lived@file`
@@ -154,6 +155,7 @@ Typical uses:
 - default stack access policy: copy `default-access.yml.dist` to `default-access.yml` and choose the private or public definition
 - public single-stack override: copy `public-access.yml.dist` to `public-access.yml`, then set `TRAEFIK_ACCESS_POLICY=public-access@file` in that stack
 - unmatched host redirect: copy `unknown-host-redirect.yml.dist` to `unknown-host-redirect.yml`, then replace `https://traefik.example.com/` with the canonical URL for requests whose host does not match any stack or dynamic router
+- router-level HTTPS redirect: add `redirect-to-https@file` to routers that should redirect plain HTTP requests to HTTPS
 - larger uploads: add `upload-250m@file` to the router middleware list
 - common compression: add `chain-default@file`
 - long-lived or streaming backends: set `traefik.http.services.<name>.loadbalancer.serversTransport=long-lived@file`

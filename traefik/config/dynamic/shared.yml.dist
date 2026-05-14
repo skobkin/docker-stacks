@@ -6,6 +6,10 @@ http:
       chain:
         middlewares:
           - compress-default
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
     upload-10m:
       buffering:
         maxRequestBodyBytes: 10485760
