@@ -68,6 +68,29 @@ docker run --rm httpd:2.4-alpine htpasswd -nbB admin 'new-password' > secrets/da
 docker compose up -d
 ```
 
+Set `TRAEFIK_DASHBOARD_MIDDLEWARES=public-auth-access@file` to protect the dashboard with Authelia instead of the default file-provider access policy plus basic auth. This requires the Authelia stack to be running on the same `traefik` network and `public-auth-access@file` to be loaded from `config/dynamic/public-access.yml`.
+
+## Optional SSO auth for public services
+
+The tracked `config/dynamic/public-access.yml.dist` template includes two middlewares:
+
+- `public-access@file`: allow all IPv4 and IPv6 sources
+- `public-auth-access@file`: require Authelia forward-auth through `http://authelia:9091/api/authz/forward-auth`
+
+To enable the SSO middleware, copy the template to the live file-provider path:
+
+```shell
+cp config/dynamic/public-access.yml.dist config/dynamic/public-access.yml
+```
+
+Protected stacks can then opt in with:
+
+```dotenv
+TRAEFIK_ACCESS_POLICY=public-auth-access@file
+```
+
+Authelia handles SSO and second-factor checks before the request reaches the application. Applications that keep their own login system will usually still show their own login after Authelia succeeds unless they explicitly support trusting Authelia's forwarded identity headers.
+
 ## Certificates
 
 This stack defaults to:
@@ -121,7 +144,7 @@ This stack keeps example templates in Git and ignores the live local copies you 
 - `secrets/*.dist`: tracked examples
 - `secrets/*`: live secret files, ignored by Git
 
-Before first start, copy `dashboard.yml.dist`, `shared.yml.dist`, and `default-access.yml.dist` from `.dist` to `.yml`. Copy `public-access.yml.dist` only when you intentionally use `TRAEFIK_ACCESS_POLICY=public-access@file`. Copy `unknown-host-redirect.yml.dist` only when you want unmatched hostnames to redirect to a canonical URL. For the dashboard password file, generate a real `dashboard.htpasswd` instead of reusing the example.
+Before first start, copy `dashboard.yml.dist`, `shared.yml.dist`, and `default-access.yml.dist` from `.dist` to `.yml`. Copy `public-access.yml.dist` only when you intentionally use `TRAEFIK_ACCESS_POLICY=public-access@file`, `TRAEFIK_ACCESS_POLICY=public-auth-access@file`, or `TRAEFIK_DASHBOARD_MIDDLEWARES=public-auth-access@file`. Copy `unknown-host-redirect.yml.dist` only when you want unmatched hostnames to redirect to a canonical URL. For the dashboard password file, generate a real `dashboard.htpasswd` instead of reusing the example.
 
 ## Reusable file-provider config
 
@@ -133,6 +156,7 @@ Included reusable objects:
 
 - `default-access@file`: default access policy middleware that every Traefik-enabled stack router uses unless overridden
 - `public-access@file`: optional all-sources access policy for stacks that set `TRAEFIK_ACCESS_POLICY=public-access@file`
+- `public-auth-access@file`: optional Authelia forward-auth policy for stacks that set `TRAEFIK_ACCESS_POLICY=public-auth-access@file`
 - `unknown-host-redirect@file`: optional catch-all redirect router and middleware for hostnames not matched by more specific routers
 - `dashboard-chain@file`: dashboard auth chain
 - `chain-default@file`: light shared middleware chain
@@ -154,6 +178,7 @@ Typical uses:
 
 - default stack access policy: copy `default-access.yml.dist` to `default-access.yml` and choose the private or public definition
 - public single-stack override: copy `public-access.yml.dist` to `public-access.yml`, then set `TRAEFIK_ACCESS_POLICY=public-access@file` in that stack
+- SSO single-stack override: run the Authelia stack, copy `public-access.yml.dist` to `public-access.yml`, then set `TRAEFIK_ACCESS_POLICY=public-auth-access@file` in that stack
 - unmatched host redirect: copy `unknown-host-redirect.yml.dist` to `unknown-host-redirect.yml`, then replace `https://traefik.example.com/` with the canonical URL for requests whose host does not match any stack or dynamic router
 - router-level HTTPS redirect: add `redirect-to-https@file` to routers that should redirect plain HTTP requests to HTTPS
 - larger uploads: add `upload-250m@file` to the router middleware list

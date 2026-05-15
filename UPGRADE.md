@@ -1,3 +1,21 @@
+## 2026-05-15 - Authelia SSO and shared Redis network support
+
+### Affected stacks
+
+- `authelia`
+- `redis`
+- `traefik`
+
+### Explanation
+
+Authelia was added as an optional SSO portal and Traefik forward-auth provider. Traefik's `public-access.yml.dist` now also defines `public-auth-access@file` for services that want Authelia in front of public routes, and the Traefik dashboard middleware chain can be overridden with `TRAEFIK_DASHBOARD_MIDDLEWARES`.
+
+The shared `redis` stack now joins the external `databases` network by default so stacks such as Authelia can use it as `redis:6379` for optional session storage.
+
+### Migration
+
+Create the external `databases` network before starting `redis` if it does not already exist. For Traefik SSO, copy `traefik/config/dynamic/public-access.yml.dist` to `traefik/config/dynamic/public-access.yml`, start the Authelia stack on the same `traefik` network, and set protected services to `TRAEFIK_ACCESS_POLICY=public-auth-access@file`.
+
 ## 2026-05-13 - Traefik default access policy added
 
 ### Affected stacks

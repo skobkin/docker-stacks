@@ -9,6 +9,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | amdgputop-web           | amdgputop-web     | 8399                | 8080           | ✅       | TCP      | AMD GPU telemetry UI                |
 | ark-server              | server            | 7777                | 7777           | ❌       | TCP/UDP  | Game server                         |
 | ark-server              | server            | varies              | varies         | ❌       | TCP/UDP  | Query/RCON ports                    |
+| authelia                | authelia          | 9091                | 9091           | ✅       | TCP      | SSO portal and forward-auth API     |
 | beszel                  | beszel            | 8391                | 8090           | ✅       | TCP      | Monitoring hub web UI               |
 | BookLore                | booklore          | 6060                | 6060           | ✅       | TCP      | Book collection manager               |
 | beszel-agent            | beszel-agent      | disabled by default | 45876          | ❌       | TCP      | Enable by setting DISABLE_SSH=false |

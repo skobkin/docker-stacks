@@ -1,0 +1,90 @@
+---
+server:
+  address: tcp://:9091/
+  endpoints:
+    authz:
+      forward-auth:
+        implementation: ForwardAuth
+
+log:
+  level: '{{ env "LOG_LEVEL" }}'
+
+totp:
+  issuer: '{{ env "SESSION_COOKIE_DOMAIN" }}'
+
+webauthn:
+  disable: false
+  enable_passkey_login: false
+
+authentication_backend:
+  file:
+    path: /config/users_database.yml
+
+password_policy:
+  standard:
+    enabled: true
+    min_length: 16
+    require_uppercase: true
+    require_lowercase: true
+    require_number: true
+    require_special: true
+
+access_control:
+  default_policy: deny
+  rules:
+    - domain: '*.{{ env "SESSION_COOKIE_DOMAIN" }}'
+      policy: '{{ env "ACCESS_CONTROL_POLICY" }}'
+
+session:
+  name: authelia_session
+  same_site: lax
+  inactivity: 1 week
+  expiration: 1 months
+  remember_me: 1 months
+  cookies:
+    - domain: '{{ env "SESSION_COOKIE_DOMAIN" }}'
+      authelia_url: '{{ env "PUBLIC_URL" }}'
+      {{- if env "DEFAULT_REDIRECTION_URL" }}
+      default_redirection_url: '{{ env "DEFAULT_REDIRECTION_URL" }}'
+      {{- end }}
+
+  # Optional Redis-backed session storage.
+  # Enable COMPOSE_VARIANT=databases or traefik_databases before uncommenting.
+  # redis:
+  #   host: '{{ env "REDIS_HOST" }}'
+  #   port: {{ env "REDIS_PORT" }}
+  #   database_index: {{ env "REDIS_DATABASE_INDEX" }}
+  #   {{- if env "REDIS_USERNAME" }}
+  #   username: '{{ env "REDIS_USERNAME" }}'
+  #   {{- end }}
+  #   {{- if env "REDIS_PASSWORD" }}
+  #   password: '{{ env "REDIS_PASSWORD" }}'
+  #   {{- end }}
+
+storage:
+  local:
+    path: /data/db.sqlite3
+
+identity_validation:
+  reset_password:
+    jwt_lifespan: 5 minutes
+
+notifier:
+  disable_startup_check: true
+  smtp:
+    address: '{{ env "SMTP_ADDRESS" }}'
+    sender: '{{ env "SMTP_SENDER" }}'
+    {{- if env "SMTP_USERNAME" }}
+    username: '{{ env "SMTP_USERNAME" }}'
+    {{- end }}
+    startup_check_address: '{{ env "SMTP_STARTUP_CHECK_ADDRESS" }}'
+
+  # Filesystem notifications are useful for first-run testing only.
+  # filesystem:
+  #   filename: /config/notification.txt
+
+  # ntfy has no native Authelia notifier. To publish via ntfy SMTP, enable ntfy's
+  # SMTP listener on a shared Docker network and set, for example:
+  #   SMTP_ADDRESS=smtp://ntfy:2525
+  # This is plaintext SMTP on the Docker network unless you provide a TLS-capable
+  # SMTP path.

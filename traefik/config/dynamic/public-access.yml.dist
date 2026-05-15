@@ -5,3 +5,14 @@ http:
         sourceRange:
           - "0.0.0.0/0"
           - "::/0"
+
+    public-auth-access:
+      forwardAuth:
+        address: "http://authelia:9091/api/authz/forward-auth"
+        trustForwardHeader: true
+        maxResponseBodySize: 8192
+        authResponseHeaders:
+          - "Remote-User"
+          - "Remote-Groups"
+          - "Remote-Email"
+          - "Remote-Name"
