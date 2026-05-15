@@ -42,7 +42,7 @@ Before starting Traefik, edit `config/dynamic/default-access.yml` and keep exact
 ## Most important settings
 
 - `TRAEFIK_DASHBOARD_HOST`: dashboard/API host name.
-- `TRAEFIK_ACCESS_POLICY`: dashboard access middleware, defaulting to `default-access@file`.
+- `TRAEFIK_DASHBOARD_MIDDLEWARES`: dashboard middleware list, defaulting to `default-access@file,dashboard-chain@file`.
 - `TRAEFIK_CERTIFICATESRESOLVERS_DEFAULT_ACME_EMAIL`: email used for Let's Encrypt registration and expiry notices.
 - `HTTP_BIND_PORT` and `HTTPS_BIND_PORT`: change these if you need to run Traefik beside another web server during migration or testing.
 - `HTTPS_UDP_BIND_PORT`: UDP host port for HTTP/3 on the `websecure` entrypoint, defaulting to `443`.
@@ -54,7 +54,13 @@ Before starting Traefik, edit `config/dynamic/default-access.yml` and keep exact
 
 ## Dashboard authentication
 
-Dashboard basic auth is configured through the file provider, not labels, so credentials stay out of Docker metadata.
+Dashboard basic auth is configured through the file provider, not labels, so credentials stay out of Docker metadata. The default dashboard router middleware list is:
+
+```dotenv
+TRAEFIK_DASHBOARD_MIDDLEWARES=default-access@file,dashboard-chain@file
+```
+
+`dashboard-chain@file` is defined in `config/dynamic/dashboard.yml` and currently contains the `dashboard-auth` Basic auth middleware.
 
 The htpasswd file is expected at:
 
@@ -68,7 +74,27 @@ docker run --rm httpd:2.4-alpine htpasswd -nbB admin 'new-password' > secrets/da
 docker compose up -d
 ```
 
-Set `TRAEFIK_DASHBOARD_MIDDLEWARES=public-auth-access@file` to protect the dashboard with Authelia instead of the default file-provider access policy plus basic auth. This requires the Authelia stack to be running on the same `traefik` network and `public-auth-access@file` to be loaded from `config/dynamic/public-access.yml`.
+To protect the dashboard with Authelia instead of Basic auth:
+
+1. Copy `config/dynamic/public-access.yml.dist` to `config/dynamic/public-access.yml` (if not already).
+2. Run the Authelia stack on the same `traefik` network.
+3. Set this in the Traefik stack's Compose interpolation environment, normally `traefik/.env`:
+
+```dotenv
+TRAEFIK_DASHBOARD_MIDDLEWARES=public-auth-access@file
+```
+
+4. Recreate the Traefik container:
+
+```shell
+docker compose up -d traefik
+```
+
+The rendered router label must contain only `public-auth-access@file` for the dashboard router. If the browser still shows an HTTP Basic auth prompt, check the rendered Compose config:
+
+```shell
+docker compose config | grep 'traefik.http.routers.dashboard.middlewares'
+```
 
 ## Optional SSO auth for public services
 
@@ -76,6 +102,8 @@ The tracked `config/dynamic/public-access.yml.dist` template includes two middle
 
 - `public-access@file`: allow all IPv4 and IPv6 sources
 - `public-auth-access@file`: require Authelia forward-auth through `http://authelia:9091/api/authz/forward-auth`
+
+The `public-auth-access@file` middleware intentionally filters request headers sent to Authelia and does not forward `Authorization`. This keeps normal browser SSO on Authelia's session-cookie flow and avoids stale Basic auth credentials from old dashboard access being interpreted as Authelia header authentication.
 
 To enable the SSO middleware, copy the template to the live file-provider path:
 
@@ -88,6 +116,8 @@ Protected stacks can then opt in with:
 ```dotenv
 TRAEFIK_ACCESS_POLICY=public-auth-access@file
 ```
+
+`TRAEFIK_ACCESS_POLICY` is used by other Traefik-enabled stacks in this repository. The Traefik dashboard router does not read it; use `TRAEFIK_DASHBOARD_MIDDLEWARES` for the dashboard.
 
 Authelia handles SSO and second-factor checks before the request reaches the application. Applications that keep their own login system will usually still show their own login after Authelia succeeds unless they explicitly support trusting Authelia's forwarded identity headers.
 

@@ -69,6 +69,8 @@ TRAEFIK_ACCESS_POLICY=public-auth-access@file
 
 Copy `../traefik/config/dynamic/public-access.yml.dist` to `../traefik/config/dynamic/public-access.yml` in the Traefik stack first, then reload Traefik. The `public-auth-access@file` middleware calls Authelia at `http://authelia:9091/api/authz/forward-auth`, so both Authelia and Traefik must share the external `traefik` network.
 
+The shared middleware template filters request headers sent to Authelia and intentionally omits `Authorization`. That keeps browser access on Authelia's session-cookie redirect flow. If `Authorization` is forwarded, stale or wrong Basic auth credentials can make Authelia return a `WWW-Authenticate` challenge instead of redirecting to the SSO portal.
+
 Applications with their own login page will still show their own login after Authelia succeeds unless the application also supports trusting Authelia's forwarded headers.
 
 To skip Authelia login for trusted LAN or VPN clients, uncomment the optional `policy: bypass` rule in `config/configuration.yml` and replace the example subnet list. Keep that bypass rule before the normal wildcard protected-domain rule, because Authelia applies the first matching access-control rule.

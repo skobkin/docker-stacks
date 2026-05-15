@@ -34,7 +34,7 @@ Most of these stacks:
 
 ## Access Policy
 
-Every Traefik-enabled stack router uses `${TRAEFIK_ACCESS_POLICY:-default-access@file}` as its first middleware. The Traefik dashboard router uses the same default.
+Every Traefik-enabled application stack router uses `${TRAEFIK_ACCESS_POLICY:-default-access@file}` as its first middleware. The Traefik dashboard router is configured in the Traefik stack itself and uses `TRAEFIK_DASHBOARD_MIDDLEWARES` instead.
 
 `default-access@file` is defined locally in the Traefik file-provider config, so operators choose whether the default behavior is private or public by editing `traefik/config/dynamic/default-access.yml`.
 
