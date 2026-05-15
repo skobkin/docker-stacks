@@ -95,7 +95,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | sish                    | sish              | 8395                | 8395           | ✅       | TCP      | HTTP tunneling                      |
 | sish                    | sish              | 2222                | 2222           | ❌       | TCP      | SSH tunneling                       |
 | sonarr                  | sonarr            | 8989                | 8989           | ✅       | TCP      | TV show management                  |
-| speedtest               | speedtest         | 8888                | 80             | ✅       | TCP      | Internet speed test                 |
+| speedtest               | speedtest         | 8888                | 8080           | ✅       | TCP      | LibreSpeed web speed test           |
 | synapse                 | synapse           | 8008                | 8008           | ✅       | TCP      | Matrix server                       |
 | syncthing               | syncthing         | 8384                | 8384           | ✅       | TCP      | File sync UI                        |
 | syncthing               | syncthing         | 22000               | 22000          | ❌       | TCP/UDP  | File sync                           |

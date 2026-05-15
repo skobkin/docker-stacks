@@ -1,3 +1,17 @@
+## 2026-05-15 - Speedtest Rust image refresh
+
+### Affected stacks
+
+- `speedtest`
+
+### Explanation
+
+The stack now uses the maintained LibreSpeed Rust image (`ghcr.io/librespeed/speedtest-rust`) instead of the old `adolfintel/speedtest` image. The Compose file also supports overriding `IMAGE_TAG`, `HTTP_BIND_ADDR`, `HTTP_BIND_PORT`, and `HOST_CONFIG_FILE` from `.env`.
+
+### Migration
+
+Copy new variables from `speedtest/.env.dist` into the local `speedtest/.env`, copy `speedtest/config/configs.toml.dist` to `speedtest/config/configs.toml`, review the Rust backend settings, and recreate the container. The default template sets `database_type = "none"`; uncomment the SQLite option if local telemetry/statistics storage is needed. SQLite data is stored under `HOST_DATA_DIR` (`./data` by default).
+
 ## 2026-05-15 - Authelia SSO and shared Redis network support
 
 ### Affected stacks

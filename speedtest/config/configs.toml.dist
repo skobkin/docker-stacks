@@ -1,0 +1,41 @@
+# https://github.com/librespeed/speedtest-rust/blob/master/configs.toml
+
+# Bind inside the container. Keep this on all interfaces so Docker port publishing works.
+bind_address = "0.0.0.0"
+listen_port = 8080
+
+# Use "auto" for CPU-core based worker count, or a positive integer.
+worker_threads = 1
+
+# LibreSpeed API base path: /{base_url}/routes
+base_url = "backend"
+
+# Optional ipinfo.io API key. Without it, the bundled offline database is used.
+ipinfo_api_key = ""
+
+# Built-in frontend assets shipped in the image.
+assets_path = "./assets"
+
+# Fill this to enable the statistics page.
+stats_password = ""
+
+redact_ip_addresses = false
+result_image_theme = "light"
+
+# Valid values: none, memory, sqlite, mysql, postgres.
+# With none, telemetry/statistics are not recorded and result images are not generated.
+database_type = "none"
+
+# SQLite option:
+#database_type = "sqlite"
+#database_file = "./data/speedtest.db"
+
+# MySQL/PostgreSQL options:
+database_hostname = "localhost"
+database_name = "speedtest_db"
+database_username = ""
+database_password = ""
+
+enable_tls = false
+tls_cert_file = ""
+tls_key_file = ""
