@@ -48,6 +48,8 @@ Copy `../traefik/config/dynamic/public-access.yml.dist` to `../traefik/config/dy
 
 Applications with their own login page will still show their own login after Authelia succeeds unless the application also supports trusting Authelia's forwarded headers.
 
+To skip Authelia login for trusted LAN or VPN clients, uncomment the optional `policy: bypass` rule in `config/configuration.yml` and replace the example subnet list. Keep that bypass rule before the normal wildcard protected-domain rule, because Authelia applies the first matching access-control rule.
+
 ## Optional Redis sessions
 
 SQLite stores Authelia account, TOTP, WebAuthn, and other persistent data. Redis is optional and only moves session state out of Authelia memory.

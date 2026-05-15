@@ -32,6 +32,16 @@ password_policy:
 access_control:
   default_policy: deny
   rules:
+    # Optional LAN/VPN bypass.
+    # Uncomment and replace the subnet list if trusted local clients should skip
+    # Authelia login while WAN clients still require ACCESS_CONTROL_POLICY.
+    # - domain: '*.{{ env "SESSION_COOKIE_DOMAIN" }}'
+    #   policy: bypass
+    #   networks:
+    #     - '192.168.0.0/16'
+    #     - '10.0.0.0/8'
+    #     - '172.16.0.0/12'
+
     - domain: '*.{{ env "SESSION_COOKIE_DOMAIN" }}'
       policy: '{{ env "ACCESS_CONTROL_POLICY" }}'
 
