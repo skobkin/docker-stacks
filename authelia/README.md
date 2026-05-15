@@ -28,13 +28,36 @@ docker compose up -d
 
 Before starting it for real:
 
-- set `PUBLIC_URL`, usually `https://auth.sub.domain.tld`
+- set `session.cookies[].authelia_url`, usually `https://auth.sub.domain.tld`
 - set `TRAEFIK_HOST` to the Authelia portal host, usually `auth.sub.domain.tld`
-- set `SESSION_COOKIE_DOMAIN` to the shared parent domain, such as `sub.domain.tld`
+- set `totp.issuer`, `session.cookies[].domain`, and `access_control.rules[].domain` to the shared parent domain, such as `sub.domain.tld`
 - replace the example admin password hash and email in `config/users_database.yml`
 - configure a real SMTP notifier path
 
 The example password hash is only a placeholder for local validation. Do not use it in production.
+
+## Passkey login modes
+
+The default `policy: two_factor` rule keeps protected services behind password plus one registered second factor, such as TOTP or WebAuthn. In this mode, passkeys and hardware security keys are available as WebAuthn second factors after password login.
+
+To add passwordless passkey login at the Authelia portal, change this in `config/configuration.yml`:
+
+```yaml
+webauthn:
+  enable_passkey_login: true
+```
+
+Authelia still treats that passkey login as one factor by default. For services protected by `two_factor`, Authelia may still ask for the password after passkey login so the access policy is satisfied.
+
+Authelia also has an experimental mode where user-verified passkeys can satisfy `two_factor` while password plus TOTP/WebAuthn remains valid:
+
+```yaml
+webauthn:
+  enable_passkey_login: true
+  experimental_enable_passkey_uv_two_factors: true
+```
+
+Only enable the experimental mode after testing your authenticators and clients. Upstream behavior may change or fail in a future Authelia release. The template also includes a commented stricter WebAuthn metadata/filtering example for operators who want stronger device validation; it is disabled by default because it may reject synced or backup-eligible platform passkeys.
 
 ## Traefik forward auth
 
@@ -60,6 +83,7 @@ To use the shared Redis stack:
 2. start the `redis` stack with `DATABASES_NETWORK=databases`
 3. set `COMPOSE_VARIANT=traefik_databases` or `COMPOSE_VARIANT=databases`
 4. uncomment the `session.redis` block in `config/configuration.yml`
+5. set `AUTHELIA_SESSION_REDIS_PASSWORD_FILE=/secrets/redis_password` in `.env` if Redis requires a password stored in `secrets/redis_password`
 
 The Redis host is `redis:6379` on the shared network by default.
 
@@ -67,10 +91,12 @@ The Redis host is `redis:6379` on the shared network by default.
 
 Authelia supports SMTP and filesystem notifications, not native ntfy publishing.
 
-For ntfy notifications, enable ntfy's SMTP publishing listener on a shared Docker network, for example `NTFY_SMTP_SERVER_LISTEN=:2525`, attach both stacks to that network, and set:
+For ntfy notifications, enable ntfy's SMTP publishing listener on a shared Docker network, for example `NTFY_SMTP_SERVER_LISTEN=:2525`, attach both stacks to that network, and set this in `config/configuration.yml`:
 
-```dotenv
-SMTP_ADDRESS=smtp://ntfy:2525
+```yaml
+notifier:
+  smtp:
+    address: smtp://ntfy:2525
 ```
 
 That path is plaintext SMTP on the Docker network unless you configure a TLS-capable SMTP relay.
@@ -81,3 +107,5 @@ That path is plaintext SMTP on the Docker network unless you configure a TLS-cap
 - [Authelia Traefik integration](https://www.authelia.com/integration/proxies/traefik/)
 - [Authelia session configuration](https://www.authelia.com/configuration/session/introduction/)
 - [Authelia file users](https://www.authelia.com/configuration/first-factor/file/)
+- [Authelia WebAuthn configuration](https://www.authelia.com/configuration/second-factor/webauthn/)
+- [Authelia passkey guide](https://www.authelia.com/reference/guides/webauthn/)

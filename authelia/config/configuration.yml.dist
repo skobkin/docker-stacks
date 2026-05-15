@@ -15,6 +15,21 @@ totp:
 webauthn:
   disable: false
   enable_passkey_login: false
+  # Experimental upstream behavior: user-verified passkeys can satisfy two_factor.
+  # experimental_enable_passkey_uv_two_factors: true
+
+  # Optional stricter passkey policy. This follows Authelia's recommended
+  # passkey configuration, but it can reject synced or backup-eligible platform
+  # passkeys, so review device compatibility before enabling it.
+  # attestation_conveyance_preference: direct
+  # filtering:
+  #   prohibit_backup_eligibility: true
+  # metadata:
+  #   enabled: true
+  #   validate_trust_anchor: true
+  #   validate_entry: true
+  #   validate_status: true
+  #   validate_entry_permit_zero_aaguid: false
 
 authentication_backend:
   file:
