@@ -21,8 +21,7 @@ install -d data secrets
 docker compose run --rm --entrypoint authelia authelia crypto rand --length 64 | sed 's/^Random Value: //' > secrets/session_secret
 docker compose run --rm --entrypoint authelia authelia crypto rand --length 64 | sed 's/^Random Value: //' > secrets/storage_encryption_key
 docker compose run --rm --entrypoint authelia authelia crypto rand --length 64 | sed 's/^Random Value: //' > secrets/jwt_secret
-docker compose run --rm --entrypoint authelia authelia \
-  crypto hash generate argon2 --password 'change-me'
+docker compose run --rm --entrypoint authelia authelia crypto hash generate argon2 --password 'change-me'
 nano -w .env config/configuration.yml config/users_database.yml
 docker compose up -d
 ```
