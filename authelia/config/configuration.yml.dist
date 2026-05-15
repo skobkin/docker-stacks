@@ -93,6 +93,7 @@ notifier:
     address: smtp://smtp.example.com:587
     sender: Authelia <authelia@example.com>
     username: authelia@example.com
+    password: 'password'
     startup_check_address: admin@example.com
 
   # Filesystem notifications are useful for first-run testing only.
