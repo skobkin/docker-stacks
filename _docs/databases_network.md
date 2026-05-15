@@ -2,7 +2,7 @@
 
 Some database-backed services in this repository can use an external Docker network called `databases`.
 
-This network lets application containers reach PostgreSQL, MySQL, or MariaDB running directly on the Docker host, or shared database containers attached to the same external network.
+This network lets application containers reach PostgreSQL, MySQL, MariaDB, or Redis running directly on the Docker host, or shared database containers attached to the same external network.
 
 ## Creating the Network
 
@@ -37,6 +37,8 @@ Create the network before starting those stacks.
 For a database running directly on the Docker host, configure the stack database host or DSN to use the network gateway IP, for example `172.30.10.1`.
 
 For shared database containers, attach the database container to this network and configure the stack database host or DSN to use the database container name on the shared network.
+
+The repository `redis` stack joins this network by default. Stacks attached to `databases` can reach it as `redis:6379`.
 
 ## Host Database Configuration
 
