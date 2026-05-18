@@ -2,10 +2,11 @@
 
 services:
   telegram-llm-bot:
-    image: "skobkin/telegram-llm-bot:${IMAGE_VERSION:-latest}"
+    image: "skobkin/telegram-llm-bot:${IMAGE_TAG:-latest}"
     container_name: telegram-llm-bot
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    # persistent volume needed since 0.20.0
+    volumes:
+      - "${HOST_DATA_DIR:-./data}:/data"
     env_file: .env
     restart: unless-stopped
     logging:
