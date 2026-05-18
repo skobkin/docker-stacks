@@ -2,6 +2,9 @@
 
 services:
   telegram-llm-bot:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     image: "skobkin/telegram-llm-bot:${IMAGE_TAG:-latest}"
     container_name: telegram-llm-bot
     # persistent volume needed since 0.20.0
@@ -14,9 +17,10 @@ services:
       options:
         max-size: "${LOG_MAX_SIZE:-5m}"
         max-file: "${LOG_MAX_FILE:-5}"
-    networks:
-      - ai-tools
 
 networks:
   ai-tools:
     external: true
+  proxy:
+    external: true
+    name: "${PROXY_NETWORK:-proxy}"

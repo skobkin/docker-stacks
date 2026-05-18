@@ -8,18 +8,24 @@
 
 The stack now targets `skobkin/telegram-llm-bot:0.20.0`, mounts persistent data at `/data`, and uses the bot's new OpenAI-compatible LLM, SQLite, state-limit, tool-use, and optional search environment variables. The old `OPENAI_API_*` and `MODEL_*` variables were replaced by `LLM_BACKEND_OPENAI_COMPAT_*` and `LLM_FEATURE_*` variables.
 
+External network membership is now optional. The default variant uses only the stack-local Docker network; set `COMPOSE_VARIANT=ai_tools`, `COMPOSE_VARIANT=proxy`, or `COMPOSE_VARIANT=ai_tools_proxy` when the bot needs those external networks.
+
 ### Migration
 
 1. Copy the new variables from `telegram-llm-bot/.env.dist` into the local `telegram-llm-bot/.env`.
 2. Replace `IMAGE_VERSION` with `IMAGE_TAG`.
-3. Replace `OPENAI_API_BASE_URL` with `LLM_BACKEND_OPENAI_COMPAT_BASE_URL`.
-4. Use `http://llama-swap:8080/v1` for the repo-local llama-swap stack, or `http://ollama:11434/v1` for the repo-local Ollama stack.
-5. Replace `OPENAI_API_TOKEN` with `LLM_BACKEND_OPENAI_COMPAT_API_TOKEN`.
-6. Replace `MODEL_TEXT_REQUEST` with `LLM_FEATURE_CHAT_MODEL`.
-7. Replace `MODEL_SUMMARIZE_REQUEST` with `LLM_FEATURE_SUMMARIZE_MODEL`.
-8. Remove old prompt/persona env variables; they are now seeded into SQLite and managed through Telegram admin DMs.
-9. Set `BOT_ADMIN_IDS` if admin controls are needed.
-10. Recreate the container.
+3. Set `COMPOSE_VARIANT=`
+   - `ai_tools` if the bot uses repo-local `llama-swap` or `ollama`.
+   - `proxy` if the bot needs the external `proxy` network.
+   - `ai_tools_proxy` if both external networks are needed.
+4. Replace `OPENAI_API_BASE_URL` with `LLM_BACKEND_OPENAI_COMPAT_BASE_URL`.
+5. Use `http://llama-swap:8080/v1` for the repo-local llama-swap stack, or `http://ollama:11434/v1` for the repo-local Ollama stack.
+6. Replace `OPENAI_API_TOKEN` with `LLM_BACKEND_OPENAI_COMPAT_API_TOKEN`.
+7. Replace `MODEL_TEXT_REQUEST` with `LLM_FEATURE_CHAT_MODEL`.
+8. Replace `MODEL_SUMMARIZE_REQUEST` with `LLM_FEATURE_SUMMARIZE_MODEL`.
+9. Remove old prompt/persona env variables; they are now seeded into SQLite and managed through Telegram admin DMs.
+10. Set `BOT_ADMIN_IDS` if admin controls are needed.
+11. Recreate the container.
 
 ## 2026-05-15 - Speedtest Rust image refresh
 
