@@ -14,4 +14,10 @@ This stack runs OpenWebRX+ with Docker Compose defaults adapted from OpenWebRX D
   - `HOST_PLUGINS_DIR` -> `/opt/openwebrx/plugins`
 - `tmpfs` mount is enabled by default for temporary decoder files (`TMPFS_*` vars).
 
+## Traefik
+
+To expose OpenWebRX+ through the shared Traefik stack, enable
+`COMPOSE_VARIANT=traefik` and set `TRAEFIK_HOST` in `.env`. See the shared
+[Traefik](../_docs/traefik.md) guide for access policy and file-provider setup.
+
 For general setup instructions, refer to the [root README](../README.md).
