@@ -1,0 +1,102 @@
+services:
+  default: {}
+
+  proxy:
+    networks:
+      - ai-tools
+      - proxy
+
+  api:
+    ports:
+      - "${API_BIND_ADDR:-127.0.0.1}:${API_BIND_PORT:-8642}:8642/tcp"
+    environment:
+      API_SERVER_ENABLED: "true"
+      API_SERVER_HOST: "0.0.0.0"
+      API_SERVER_PORT: "8642"
+      API_SERVER_KEY: "${API_SERVER_KEY}"
+
+  api_proxy:
+    ports:
+      - "${API_BIND_ADDR:-127.0.0.1}:${API_BIND_PORT:-8642}:8642/tcp"
+    environment:
+      API_SERVER_ENABLED: "true"
+      API_SERVER_HOST: "0.0.0.0"
+      API_SERVER_PORT: "8642"
+      API_SERVER_KEY: "${API_SERVER_KEY}"
+    networks:
+      - ai-tools
+      - proxy
+
+  traefik:
+    networks:
+      - ai-tools
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.hermes.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.hermes.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.hermes.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.routers.hermes.service: "hermes-dashboard"
+      traefik.http.services.hermes-dashboard.loadbalancer.server.port: "9119"
+
+  traefik_proxy:
+    networks:
+      - ai-tools
+      - proxy
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.hermes.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.hermes.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.hermes.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.routers.hermes.service: "hermes-dashboard"
+      traefik.http.services.hermes-dashboard.loadbalancer.server.port: "9119"
+
+  traefik_api:
+    environment:
+      API_SERVER_ENABLED: "true"
+      API_SERVER_HOST: "0.0.0.0"
+      API_SERVER_PORT: "8642"
+      API_SERVER_KEY: "${API_SERVER_KEY}"
+    networks:
+      - ai-tools
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.hermes.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.hermes.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.hermes.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.routers.hermes.service: "hermes-dashboard"
+      traefik.http.services.hermes-dashboard.loadbalancer.server.port: "9119"
+      traefik.http.routers.hermes-api.rule: "Host(`${TRAEFIK_API_HOST}`)"
+      traefik.http.routers.hermes-api.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.hermes-api.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.routers.hermes-api.service: "hermes-api"
+      traefik.http.services.hermes-api.loadbalancer.server.port: "8642"
+
+  traefik_api_proxy:
+    environment:
+      API_SERVER_ENABLED: "true"
+      API_SERVER_HOST: "0.0.0.0"
+      API_SERVER_PORT: "8642"
+      API_SERVER_KEY: "${API_SERVER_KEY}"
+    networks:
+      - ai-tools
+      - proxy
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.hermes.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.hermes.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.hermes.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.routers.hermes.service: "hermes-dashboard"
+      traefik.http.services.hermes-dashboard.loadbalancer.server.port: "9119"
+      traefik.http.routers.hermes-api.rule: "Host(`${TRAEFIK_API_HOST}`)"
+      traefik.http.routers.hermes-api.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.hermes-api.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.routers.hermes-api.service: "hermes-api"
+      traefik.http.services.hermes-api.loadbalancer.server.port: "8642"

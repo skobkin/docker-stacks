@@ -1,0 +1,43 @@
+services:
+  hermes:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
+    image: "nousresearch/hermes-agent:${IMAGE_TAG:-main}"
+    container_name: hermes
+    command: gateway run
+    ports:
+      - "${DASHBOARD_BIND_ADDR:-127.0.0.1}:${DASHBOARD_BIND_PORT:-8410}:9119/tcp"
+    volumes:
+      - "${HOST_DATA_DIR:-./data}:/opt/data"
+    env_file: .env
+    environment:
+      HERMES_DASHBOARD: "1"
+      HERMES_DASHBOARD_HOST: "0.0.0.0"
+      HERMES_DASHBOARD_PORT: "9119"
+      HERMES_DASHBOARD_BASIC_AUTH_USERNAME: "${HERMES_DASHBOARD_BASIC_AUTH_USERNAME:?}"
+      HERMES_DASHBOARD_BASIC_AUTH_PASSWORD_HASH: "${HERMES_DASHBOARD_BASIC_AUTH_PASSWORD_HASH:?}"
+      HERMES_DASHBOARD_BASIC_AUTH_SECRET: "${HERMES_DASHBOARD_BASIC_AUTH_SECRET:?}"
+    deploy:
+      resources:
+        limits:
+          memory: "${MEMORY_LIMIT:-8G}"
+          cpus: "${CPU_LIMIT:-4.0}"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+    networks:
+      - ai-tools
+
+networks:
+  ai-tools:
+    external: true
+  proxy:
+    external: true
+    name: "${PROXY_NETWORK:-proxy}"
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"
