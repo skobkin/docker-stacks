@@ -6,7 +6,7 @@ services:
     extends:
       file: ./compose.features.yml
       service: "livekit_${COMPOSE_VARIANT:-default}"
-    image: "livekit/livekit-server:${LIVEKIT_IMAGE_TAG:-v1.12.0}"
+    image: "livekit/livekit-server:${LIVEKIT_IMAGE_TAG:-v1.12}"
     container_name: matrix-calls-livekit
     ports:
       - "${LIVEKIT_HTTP_BIND_ADDR:-127.0.0.1}:${LIVEKIT_HTTP_BIND_PORT:-7880}:7880/tcp"
@@ -39,7 +39,7 @@ services:
     extends:
       file: ./compose.features.yml
       service: "jwt_${COMPOSE_VARIANT:-default}"
-    image: "ghcr.io/element-hq/lk-jwt-service:${LK_JWT_SERVICE_IMAGE_TAG:-0.5.0}"
+    image: "ghcr.io/element-hq/lk-jwt-service:${LK_JWT_SERVICE_IMAGE_TAG:-latest}"
     container_name: matrix-calls-lk-jwt-service
     depends_on:
       - livekit

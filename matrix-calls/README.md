@@ -11,12 +11,14 @@ It does not include Element Call web UI, recording, LiveKit Egress, Redis, recor
 
 ```shell
 cp .env.dist .env
-docker run --rm livekit/livekit-server:v1.12.0 generate-keys
+docker run --rm livekit/livekit-server:${LIVEKIT_IMAGE_TAG:-v1.12} generate-keys
 nano -w .env
 docker compose up -d
 ```
 
 Put the generated API key and secret into `LIVEKIT_KEY` and `LIVEKIT_SECRET`. Set `LIVEKIT_FULL_ACCESS_HOMESERVERS` to your Matrix server name, for example `example.com`.
+
+The default image tags are Watchtower-friendly: LiveKit uses the moving `v1.12` minor tag, and `lk-jwt-service` uses upstream's documented `latest` tag. Pin `LIVEKIT_IMAGE_TAG` or `LK_JWT_SERVICE_IMAGE_TAG` in `.env` if you want manual upgrade control; `lk-jwt-service:latest` is not a bounded SemVer channel.
 
 ## Networking
 
