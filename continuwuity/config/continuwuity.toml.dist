@@ -34,7 +34,7 @@ server = "matrix.example.com:443"
 # turn_ttl = 86400
 
 [global.matrix_rtc]
-# Future MatrixRTC / LiveKit example:
+# Optional MatrixRTC / LiveKit focus for the separate matrix-calls stack:
 # foci = [
-#   { type = "livekit", livekit_service_url = "https://livekit.example.com" },
+#   { type = "livekit", livekit_service_url = "https://calls.example.com" },
 # ]

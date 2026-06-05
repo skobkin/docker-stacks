@@ -186,11 +186,20 @@ Use TOML when you want clearer structure for:
 - MatrixRTC / future LiveKit foci
 - backup path
 
-## Calls and TURN
+## Matrix calls and TURN
 
-This stack does not include LiveKit or coturn.
+This stack does not include LiveKit or coturn. Use the separate [`matrix-calls`](../matrix-calls/README.md) stack for basic native MatrixRTC calls with LiveKit.
 
-It does avoid blocking them later:
+Calls stay disabled until you opt in with TOML configuration:
+
+```toml
+[global.matrix_rtc]
+foci = [
+  { type = "livekit", livekit_service_url = "https://calls.example.com" },
+]
+```
+
+It does avoid blocking LiveKit or TURN later:
 
 - `config/continuwuity.toml.dist` includes commented TURN and MatrixRTC sections
 - the delegated default works with a future separate LiveKit domain

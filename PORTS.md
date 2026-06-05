@@ -15,6 +15,10 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | beszel-agent            | beszel-agent      | disabled by default | 45876          | ❌       | TCP      | Enable by setting DISABLE_SSH=false |
 | castopod                | castopod          | 8393                | 8000           | ✅       | TCP      | Podcast hosting                     |
 | continuwuity            | continuwuity      | 6167                | 6167           | ✅       | TCP      | Matrix homeserver                   |
+| matrix-calls            | livekit           | 7880                | 7880           | ✅       | TCP      | LiveKit HTTP/API, localhost-bound   |
+| matrix-calls            | livekit           | 7881                | 7881           | ❌       | TCP      | LiveKit ICE over TCP                |
+| matrix-calls            | livekit           | 50100-50200         | 50100-50200    | ❌       | UDP      | LiveKit ICE media transport         |
+| matrix-calls            | lk-jwt-service    | 8411                | 8411           | ✅       | TCP      | MatrixRTC JWT service, localhost-bound |
 | drone                   | drone             | 8386                | 80             | ✅       | TCP      | CI/CD server                        |
 | drone-runner            | drone-runner      | 8387                | 3000           | ✅       | TCP      | CI/CD runner                        |
 | duplicati               | duplicati         | 8200                | 8200           | ✅       | TCP      | Backup software                     |

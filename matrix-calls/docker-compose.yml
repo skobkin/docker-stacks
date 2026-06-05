@@ -1,0 +1,65 @@
+# https://github.com/livekit/livekit
+# https://github.com/element-hq/lk-jwt-service
+
+services:
+  livekit:
+    extends:
+      file: ./compose.features.yml
+      service: "livekit_${COMPOSE_VARIANT:-default}"
+    image: "livekit/livekit-server:${LIVEKIT_IMAGE_TAG:-v1.12.0}"
+    container_name: matrix-calls-livekit
+    ports:
+      - "${LIVEKIT_HTTP_BIND_ADDR:-127.0.0.1}:${LIVEKIT_HTTP_BIND_PORT:-7880}:7880/tcp"
+      - "${LIVEKIT_ICE_TCP_BIND_ADDR:-0.0.0.0}:${LIVEKIT_ICE_TCP_PORT:-7881}:${LIVEKIT_ICE_TCP_PORT:-7881}/tcp"
+      - "${LIVEKIT_ICE_UDP_BIND_ADDR:-0.0.0.0}:${LIVEKIT_ICE_UDP_PORT_RANGE:-50100-50200}:${LIVEKIT_ICE_UDP_PORT_RANGE:-50100-50200}/udp"
+    env_file: .env
+    environment:
+      LIVEKIT_CONFIG: |
+        port: 7880
+        bind_addresses:
+          - ""
+        rtc:
+          tcp_port: ${LIVEKIT_ICE_TCP_PORT:-7881}
+          port_range_start: ${LIVEKIT_ICE_UDP_PORT_RANGE_START:-50100}
+          port_range_end: ${LIVEKIT_ICE_UDP_PORT_RANGE_END:-50200}
+          use_external_ip: ${LIVEKIT_USE_EXTERNAL_IP:-true}
+          enable_loopback_candidate: false
+        room:
+          auto_create: false
+        keys:
+          ${LIVEKIT_KEY:?Set LIVEKIT_KEY in .env}: ${LIVEKIT_SECRET:?Set LIVEKIT_SECRET in .env}
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
+  lk-jwt-service:
+    extends:
+      file: ./compose.features.yml
+      service: "jwt_${COMPOSE_VARIANT:-default}"
+    image: "ghcr.io/element-hq/lk-jwt-service:${LK_JWT_SERVICE_IMAGE_TAG:-0.5.0}"
+    container_name: matrix-calls-lk-jwt-service
+    depends_on:
+      - livekit
+    ports:
+      - "${JWT_BIND_ADDR:-127.0.0.1}:${JWT_BIND_PORT:-8411}:8411/tcp"
+    env_file: .env
+    environment:
+      LIVEKIT_URL: "${LIVEKIT_URL:?Set LIVEKIT_URL in .env}"
+      LIVEKIT_KEY: "${LIVEKIT_KEY:?Set LIVEKIT_KEY in .env}"
+      LIVEKIT_SECRET: "${LIVEKIT_SECRET:?Set LIVEKIT_SECRET in .env}"
+      LIVEKIT_FULL_ACCESS_HOMESERVERS: "${LIVEKIT_FULL_ACCESS_HOMESERVERS:?Set LIVEKIT_FULL_ACCESS_HOMESERVERS in .env}"
+      LIVEKIT_JWT_BIND: ":8411"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"
