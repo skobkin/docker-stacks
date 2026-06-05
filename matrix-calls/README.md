@@ -11,7 +11,7 @@ It does not include Element Call web UI, recording, LiveKit Egress, Redis, recor
 
 ```shell
 cp .env.dist .env
-docker run --rm livekit/livekit-server:${LIVEKIT_IMAGE_TAG:-v1.12} generate-keys
+docker compose run --rm livekit generate-keys
 nano -w .env
 docker compose up -d
 ```
