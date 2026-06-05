@@ -23,6 +23,7 @@ services:
           port_range_start: ${LIVEKIT_ICE_UDP_PORT_RANGE_START:-50100}
           port_range_end: ${LIVEKIT_ICE_UDP_PORT_RANGE_END:-50200}
           use_external_ip: ${LIVEKIT_USE_EXTERNAL_IP:-true}
+          node_ip: ${LIVEKIT_NODE_IP:-}
           enable_loopback_candidate: false
         room:
           auto_create: false

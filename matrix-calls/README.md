@@ -33,6 +33,15 @@ The default stack publishes:
 
 Open `7881/tcp` and `50100-50200/udp` on the host firewall. Keep `7880/tcp` and `8411/tcp` behind TLS through a reverse proxy.
 
+If LiveKit advertises Docker bridge or other wrong addresses, prefer an explicit static public IP in `matrix-calls/.env`:
+
+```dotenv
+LIVEKIT_USE_EXTERNAL_IP=false
+LIVEKIT_NODE_IP=203.0.113.10
+```
+
+`LIVEKIT_NODE_IP` maps to LiveKit's `rtc.node_ip`. LiveKit's `rtc.use_external_ip` takes precedence, so set `LIVEKIT_USE_EXTERNAL_IP=false` when using a static address.
+
 ## Traefik
 
 Set `COMPOSE_VARIANT=traefik` and `TRAEFIK_HOST=calls.example.com`.
