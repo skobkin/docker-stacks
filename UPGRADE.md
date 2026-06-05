@@ -1,3 +1,13 @@
+## 2026-06-05 - qBittorrent resource limits added
+
+### Affected stacks
+
+- `qbittorrent`
+
+### Explanation
+
+The qBittorrent stack now has configurable Compose resource limits. By default, the container is limited to 4 CPUs and 4 GB of memory through `CPU_LIMIT` and `MEMORY_LIMIT` in `.env`.
+
 ## 2026-05-18 - Telegram LLM Bot 0.20.0 configuration update
 
 ### Affected stacks

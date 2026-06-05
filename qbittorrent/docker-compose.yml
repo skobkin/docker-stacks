@@ -15,6 +15,11 @@ services:
     volumes:
       - "${CONFIG_PATH}:/config"
       - "${DOWNLOAD_PATH}:${DOWNLOAD_PATH}"
+    deploy:
+      resources:
+        limits:
+          memory: "${MEMORY_LIMIT:-4G}"
+          cpus: "${CPU_LIMIT:-4.0}"
     restart: unless-stopped
     logging:
       driver: "json-file"
