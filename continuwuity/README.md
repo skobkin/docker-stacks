@@ -190,7 +190,13 @@ Use TOML when you want clearer structure for:
 
 This stack does not include LiveKit or coturn. Use the separate [`matrix-calls`](../matrix-calls/README.md) stack for basic native MatrixRTC calls with LiveKit.
 
-Calls stay disabled until you opt in with TOML configuration:
+Calls stay disabled until Continuwuity advertises a LiveKit focus. For the env-first setup, enable this in `.env` after deploying `matrix-calls`:
+
+```dotenv
+CONTINUWUITY_MATRIX_RTC__FOCI=[{type="livekit",livekit_service_url="https://calls.example.com"}]
+```
+
+The equivalent TOML form is:
 
 ```toml
 [global.matrix_rtc]
@@ -201,6 +207,7 @@ foci = [
 
 It does avoid blocking LiveKit or TURN later:
 
+- `.env.dist` includes a commented MatrixRTC foci variable
 - `config/continuwuity.toml.dist` includes commented TURN and MatrixRTC sections
 - the delegated default works with a future separate LiveKit domain
 

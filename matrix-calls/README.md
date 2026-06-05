@@ -52,19 +52,19 @@ See the [common Traefik guide](../_docs/traefik.md) and the [external Traefik ne
 
 ## Continuwuity
 
-Calls stay disabled until Continuwuity advertises the LiveKit focus. If you use the env-first Continuwuity stack, move MatrixRTC settings into a TOML config:
+Calls stay disabled until Continuwuity advertises the LiveKit focus. If you use the env-first Continuwuity stack, enable this in `continuwuity/.env`:
+
+```dotenv
+CONTINUWUITY_MATRIX_RTC__FOCI=[{type="livekit",livekit_service_url="https://calls.example.com"}]
+```
+
+The equivalent TOML form is:
 
 ```toml
 [global.matrix_rtc]
 foci = [
   { type = "livekit", livekit_service_url = "https://calls.example.com" },
 ]
-```
-
-Then set this in `continuwuity/.env`:
-
-```dotenv
-CONTINUWUITY_CONFIG=/etc/continuwuity/continuwuity.toml
 ```
 
 Restart Continuwuity after changing the config.
