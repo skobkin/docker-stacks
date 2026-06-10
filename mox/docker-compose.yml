@@ -1,0 +1,32 @@
+# Mox mail server
+# https://www.xmox.nl/install/#hdr-docker
+# https://r.xmox.nl/r/mox/
+# https://github.com/mjl-/mox/blob/main/docker-compose.yml
+
+services:
+  mox:
+    image: 'r.xmox.nl/mox:${IMAGE_TAG:-latest}'
+    container_name: 'mox'
+    hostname: 'mox'
+    env_file: '.env'
+    environment:
+      # Avoid systemd unit generation during quickstart.
+      MOX_DOCKER: 'yes'
+    # Mox needs host networking so it can see public IPs and real client IPs.
+    network_mode: 'host'
+    volumes:
+      - '${HOST_CONFIG_DIR:-./config}:/mox/config:z'
+      - '${HOST_DATA_DIR:-./data}:/mox/data:z'
+      - '${HOST_WEB_DIR:-./web}:/mox/web:z'
+    working_dir: '/mox'
+    restart: unless-stopped
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'
+    healthcheck:
+      test: "netstat -nlt | grep ':25 '"
+      interval: 1s
+      timeout: 1s
+      retries: 10
