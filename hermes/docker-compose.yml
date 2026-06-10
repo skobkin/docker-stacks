@@ -10,8 +10,10 @@ services:
       - "${DASHBOARD_BIND_ADDR:-127.0.0.1}:${DASHBOARD_BIND_PORT:-8410}:9119/tcp"
     volumes:
       - "${HOST_DATA_DIR:-./data}:/opt/data"
+      - /etc/localtime:/etc/localtime:ro
     env_file: .env
     environment:
+      TZ: "${TZ:-UTC}"
       HERMES_DASHBOARD: "1"
       HERMES_DASHBOARD_HOST: "0.0.0.0"
       HERMES_DASHBOARD_PORT: "9119"
