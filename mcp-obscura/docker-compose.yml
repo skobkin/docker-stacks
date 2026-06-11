@@ -1,0 +1,26 @@
+# https://github.com/h4ckf0r0day/obscura
+
+services:
+  mcp-obscura:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
+    image: "h4ckf0r0day/obscura:${IMAGE_TAG:-latest}"
+    container_name: mcp-obscura
+    ports:
+      - "${BIND_ADDR:-127.0.0.1}:${BIND_PORT:-8413}:3000/tcp"
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  proxy:
+    external: true
+    name: "${PROXY_NETWORK:-proxy}"
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"

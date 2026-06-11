@@ -31,6 +31,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | forgejo                 | forgejo           | 3000                | 3000           | ✅       | TCP      | Git hosting                         |
 | forgejo                 | server            | 222                 | 22             | ❌       | TCP      | SSH Git access                      |
 | mcp-forgejo             | mcp-forgejo       | 8412                | 8080           | ✅       | TCP      | Forgejo MCP HTTP endpoint, localhost-bound |
+| mcp-obscura             | mcp-obscura       | 8413                | 3000           | ✅       | TCP      | Obscura MCP HTTP endpoint, localhost-bound |
 | frigate                 | frigate           | 8971                | 8971           | ✅       | TCP      | Authenticated UI/API                |
 | frigate                 | frigate           | 8554                | 8554           | ❌       | TCP      | RTSP restream                       |
 | frigate                 | frigate           | 8555                | 8555           | ❌       | TCP      | WebRTC signaling/two-way talk       |

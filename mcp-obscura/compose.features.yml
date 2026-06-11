@@ -1,0 +1,130 @@
+services:
+  default:
+    command:
+      - "mcp"
+      - "--http"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "3000"
+
+  stealth:
+    command:
+      - "mcp"
+      - "--http"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "3000"
+      - "--stealth"
+
+  proxy:
+    command:
+      - "mcp"
+      - "--http"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "3000"
+      - "--proxy"
+      - "${OBSCURA_PROXY:-socks5://mihomo:1050}"
+    networks:
+      - proxy
+
+  stealth_proxy:
+    command:
+      - "mcp"
+      - "--http"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "3000"
+      - "--stealth"
+      - "--proxy"
+      - "${OBSCURA_PROXY:-socks5://mihomo:1050}"
+    networks:
+      - proxy
+
+  traefik:
+    command:
+      - "mcp"
+      - "--http"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "3000"
+    networks:
+      - default
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.mcp-obscura.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.mcp-obscura.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.mcp-obscura.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.services.mcp-obscura.loadbalancer.server.port: "3000"
+
+  traefik_stealth:
+    command:
+      - "mcp"
+      - "--http"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "3000"
+      - "--stealth"
+    networks:
+      - default
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.mcp-obscura.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.mcp-obscura.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.mcp-obscura.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.services.mcp-obscura.loadbalancer.server.port: "3000"
+
+  traefik_proxy:
+    command:
+      - "mcp"
+      - "--http"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "3000"
+      - "--proxy"
+      - "${OBSCURA_PROXY:-socks5://mihomo:1050}"
+    networks:
+      - default
+      - proxy
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.mcp-obscura.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.mcp-obscura.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.mcp-obscura.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.services.mcp-obscura.loadbalancer.server.port: "3000"
+
+  traefik_stealth_proxy:
+    command:
+      - "mcp"
+      - "--http"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "3000"
+      - "--stealth"
+      - "--proxy"
+      - "${OBSCURA_PROXY:-socks5://mihomo:1050}"
+    networks:
+      - default
+      - proxy
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.mcp-obscura.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.mcp-obscura.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.mcp-obscura.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.services.mcp-obscura.loadbalancer.server.port: "3000"
