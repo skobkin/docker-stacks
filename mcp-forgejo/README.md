@@ -18,6 +18,12 @@ http://127.0.0.1:8412/mcp
 
 The port is bound to localhost by default. Change `BIND_ADDR` only when the endpoint is protected by an appropriate network or access-control layer.
 
+This service joins the external [`ai-tools`](../_docs/ai_tools_network.md) Docker network so MCP clients and other AI services can reach it as `mcp-forgejo:8080`. Create the network before starting the stack:
+
+```shell
+docker network create ai-tools
+```
+
 ## Authentication
 
 By default, clients provide a Forgejo access token on each MCP request:

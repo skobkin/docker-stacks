@@ -17,6 +17,8 @@ services:
     env_file: .env
     environment:
       FORGEJO_URL: "${FORGEJO_URL:?}"
+    networks:
+      - ai-tools
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -25,6 +27,8 @@ services:
         max-file: "${LOG_MAX_FILE:-5}"
 
 networks:
+  ai-tools:
+    external: true
   proxy:
     external: true
     name: "${PROXY_NETWORK:-proxy}"
