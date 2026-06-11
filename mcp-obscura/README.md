@@ -20,6 +20,12 @@ The port is bound to localhost by default. Change `BIND_ADDR` only when the endp
 
 This stack requires an Obscura image whose `mcp` command supports `--host`. The command binds to `0.0.0.0:3000` inside the container so the endpoint is reachable through the localhost-published port and optional Traefik network.
 
+This service joins the external [`ai-tools`](../_docs/ai_tools_network.md) Docker network so MCP clients and other AI services can reach it at `http://mcp-obscura:3000/mcp`. Create the network before starting the stack:
+
+```shell
+docker network create ai-tools
+```
+
 ## Security
 
 Obscura's MCP HTTP server has no built-in authentication. Any client that can reach it can control the shared browser session, navigate to URLs, read page contents, and execute the exposed browser tools. Keep the default localhost binding or add authentication and restrictive access control at the reverse proxy.
