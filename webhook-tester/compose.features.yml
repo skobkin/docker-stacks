@@ -1,0 +1,15 @@
+services:
+  default: {}
+
+  traefik:
+    networks:
+      - default
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.webhook-tester.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.webhook-tester.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.webhook-tester.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.routers.webhook-tester.service: "webhook-tester"
+      traefik.http.services.webhook-tester.loadbalancer.server.port: "8080"

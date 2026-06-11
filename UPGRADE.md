@@ -1,3 +1,25 @@
+## 2026-06-11 - Webhook.site replaced by WebHook Tester
+
+### Affected stacks
+
+- `webhooksite`
+- `webhook-tester`
+
+### Explanation
+
+The multi-container Webhook.site stack has been removed and replaced by the single-container WebHook Tester stack. The new stack stores sessions and captured requests on the filesystem under `webhook-tester/data` by default and listens on localhost port `8414`.
+
+Existing Webhook.site sessions and Redis data are not compatible with WebHook Tester and cannot be migrated automatically.
+
+### Migration
+
+1. Stop the old stack with `cd webhooksite && docker compose down`.
+2. Archive or remove the old `webhooksite/data` directory manually after confirming it is no longer needed.
+3. Change to `webhook-tester`, copy `.env.dist` to `.env`, and review the UID/GID and storage settings.
+4. Update local integrations and bookmarks from port `8391` to `8414`.
+5. When using Traefik for webhook providers outside the private network, explicitly set `TRAEFIK_ACCESS_POLICY=public-access@file` and configure `PUBLIC_URL_ROOT`.
+6. Start the new stack with `docker compose up -d`.
+
 ## 2026-06-05 - qBittorrent resource limits added
 
 ### Affected stacks
