@@ -4,3 +4,28 @@ services:
   proxy:
     networks:
       - proxy
+
+  traefik:
+    networks:
+      - default
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.mcp-forgejo.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.mcp-forgejo.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.mcp-forgejo.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.services.mcp-forgejo.loadbalancer.server.port: "8080"
+
+  traefik_proxy:
+    networks:
+      - default
+      - proxy
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.mcp-forgejo.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.mcp-forgejo.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.mcp-forgejo.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.services.mcp-forgejo.loadbalancer.server.port: "8080"

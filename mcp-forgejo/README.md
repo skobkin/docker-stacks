@@ -36,3 +36,17 @@ See the upstream [multi-tenant HTTP guide](https://github.com/goern/forgejo-mcp/
 ## Proxy Variant
 
 Set `COMPOSE_VARIANT=proxy` when the server needs the external `proxy` network for outbound access through a service such as Mihomo. Create that network as documented in the shared [`proxy` network guide](../_docs/proxy_network.md), then uncomment the relevant proxy variables in `.env`.
+
+## Traefik
+
+Set `COMPOSE_VARIANT=traefik`, configure `TRAEFIK_HOST`, and create the external `traefik` network to expose the MCP endpoint through the shared Traefik stack. Use `COMPOSE_VARIANT=traefik_proxy` when both Traefik exposure and the outbound proxy network are required.
+
+The Traefik client URL is:
+
+```text
+https://mcp-forgejo.example.com/mcp
+```
+
+The router uses the shared `websecure` entrypoint and `default-access@file` policy by default. Review the common [Traefik usage guide](../_docs/traefik.md) and [network setup](../_docs/traefik_network.md) before enabling this variant.
+
+Do not expose this endpoint publicly without an appropriate access policy. Client-provided Forgejo tokens are carried in `Authorization` headers, so any reverse-proxy authentication must preserve those headers or use a different mechanism.
