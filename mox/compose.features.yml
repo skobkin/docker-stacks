@@ -1,0 +1,35 @@
+services:
+  default: {}
+
+  traefik:
+    labels:
+      traefik.enable: "true"
+
+      traefik.http.routers.mox-mtasts.rule: >-
+        Host(`${TRAEFIK_MTASTS_HOST:-}`) &&
+        Path(`/.well-known/mta-sts.txt`)
+      traefik.http.routers.mox-mtasts.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.mox-mtasts.middlewares: "${TRAEFIK_PUBLIC_ACCESS_POLICY:-public-access@file}"
+      traefik.http.routers.mox-mtasts.service: "mox-standards"
+
+      traefik.http.routers.mox-autoconfig.rule: >-
+        (Host(`${TRAEFIK_AUTOCONFIG_HOST:-}`) ||
+        Host(`${TRAEFIK_MAIL_HOST:-}`)) &&
+        (Path(`/mail/config-v1.1.xml`) ||
+        Path(`/autodiscover/autodiscover.xml`) ||
+        Path(`/profile.mobileconfig`) ||
+        Path(`/profile.mobileconfig.qrcode.png`))
+      traefik.http.routers.mox-autoconfig.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.mox-autoconfig.middlewares: "${TRAEFIK_PUBLIC_ACCESS_POLICY:-public-access@file}"
+      traefik.http.routers.mox-autoconfig.priority: "100"
+      traefik.http.routers.mox-autoconfig.service: "mox-standards"
+
+      traefik.http.routers.mox-web.rule: >-
+        Host(`${TRAEFIK_MAIL_HOST:-}`) &&
+        !PathPrefix(`/admin`)
+      traefik.http.routers.mox-web.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.mox-web.middlewares: "${TRAEFIK_WEB_ACCESS_POLICY:-default-access@file}"
+      traefik.http.routers.mox-web.service: "mox-web"
+
+      traefik.http.services.mox-standards.loadbalancer.server.port: "${TRAEFIK_STANDARDS_SERVICE_PORT:-81}"
+      traefik.http.services.mox-web.loadbalancer.server.port: "${TRAEFIK_WEB_SERVICE_PORT:-1080}"

@@ -1,104 +1,133 @@
 # Mox
 
-Mox runs with Docker `host` networking so it can see the host's public IPs and the real
-client IPs for filtering and rate limiting.
+Mox runs with Docker host networking so it can see the host's public addresses
+and real client IPs for filtering and rate limiting. Optional Traefik support
+only proxies Mox's HTTP services; SMTP, submission, and IMAP continue to connect
+directly to Mox.
 
-### 1. First-time setup
+## Initial setup
 
-#### 1.1 Prepare directories
+Create the local environment file and review its hostnames:
 
-Ensure the `config`, `data`, and `web` directories exist (or update `.env` to point
-elsewhere). This README assumes you are in the `mox/` stack directory on the host.
+```shell
+cp .env.dist .env
+```
 
-#### 1.2 (Recommended) Create a dedicated system user
+Ensure the `config`, `data`, and `web` directories exist, or override their
+locations in `.env`.
 
-The upstream Docker quickstart uses a dedicated user so generated files are owned
-by that user. This is recommended but optional when using Docker.
-
-Create a user and set its home to the `mox/` directory:
+The upstream Docker quickstart recommends a dedicated user so generated files
+are owned by a stable UID:
 
 ```shell
 sudo useradd -m -d "$(pwd)" mox
 ```
 
-#### 1.3 Run quickstart
-
-Run quickstart to generate config files and DNS instructions:
+When Traefik already owns ports 80 and 443, generate the configuration with
+`-existing-webserver`:
 
 ```shell
-docker compose run --rm mox mox quickstart you@yourdomain.example $(id -u mox)
+docker compose run --rm mox mox quickstart \
+  -existing-webserver \
+  you@example.com \
+  "$(id -u mox)"
 ```
 
-If you run quickstart on a different machine than the final host, add
+If quickstart runs on a different machine than the production mail host, add
 `-hostname mail.example.com`.
 
-#### 1.4 Using an existing Nginx on 80/443
+Quickstart writes `config/mox.conf`, `config/domains.conf`, passwords, and the
+required DNS records. Review all generated output before starting Mox.
 
-If you already run Nginx on ports 80/443, add `-existing-webserver` to quickstart
-so Mox does not try to bind those ports:
+## Traefik
+
+Set `COMPOSE_VARIANT=traefik` and configure these hostnames in `.env`:
+
+```dotenv
+TRAEFIK_MAIL_HOST=mail.example.com
+TRAEFIK_AUTOCONFIG_HOST=autoconfig.example.com
+TRAEFIK_MTASTS_HOST=mta-sts.example.com
+```
+
+All three hostname variables are required when the Traefik variant is selected.
+Keep them distinct in a normal deployment:
+
+- `TRAEFIK_MAIL_HOST` is the mail server and client-settings hostname.
+- `TRAEFIK_AUTOCONFIG_HOST` should be `autoconfig.<mail-domain>` so clients can
+  discover it through the standard hostname.
+- `TRAEFIK_MTASTS_HOST` must be `mta-sts.<mail-domain>` because MTA-STS
+  discovery and Mox require that naming convention.
+
+The mail and autoconfig routes can technically share a hostname when DNS and
+client discovery are configured accordingly, but sharing all three does not
+provide standards-compliant MTA-STS discovery.
+
+The Traefik variant keeps `network_mode: host`. Traefik's Docker provider
+detects host-networked containers and connects through `host.docker.internal`,
+which the repository Traefik stack maps to the Docker host gateway.
+
+The routers use this mapping:
+
+| External hostname and path | Mox listener |
+|----------------------------|--------------|
+| `mta-sts.example.com/.well-known/mta-sts.txt` | Plain HTTP port `81` |
+| `autoconfig.example.com/mail/config-v1.1.xml` | Plain HTTP port `81` |
+| `mail.example.com/autodiscover/autodiscover.xml` | Plain HTTP port `81` |
+| `mail.example.com/profile.mobileconfig` and `.qrcode.png` | Plain HTTP port `81` |
+| `mail.example.com/`, `/webmail/`, and `/webapi/` | Plain HTTP port `1080` |
+
+The MTA-STS and autoconfiguration routers default to
+`public-access@file` because external mail systems and clients must reach them.
+The account, webmail, and WebAPI router defaults to
+`default-access@file`, which is normally private. Override
+`TRAEFIK_PUBLIC_ACCESS_POLICY` or `TRAEFIK_WEB_ACCESS_POLICY` only when the
+shared policies do not match the deployment.
+
+Before using the public routes, install the shared public policy if it is not
+already present:
 
 ```shell
-docker compose run --rm mox mox quickstart -existing-webserver you@yourdomain.example $(id -u mox)
+cp ../traefik/config/dynamic/public-access.yml.dist \
+  ../traefik/config/dynamic/public-access.yml
 ```
 
-When using `-existing-webserver`, you must terminate TLS in Nginx and reverse-proxy
-requests to the Mox web listeners configured in `config/mox.conf`. Quickstart will
-also place placeholder TLS certificate paths in `config/mox.conf` for the public
-SMTP/IMAP listener; you must replace them with real cert paths from `acme.sh`.
+Traefik intentionally does not route `/admin/`. Access the loopback-only admin
+interface through SSH:
 
-##### 1.4.1 Choose and understand hostnames
+```shell
+ssh -L 1080:127.0.0.1:1080 user@mail.example.com
+```
 
-Quickstart prints the DNS records you need. Those records typically include:
+Then open `http://localhost:1080/admin/`.
 
-- A hostname for SMTP/IMAP (often `mail.example.com`) that becomes your MX host.
-- `mta-sts.example.com` for the MTA-STS policy.
-- `autoconfig.example.com` for mail client auto-configuration.
+See the common [Traefik guide](../_docs/traefik.md) for entrypoint and access
+policy setup. Mox does not join the external Traefik network, so creating that
+network is only a requirement of the shared Traefik stack itself.
 
-You can change hostnames in the quickstart output, but make sure you:
-1) create DNS records for them, 2) issue certificates for them, and 3) proxy each
-hostname to the right Mox listener via Nginx.
+### Configure a listener reachable from Traefik
 
-##### 1.4.2 Update TLS cert paths in `config/mox.conf`
+The default `-existing-webserver` configuration may bind its internal listener
+only to loopback. A bridge-networked Traefik container cannot connect to the
+host's `127.0.0.1`.
 
-Quickstart writes placeholder paths for the public listener TLS certificates. Replace
-them with the real paths that `acme.sh` writes on your host.
-Use the same certs/keys that Nginx serves for those hostnames.
+Find the IPv4 address that Traefik uses for `host.docker.internal`:
 
-Example (paths are placeholders, use your actual `acme.sh` locations):
+```shell
+docker exec traefik getent ahostsv4 host.docker.internal
+```
+
+Use the first address from that output, typically the Docker bridge gateway,
+for a dedicated listener in `config/mox.conf`. Do not use `0.0.0.0`, because
+that would expose ports 81 and 1080 on every host interface.
+
+Mox configuration uses tabs for indentation:
 
 ```text
 Listeners:
-	public:
-		TLS:
-			KeyCerts:
-				- CertFile: /etc/ssl/acme/mail.example.com/fullchain.cer
-				  KeyFile: /etc/ssl/acme/mail.example.com/key.pem
-				- CertFile: /etc/ssl/acme/mta-sts.example.com/fullchain.cer
-				  KeyFile: /etc/ssl/acme/mta-sts.example.com/key.pem
-				- CertFile: /etc/ssl/acme/autoconfig.example.com/fullchain.cer
-				  KeyFile: /etc/ssl/acme/autoconfig.example.com/key.pem
-```
-
-If you use a wildcard certificate that covers all of these hostnames, you can point
-all entries at that single cert/key.
-
-##### 1.4.3 Configure Mox internal listeners for proxying
-
-The following is aligned with the upstream quickstart for `-existing-webserver`:
-it keeps all web endpoints on localhost, uses port 1080 for account/admin/webmail,
-and port 81 for autoconfig/MTA-STS/webserver. `Forwarded: true` tells Mox to trust
-`X-Forwarded-*` headers from Nginx.
-
-```text
-Listeners:
-	internal:
+	proxy:
 		IPs:
-			- 127.0.0.1
-		Hostname: localhost
-		AdminHTTP:
-			Enabled: true
-			Port: 1080
-			Forwarded: true
+			- 172.17.0.1
+		Hostname: mail.example.com
 		AccountHTTP:
 			Enabled: true
 			Port: 1080
@@ -115,101 +144,103 @@ Listeners:
 			Enabled: true
 			Port: 81
 			NonTLS: true
+			Forwarded: true
 		MTASTSHTTPS:
 			Enabled: true
 			Port: 81
 			NonTLS: true
+			Forwarded: true
 		WebserverHTTP:
 			Enabled: true
 			Port: 81
 ```
 
-Note: Mox config uses tabs for indentation.
+Replace `172.17.0.1` and the hostname with values from the deployment. Do not
+enable `AdminHTTP` on this listener.
 
-##### 1.4.4 Nginx reverse-proxy examples
+Keep administration on a separate loopback listener. A configuration generated
+by quickstart already has an `internal` listener. The minimal admin portion is:
 
-Mail/web UI host (proxy to port 1080):
-
-```nginx
-server {
-	listen 80;
-	listen 443 ssl http2;
-	server_name mail.example.com;
-
-	# Optional HTTP->HTTPS redirect
-	# if ($scheme = http) { return 301 https://$host$request_uri; }
-
-	# SSL config from acme.sh (use your local include/snippet)
-	#include ssl-domain.conf;
-
-	location / {
-		proxy_pass http://127.0.0.1:1080;
-		proxy_set_header Host $host;
-		proxy_set_header X-Real-IP $remote_addr;
-		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-		proxy_set_header X-Forwarded-Proto $scheme;
-	}
-
-	# Optional: lock down admin UI
-	#location /admin/ {
-	#	allow 192.168.0.0/16;
-	#	deny all;
-	#	proxy_pass http://127.0.0.1:1080;
-	#	proxy_set_header Host $host;
-	#	proxy_set_header X-Real-IP $remote_addr;
-	#	proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-	#	proxy_set_header X-Forwarded-Proto $scheme;
-	#}
-}
+```text
+	internal:
+		IPs:
+			- 127.0.0.1
+			- ::1
+		Hostname: localhost
+		AdminHTTP:
+			Enabled: true
+			Port: 1080
 ```
 
-Autoconfig + MTA-STS hostnames (proxy to port 81, plain HTTP to Mox):
+Multiple listeners can share port 1080 because they bind different addresses.
+Other intended loopback-only services, such as metrics, can remain on the
+`internal` listener.
 
-```nginx
-server {
-	listen 80;
-	listen 443 ssl http2;
-	server_name autoconfig.example.com mta-sts.example.com;
+## Updating an existing configuration
 
-	# SSL config from acme.sh (use your local include/snippet)
-	#include ssl-domain.conf;
+Do not rerun quickstart over an existing installation. Back up
+`config/mox.conf` and edit its `Listeners` section.
 
-	location / {
-		proxy_pass http://127.0.0.1:81;
-		proxy_set_header Host $host;
-		proxy_set_header X-Real-IP $remote_addr;
-		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-		proxy_set_header X-Forwarded-Proto $scheme;
-	}
-}
+For a configuration originally generated without `-existing-webserver`:
+
+1. Keep SMTP, submissions, IMAPS, and their ports unchanged.
+2. Provision PEM certificates for the mail protocol hostnames. In the public
+   listener's `TLS` section, remove `ACME` and configure `KeyCerts` with those
+   certificate and key paths. Leaving `TLS.ACME` enabled makes Mox continue
+   listening on its ACME port, normally 443.
+3. Disable or remove `AccountHTTPS`, `AdminHTTPS`, `WebmailHTTPS`,
+   `WebAPIHTTPS`, `AutoconfigHTTPS`, `MTASTSHTTPS`, `WebserverHTTP`, and
+   `WebserverHTTPS` from the public listener so Mox releases ports 80 and 443.
+4. Add the dedicated `proxy` listener shown above.
+5. Keep or add the loopback-only `internal` admin listener.
+
+For a configuration already generated with `-existing-webserver`:
+
+1. Keep the public SMTP, submissions, IMAPS, and TLS sections unchanged.
+2. Remove account, webmail, WebAPI, autoconfig, MTA-STS, and webserver services
+   from the existing `internal` listener.
+3. Leave `AdminHTTP` on the loopback-only `internal` listener.
+4. Add the dedicated `proxy` listener shown above, using the address resolved
+   by Traefik.
+
+Set `Forwarded: true` on every account, webmail, WebAPI, autoconfig, or MTA-STS
+service reached through Traefik. This lets Mox use `X-Forwarded-*` headers for
+client addresses, rate limits, logging, and secure cookies.
+
+Validate the edited configuration before restarting:
+
+```shell
+docker compose run --rm mox mox config test
 ```
 
-If you only want to expose webmail or web API, proxy `/webmail/` and/or `/webapi/`
-instead of `/`. If you want admin access private, keep `/admin/` restricted via
-Nginx allow/deny or expose it only on an internal/VPN-only virtual host.
+## Mail protocol certificates
 
-### 2. Running in production
+Traefik terminates HTTPS only. Mox still terminates TLS for SMTP STARTTLS,
+submissions, and IMAPS, so the public listener must retain readable PEM
+certificate and key files covering the mail server and client-settings
+hostnames used by those protocols.
 
-#### 2.1 Review configuration and DNS
+Traefik's `acme.json` cannot be referenced directly by Mox. Provision separate
+PEM files with an ACME client or another certificate workflow and place them
+under the mounted Mox configuration directory, or mount another host directory
+containing them. Update `Listeners.public.TLS.KeyCerts` in `config/mox.conf`.
+Remove obsolete MTA-STS or autoconfig certificate entries only when those names
+are used exclusively through Traefik; do not remove certificates required by
+SMTP, submission, or IMAP hostnames.
 
-Review `config/mox.conf` and `config/domains.conf`, then apply the DNS records
-printed by quickstart.
+## Start and review
 
-#### 2.2 Start the server
+Review `config/mox.conf`, `config/domains.conf`, and all DNS records printed by
+quickstart, then start the service:
 
 ```shell
 docker compose up -d
 ```
 
-#### 2.3 Reverse proxy with Nginx (if ports 80/443 are already in use)
+The optional `web` directory contains static files served by configured Mox
+web handlers.
 
-If you use Nginx on 80/443, keep it there and proxy requests to the Mox web listener
-configured in `config/mox.conf`. Ensure Nginx also handles ACME/TLS for Mox and any
-other sites you serve. See section 1.4 for the full reverse-proxy checklist.
-
-## Notes
-
-- The `web` directory is optional; it is used for static files served by Mox.
-- If you want Mox to manage ACME and serve the admin UI directly, keep ports 80/443
-  available for Mox.
-- See the Mox install docs and docker compose example for more details.
+See the upstream [Docker installation guide](https://www.xmox.nl/install/#hdr-docker),
+[configuration reference](https://www.xmox.nl/config/), and
+[reference Compose file](https://github.com/mjl-/mox/blob/main/docker-compose.yml)
+for additional details.

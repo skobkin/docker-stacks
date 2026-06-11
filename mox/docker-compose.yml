@@ -5,6 +5,9 @@
 
 services:
   mox:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
     image: 'r.xmox.nl/mox:${IMAGE_TAG:-latest}'
     container_name: 'mox'
     hostname: 'mox'
