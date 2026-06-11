@@ -30,6 +30,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | folding-at-home         | foldingathome     | 7396                | 7396           | ✅       | TCP      | Distributed computing               |
 | forgejo                 | forgejo           | 3000                | 3000           | ✅       | TCP      | Git hosting                         |
 | forgejo                 | server            | 222                 | 22             | ❌       | TCP      | SSH Git access                      |
+| mcp-forgejo             | mcp-forgejo       | 8412                | 8080           | ✅       | TCP      | Forgejo MCP HTTP endpoint, localhost-bound |
 | frigate                 | frigate           | 8971                | 8971           | ✅       | TCP      | Authenticated UI/API                |
 | frigate                 | frigate           | 8554                | 8554           | ❌       | TCP      | RTSP restream                       |
 | frigate                 | frigate           | 8555                | 8555           | ❌       | TCP      | WebRTC signaling/two-way talk       |

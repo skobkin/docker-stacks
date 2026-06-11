@@ -1,0 +1,6 @@
+services:
+  default: {}
+
+  proxy:
+    networks:
+      - proxy

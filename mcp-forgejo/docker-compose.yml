@@ -1,0 +1,30 @@
+# https://codeberg.org/goern/forgejo-mcp
+
+services:
+  mcp-forgejo:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
+    image: "codeberg.org/goern/forgejo-mcp:${IMAGE_TAG:-latest}"
+    container_name: mcp-forgejo
+    command:
+      - "--transport"
+      - "http"
+      - "--http-port"
+      - "8080"
+    ports:
+      - "${BIND_ADDR:-127.0.0.1}:${BIND_PORT:-8412}:8080/tcp"
+    env_file: .env
+    environment:
+      FORGEJO_URL: "${FORGEJO_URL:?}"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  proxy:
+    external: true
+    name: "${PROXY_NETWORK:-proxy}"
