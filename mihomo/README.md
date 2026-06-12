@@ -1,6 +1,6 @@
 # Mihomo
 
-This stack replaces `v2fly-client` with [Mihomo](https://github.com/MetaCubeX/mihomo) while keeping the same default SOCKS, HTTP, and TProxy host ports.
+This stack keeps the same default SOCKS, HTTP, and TProxy host ports that the previous v2fly-client stack exposed.
 
 ## Prerequisites
 
