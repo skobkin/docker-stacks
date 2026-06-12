@@ -80,9 +80,6 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | openhands               | openhands         | 3000                | 3000           | ✅       | TCP      | AI coding assistant                 |
 | open-webui              | webui             | 8010                | 8080           | ✅       | TCP      | AI chat interface                   |
 | openwebrxplus           | openwebrxplus     | 8402                | 8073           | ✅       | TCP      | WebSDR receiver UI                  |
-| open-streaming-platform | osp               | 8585                | 80             | ✅       | TCP      | Live streaming                      |
-| open-streaming-platform | osp               | 8553                | 443            | ✅       | TCP      | HTTPS                               |
-| open-streaming-platform | osp               | 1935                | 1935           | ❌       | TCP      | RTMP streaming                      |
 | owncast                 | owncast           | varies              | 8080           | ✅       | TCP      | Live streaming                      |
 | phanpy                  | phanpy            | 8403                | 80             | ✅       | TCP      | Static Phanpy web UI                |
 | piper                   | piper             | 10200               | 10200          | ✅       | TCP      | Text-to-speech                      |
