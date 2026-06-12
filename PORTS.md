@@ -111,9 +111,6 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | tor-privoxy             | tor               | 5353                | 5353           | ❌       | TCP      | DNS                                 |
 | transmission            | transmission      | 9091                | 9091           | ✅       | TCP      | Torrent client                      |
 | transmission            | transmission      | 51413               | 51413          | ❌       | TCP/UDP  | BitTorrent                          |
-| v2fly-client            | v2fly             | 1050                | 1050           | ❌       | TCP      | SOCKS proxy                         |
-| v2fly-client            | v2fly             | 1080                | 1080           | ❌       | TCP      | HTTP proxy                          |
-| v2fly-client            | v2fly             | 12345               | 12345          | ❌       | TCP/UDP  | Transparent proxy                   |
 | woodpecker              | woodpecker-server | 8400                | 8000           | ✅       | TCP      | CI web UI                           |
 | woodpecker              | woodpecker-server | 9400                | 9000           | ❌       | TCP      | gRPC endpoint for agents            |
 | webhook-tester          | webhook-tester    | 8414                | 8080           | ✅       | TCP      | Webhook testing                     |
