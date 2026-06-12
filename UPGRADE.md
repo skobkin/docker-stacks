@@ -1,3 +1,34 @@
+## 2026-06-12 - Abandoned stacks removed
+
+### Affected stacks
+
+- `drone`
+- `drone-runner`
+- `homer`
+- `magnetico-web-telegram`
+- `open-streaming-platform`
+- `shinobi`
+- `proxy-mtproto`
+- `duplicati`
+- `metube`
+- `shadowsocks-client`
+- `v2fly-client`
+
+### Explanation
+
+These stacks were marked abandoned (⏸) in the README and have been removed per #274. Drone and Drone Docker Runner were already replaced by Woodpecker CI in this repository. magnetico-web-telegram was superseded by newer magnetico-web. Homer, Open Streaming Platform, Shinobi, and Metube have dormant upstream projects. proxy-mtproto is replaced by `proxy-socks5` or external Rust MTProto proxies. Duplicati, Shadowsocks Client, and V2Fly Client were marked abandoned with no current operator use.
+
+`folding-at-home` is now marked abandoned (⏸) but kept in the repository.
+
+### Migration
+
+1. For each removed stack currently running: `cd <stack> && docker compose down` and archive or remove the stack's `data/` directory manually.
+2. Drone users should already be on Woodpecker (`woodpecker/`, `woodpecker-agent/`). Disable the Drone server and runner containers and remove any DNS or reverse-proxy entries pointing at them.
+3. magnetico-web-telegram users can remove the bot and use magnetico-web directly.
+4. proxy-mtproto users should switch to `proxy-socks5` (HTTP/SOCKS5) or a maintained MTProto proxy image.
+5. v2fly-client users should switch to the `mihomo` stack (same default SOCKS, HTTP, and TProxy host ports).
+6. No other operator action is required; the repo's CI now validates one fewer compose file per stack.
+
 ## 2026-06-11 - Webhook.site replaced by WebHook Tester
 
 ### Affected stacks
