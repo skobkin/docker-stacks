@@ -9,7 +9,7 @@ create needed `.env` files from `.env.dist` template.
 
 ```shell
 # Choose a service
-cd folding-at-home
+cd ip-detect
 # Copy template
 cp .env.dist .env
 # edit the config to your preference
@@ -49,7 +49,7 @@ Legend: ✅ — working, ⏸ — abandoned and can be removed, 🤷 — not test
 | emby                    | ✅      | `emby/embyserver`                                | Media server with online transcoding support.                         | [Website](https://emby.media)                                                                                                                                                                                                |
 | ESPHome                 | ✅      | `ghcr.io/esphome/esphome`                        | ESP8266/ESP32 microcontroller management platform.                    | [Website](https://esphome.io), [Github](https://github.com/esphome/esphome)                                                                                                                                                  |
 | Firefly III             | ✅      | `fireflyiii/core`                                | Bookkeeping software.                                                 | [Website](https://docs.firefly-iii.org), [Github](https://github.com/firefly-iii/firefly-iii)                                                                                                                                |
-| Folding@Home            | ✅      | `johnktims/folding-at-home`                      | Protein folding distributed computing platform.                       | [Website](https://foldingathome.org), [My guide](https://skobk.in/2020/06/folding-at-home-quick-start/)                                                                                                                      |
+| Folding@Home            | ⏸      | `johnktims/folding-at-home`                      | Protein folding distributed computing platform.                       | [Website](https://foldingathome.org), [My guide](https://skobk.in/2020/06/folding-at-home-quick-start/)                                                                                                                      |
 | Faster Whisper          | ✅      | `linuxserver/faster-whisper`                     | Fast speech recognition using Whisper models.                         | [Website](https://github.com/guillaumekln/faster-whisper), [Image](https://hub.docker.com/r/linuxserver/faster-whisper)                                                                                                      |
 | Forgejo                 | ✅      | `codeberg.org/forgejo/forgejo`                   | Lightweight Git hosting platform.                                     | [Website](https://forgejo.org), [Github](https://codeberg.org/forgejo/forgejo)                                                                                                                                               |
 | Forgejo MCP             | ✅      | `codeberg.org/goern/forgejo-mcp`                 | Forgejo integration server for MCP clients.                            | [Codeberg](https://codeberg.org/goern/forgejo-mcp), [Github mirror](https://github.com/goern/forgejo-mcp)                                                                                                                     |
