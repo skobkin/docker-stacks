@@ -19,8 +19,6 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | matrix-calls            | livekit           | 7881                | 7881           | ❌       | TCP      | LiveKit ICE over TCP                |
 | matrix-calls            | livekit           | 50100-50200         | 50100-50200    | ❌       | UDP      | LiveKit ICE media transport         |
 | matrix-calls            | lk-jwt-service    | 8411                | 8411           | ✅       | TCP      | MatrixRTC JWT service, localhost-bound |
-| drone                   | drone             | 8386                | 80             | ✅       | TCP      | CI/CD server                        |
-| drone-runner            | drone-runner      | 8387                | 3000           | ✅       | TCP      | CI/CD runner                        |
 | duplicati               | duplicati         | 8200                | 8200           | ✅       | TCP      | Backup software                     |
 | element-web             | element-web       | varies              | 80             | ✅       | TCP      | Matrix client                       |
 | emby                    | emby              | 8096                | 8096           | ✅       | TCP      | Media server                        |
