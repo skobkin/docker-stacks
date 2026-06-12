@@ -40,7 +40,6 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | hermes                  | hermes            | 8410                | 9119           | ✅       | TCP      | Authenticated dashboard             |
 | hermes                  | hermes            | 8642                | 8642           | ✅       | TCP      | API server, disabled unless API variant is selected |
 | home-assistant          | homeassistant     | *host mode*         | *host mode*    | ✅       | -        | IoT hub                             |
-| homer                   | homer             | 8084                | 8080           | ✅       | TCP      | Dashboard                           |
 | i2pd                    | i2pd              | 7070                | 7070           | ✅       | TCP      | Web interface                       |
 | i2pd                    | i2pd              | 4444                | 4444           | ❌       | TCP      | HTTP proxy                          |
 | i2pd                    | i2pd              | 4447                | 4447           | ❌       | TCP      | SOCKS proxy                         |
