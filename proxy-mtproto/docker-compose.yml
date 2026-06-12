@@ -1,9 +1,0 @@
-
-services:
-  mtg:
-    image: mtproxy/mtproxy
-    container_name: proxy-mtproto
-    ports:
-      - "${EXTERNAL_PORT}:${PORT}/tcp"
-    env_file: .env
-    restart: unless-stopped

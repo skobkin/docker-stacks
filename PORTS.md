@@ -84,7 +84,6 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | phanpy                  | phanpy            | 8403                | 80             | ✅       | TCP      | Static Phanpy web UI                |
 | piper                   | piper             | 10200               | 10200          | ✅       | TCP      | Text-to-speech                      |
 | portainer               | portainer         | 9000                | 9000           | ✅       | TCP      | Docker management                   |
-| proxy-mtproto           | proxy             | varies              | varies         | ❌       | TCP      | Telegram proxy                      |
 | proxy-socks5            | proxy             | 2080                | 1080           | ❌       | TCP      | SOCKS5 proxy                        |
 | qbittorrent             | qbittorrent       | 8090                | varies         | ✅       | TCP      | Torrent client web UI               |
 | qbittorrent             | qbittorrent       | 6881                | 6881           | ❌       | TCP/UDP  | BitTorrent                          |
