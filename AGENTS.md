@@ -15,6 +15,7 @@ Keep this file repo-specific. Use general Docker/Compose best practices from nor
 - Add concise comments to `.env.dist` for app-specific variables. Expand comments and add links only when an option is complex, non-obvious, or has dedicated upstream documentation.
 - Keep per-stack `README.md` files focused on stack-specific behavior. When a section would duplicate guidance shared by multiple stacks, move that content into a common doc under [`_docs/`](./_docs/) and link to it from the stack README instead of repeating the full text.
 - Update [`UPGRADE.md`](./UPGRADE.md) only for breaking changes or changes that require existing operators to take migration or deployment action. Do not add entries for new additive stacks, documentation-only changes, or backward-compatible improvements that require no operator action. When an entry is required, add it at the top as `## yyyy-mm-dd - Brief change title`, list affected stacks under `### Affected stacks`, explain the change under `### Explanation`, and include `### Migration` with the required operator steps.
+- If asked to do full work on an issue, fetch and work in a separate branch based on latest `origin/master`.
 
 ## Compose Conventions
 
