@@ -16,6 +16,16 @@
 #   https://anubis.techaro.lol/docs/admin/policy/
 #   https://anubis.techaro.lol/docs/admin/policy/expressions/
 
+# Well-known good bots and status checkers. These clients cannot solve
+# a proof-of-work challenge, so allow them through unconditionally.
+- name: kagi
+  user_agent_regex: (?i:kagi)
+  action: ALLOW
+
+- name: gatus
+  user_agent_regex: (?i:gatus)
+  action: ALLOW
+
 # Common paths that bots and crawlers probe and that are safe to serve
 # without a challenge.
 - name: well-known
