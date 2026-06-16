@@ -1,0 +1,17 @@
+http:
+  middlewares:
+    anubis:
+      forwardAuth:
+        # Anubis must be reachable as `anubis:8923` on the shared `traefik`
+        # network. The endpoint path is fixed by Anubis.
+        address: "http://anubis:8923/.within.website/x/cmd/anubis/api/check"
+        trustForwardHeader: true
+        maxResponseBodySize: 8192
+        authRequestHeaders:
+          - "Accept"
+          - "Cookie"
+          - "X-Forwarded-Method"
+          - "X-Forwarded-Proto"
+          - "X-Forwarded-Host"
+          - "X-Forwarded-Uri"
+          - "X-Forwarded-For"

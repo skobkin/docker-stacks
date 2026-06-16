@@ -1,0 +1,42 @@
+# Anubis - AI bot firewall exposed as a Traefik ForwardAuth service.
+# https://anubis.techaro.lol/
+# https://anubis.techaro.lol/docs/admin/environments/traefik/
+
+services:
+  anubis:
+    image: "ghcr.io/techarohq/anubis:${IMAGE_TAG}"
+    container_name: anubis
+    hostname: anubis
+    env_file: .env
+    environment:
+      # Bind address inside the container. :8923 is the Anubis default.
+      BIND: ":8923"
+      # Policy file path inside the container. Matches the bind mount below.
+      POLICY_FNAME: "/config/policy.yml"
+      # Operator-supplied values. These are required for Anubis to issue
+      # cookies and render challenge pages correctly. Set them in .env.
+      REDIRECT_DOMAINS: "${REDIRECT_DOMAINS}"
+      PUBLIC_URL: "${PUBLIC_URL}"
+      COOKIE_DOMAIN: "${COOKIE_DOMAIN}"
+    volumes:
+      - "${HOST_CONFIG_DIR:-./config}:/config:ro"
+      - "${HOST_DATA_DIR:-./data}:/data"
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      # Localhost-only bind. Traefik reaches this service on the shared
+      # external `traefik` network and does not need a host port, but the
+      # bind is exposed for direct verification and debugging.
+      - "${BIND_ADDR:-127.0.0.1}:${BIND_PORT:-8923}:8923/tcp"
+    networks:
+      - traefik
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"

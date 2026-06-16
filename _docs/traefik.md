@@ -27,7 +27,7 @@ Most of these stacks:
 - `TRAEFIK_NETWORK=traefik`: external Docker network shared with the Traefik stack
 - `TRAEFIK_HOST=app.example.com`: hostname used in the Traefik router rule
 - `TRAEFIK_ENTRYPOINT=websecure`: Traefik entrypoint for the router
-- `TRAEFIK_ACCESS_POLICY=default-access@file`: middleware applied before other router middlewares; stacks default to this when unset
+- `TRAEFIK_ACCESS_POLICY=default-access@file`: comma-separated list of access middlewares applied before other router middlewares; stacks default to `default-access@file` when unset. Append additional middlewares such as `,anubis@file` to layer bot protection on top of an existing access policy.
 - `TRAEFIK_SERVICE_PORT=<container-http-port>`: internal container port that Traefik should forward to when the stack exposes this knob
 - `TRAEFIK_GRPC_ENTRYPOINT=grpcsecure`: shared Traefik entrypoint for gRPC-over-HTTPS routers
 - `TRAEFIK_GRPC_SERVICE_PORT=<container-grpc-port>`: internal container gRPC port that Traefik should forward to when the stack exposes this knob
@@ -45,6 +45,16 @@ TRAEFIK_ACCESS_POLICY=public-access@file
 ```
 
 Use this override intentionally. It affects all Traefik routers in that stack, including secondary routers such as sockets, federation, or gRPC routes.
+
+### Optional AI-bot firewall
+
+The shared Anubis stack provides an `anubis@file` forward-auth middleware. To enable it for a stack, run the Anubis stack on the same `traefik` network, copy `traefik/config/dynamic/anubis.yml.dist` to `traefik/config/dynamic/anubis.yml`, and append `,anubis@file` to the stack's `TRAEFIK_ACCESS_POLICY`:
+
+```dotenv
+TRAEFIK_ACCESS_POLICY=default-access@file,anubis@file
+```
+
+Stacks that already opt into `public-access@file` or `public-auth-access@file` (Authelia SSO) can stack Anubis on top in the same way. The order in the list is the order the middlewares run; place Anubis after the access-list middleware so trusted LAN clients bypass the challenge. Per-stack path exemptions are configured in the Anubis policy file — see the [Anubis stack README](../anubis/README.md) for the step-by-step guide.
 
 ## Unknown Host Redirect
 

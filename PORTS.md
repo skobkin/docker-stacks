@@ -7,6 +7,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | Stack                   | Service           | Default Host Port   | Container Port | Is HTTP | Protocol | Notes                               |
 |-------------------------|-------------------|---------------------|----------------|---------|----------|-------------------------------------|
 | amdgputop-web           | amdgputop-web     | 8399                | 8080           | ✅       | TCP      | AMD GPU telemetry UI                |
+| anubis                  | anubis            | 8923                | 8923           | ✅       | TCP      | AI-bot firewall forwardAuth, localhost-bound |
 | ark-server              | server            | 7777                | 7777           | ❌       | TCP/UDP  | Game server                         |
 | ark-server              | server            | varies              | varies         | ❌       | TCP/UDP  | Query/RCON ports                    |
 | authelia                | authelia          | 9091                | 9091           | ✅       | TCP      | SSO portal and forward-auth API     |
