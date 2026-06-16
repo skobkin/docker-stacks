@@ -4,6 +4,9 @@
 
 services:
   anubis:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-traefik}"
     image: "ghcr.io/techarohq/anubis:${IMAGE_TAG}"
     container_name: anubis
     hostname: anubis
@@ -13,22 +16,23 @@ services:
       BIND: ":8923"
       # Policy file path inside the container. Matches the bind mount below.
       POLICY_FNAME: "/config/policy.yml"
-      # Operator-supplied values. These are required for Anubis to issue
-      # cookies and render challenge pages correctly. Set them in .env.
+      # Required operator-supplied values. Set them in .env. See README for
+      # what each one does and why each is required.
       REDIRECT_DOMAINS: "${REDIRECT_DOMAINS}"
       PUBLIC_URL: "${PUBLIC_URL}"
       COOKIE_DOMAIN: "${COOKIE_DOMAIN}"
+      # Trailing-space value is the documented Anubis convention for
+      # redirect-mode operation. Do not change unless you know why.
+      TARGET: " "
     volumes:
       - "${HOST_CONFIG_DIR:-./config}:/config:ro"
       - "${HOST_DATA_DIR:-./data}:/data"
       - /etc/localtime:/etc/localtime:ro
     ports:
-      # Localhost-only bind. Traefik reaches this service on the shared
-      # external `traefik` network and does not need a host port, but the
-      # bind is exposed for direct verification and debugging.
+      # Localhost-only bind. Traefik reaches Anubis on the shared external
+      # `traefik` network; the localhost bind exists for direct verification
+      # and debugging.
       - "${BIND_ADDR:-127.0.0.1}:${BIND_PORT:-8923}:8923/tcp"
-    networks:
-      - traefik
     restart: unless-stopped
     logging:
       driver: "json-file"

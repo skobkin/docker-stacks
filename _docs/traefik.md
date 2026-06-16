@@ -54,7 +54,9 @@ The shared Anubis stack provides an `anubis@file` forward-auth middleware. To en
 TRAEFIK_ACCESS_POLICY=default-access@file,anubis@file
 ```
 
-Stacks that already opt into `public-access@file` or `public-auth-access@file` (Authelia SSO) can stack Anubis on top in the same way. The order in the list is the order the middlewares run; place Anubis after the access-list middleware so trusted LAN clients bypass the challenge. Per-stack path exemptions are configured in the Anubis policy file — see the [Anubis stack README](../anubis/README.md) for the step-by-step guide.
+The tracked `anubis.yml.dist` template also defines an `anubis-static` low-priority catch-all router that serves the Anubis challenge page and its static assets on every host under `PathPrefix("/.within.website/")`. The Anubis challenge HTML is rendered as the 401 response body of the forwardAuth check; same-origin asset requests under `/.within.website/` resolve to the Anubis service through this router. No per-stack Traefik labels for the challenge page are needed.
+
+Stacks that already opt into `public-access@file` or `public-auth-access@file` (Authelia SSO) can stack Anubis on top in the same way. The order in the list is the order the middlewares run, and all of them run on every request that reaches the router. `default-access@file` is an `ipAllowList`; when it returns 403, Anubis is never consulted. For requests that pass the allow list, Anubis runs next and either allows the request through or returns 401 with the challenge page. Per-stack path exemptions are configured in the Anubis policy file — see the [Anubis stack README](../anubis/README.md) for the step-by-step guide.
 
 ## Unknown Host Redirect
 

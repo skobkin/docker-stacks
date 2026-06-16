@@ -1,9 +1,11 @@
 http:
+  # The Anubis forwardAuth middleware. Attach it to a router with
+  # `...,anubis@file` in its middleware list.
   middlewares:
     anubis:
       forwardAuth:
-        # Anubis must be reachable as `anubis:8923` on the shared `traefik`
-        # network. The endpoint path is fixed by Anubis.
+        # Anubis must be reachable as `anubis:8923` on the shared
+        # `traefik` network. The endpoint path is fixed by Anubis.
         address: "http://anubis:8923/.within.website/x/cmd/anubis/api/check"
         trustForwardHeader: true
         maxResponseBodySize: 8192
@@ -15,3 +17,33 @@ http:
           - "X-Forwarded-Host"
           - "X-Forwarded-Uri"
           - "X-Forwarded-For"
+
+  # Wildcard catch-all router that serves the Anubis challenge page and
+  # its static assets on every host that routes through this Traefik
+  # instance. The Anubis challenge HTML is rendered as the 401 response
+  # body of the forwardAuth check, and the same body references static
+  # assets (CSS, JS) under /.within.website/. Those same-origin asset
+  # requests must resolve to the Anubis service, which is what this
+  # router does.
+  #
+  # priority: 1 keeps this catch-all at the bottom of the router list
+  # so any per-host router (Host(`app.example.com`)) always wins on its
+  # own paths. The catch-all only fires for requests whose path starts
+  # with /.within.website/ on a host that has no per-host router for
+  # that path -- which is exactly what Anubis needs.
+  #
+  # The TLS block is intentionally left empty: Traefik's `websecure`
+  # entrypoint already provides a default certresolver, and a per-host
+  # certresolver would only matter if you needed a non-default cert.
+  routers:
+    anubis-static:
+      rule: "PathPrefix(`/.within.website/`)"
+      entrypoints: websecure
+      service: anubis
+      priority: 1
+
+  services:
+    anubis:
+      loadbalancer:
+        server:
+          port: 8923

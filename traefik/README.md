@@ -123,9 +123,11 @@ Authelia handles SSO and second-factor checks before the request reaches the app
 
 ## Optional AI-bot firewall
 
-The tracked `config/dynamic/anubis.yml.dist` template defines a single middleware:
+The tracked `config/dynamic/anubis.yml.dist` template defines three objects:
 
-- `anubis@file`: forward-auth to the [Anubis](https://anubis.techaro.lol/) AI-bot firewall at `http://anubis:8923/.within.website/x/cmd/anubis/api/check`
+- `anubis@file` (middleware): forward-auth to the [Anubis](https://anubis.techaro.lol/) AI-bot firewall at `http://anubis:8923/.within.website/x/cmd/anubis/api/check`
+- `anubis@file` (service): the Anubis upstream on the shared `traefik` network
+- `anubis-static` (router): a low-priority catch-all router that serves the Anubis challenge page and its static assets on every host under `PathPrefix("/.within.website/")` on `websecure`
 
 Anubis is a proof-of-work challenge that issues a small challenge to suspicious clients before they reach the application. It is shared across stacks: the operator runs the Anubis stack on the same `traefik` network and opts individual stacks into the middleware.
 
@@ -144,7 +146,7 @@ To enable it:
     TRAEFIK_ACCESS_POLICY=default-access@file,anubis@file
     ```
 
-    The order in the comma-separated list is the order the middlewares run. Place Anubis after the access-list middleware so trusted LAN clients bypass the challenge.
+    The order in the comma-separated list is the order the middlewares run, and all of them run on every request that reaches the router. `default-access@file` is an `ipAllowList`; when it returns 403, Anubis is never consulted. For requests that pass the allow list, Anubis runs next and either allows the request through or returns 401 with the challenge page. The Anubis 401 body is HTML that references same-origin assets under `/.within.website/`; the `anubis-static` catch-all router in the same file-provider config serves those assets from the Anubis service on every host that has Anubis in its access policy.
 
 For per-stack path exemption (for example webhook receivers or ACME HTTP-01 challenges), edit the Anubis policy file. The full step-by-step guide lives in the [Anubis stack README](../anubis/README.md).
 
@@ -214,7 +216,7 @@ Included reusable objects:
 - `default-access@file`: default access policy middleware that every Traefik-enabled stack router uses unless overridden
 - `public-access@file`: optional all-sources access policy for stacks that set `TRAEFIK_ACCESS_POLICY=public-access@file`
 - `public-auth-access@file`: optional Authelia forward-auth policy for stacks that set `TRAEFIK_ACCESS_POLICY=public-auth-access@file`
-- `anubis@file`: optional Anubis forward-auth policy for stacks that set `TRAEFIK_ACCESS_POLICY=...anubis@file` and run the Anubis stack on the shared `traefik` network
+- `anubis@file`: optional Anubis forward-auth policy and `anubis-static` low-priority catch-all router that serves the Anubis challenge assets on every host under `PathPrefix("/.within.website/")`; both load when stacks set `TRAEFIK_ACCESS_POLICY=...anubis@file` and run the Anubis stack on the shared `traefik` network
 - `unknown-host-redirect@file`: optional catch-all redirect router and middleware for hostnames not matched by more specific routers
 - `dashboard-chain@file`: dashboard auth chain
 - `chain-default@file`: light shared middleware chain
