@@ -1,160 +1,291 @@
-# Anubis policy file.
-#
-# Anubis is a proof-of-work challenge that protects Traefik-proxied services
-# from AI bot scrapers. Each request is matched against the rules in this
-# file in order. The first matching rule's `action` decides the outcome.
-#
-# Actions:
-#   ALLOW     - pass the request through without a challenge
-#   DENY      - reject the request with HTTP 403
-#   CHALLENGE - issue the proof-of-work challenge
-#   WEIGH     - add weight toward the threshold system (Thoth-gated)
-#
-# The policy file is a YAML map. The `bots` key holds an ordered list of
-# rules; place the most specific matches first, the default catch-all
-# (matching everything) goes last. The other top-level keys
-# (`dnsbl`, `status_codes`, `thresholds`, ...) are optional and use the
-# defaults when omitted -- see the Anubis docs for details.
-#
-# IMPORTANT: scalar fields whose Anubis type is ExpressionOrList
-# (`expression`, `all`, `any`) MUST be YAML strings, never YAML booleans.
-# Anubis's ExpressionOrList unmarshaler (lib/config/expressionorlist.go)
-# inspects the first JSON byte after YAML->JSON conversion and only
-# accepts `"` (string) or `{` (object). A YAML boolean (`true` / `false`)
-# decodes to JSON `true`/`false`, whose first byte is neither, and
-# Anubis fails to load the policy with:
-#
-#   can't parse policy config YAML ...: error unmarshaling JSON:
-#   while decoding JSON: config: this must be a string or an object
-#
-# That single error makes Anubis exit before opening any listener, so a
-# broken dist = no Anubis at all. Always write `expression: 'true'`
-# (quoted), never `expression: true` (bare).
-#
-# This dist file layers on top of Anubis's bundled default policy
-# (`(data)/meta/default-config.yaml`). The default policy already
-# implements the "good crawlers allowed, bad crawlers denied" split
-# from the Anubis project's curated bundled data:
-#
-#   ALLOW of known-good crawlers (via _allow-good.yaml):
-#     Googlebot, Applebot, Bingbot, DuckDuckBot, Qwantbot,
-#     Internet Archive, Kagi, Marginalia, Mojeek, Common Crawl,
-#     Wikimedia Citoid, Yandexbot
-#
-#   ALLOW of /.well-known/, /favicon.ico, /robots.txt, /sitemap.xml
-#     for any user agent (via common/keep-internet-working.yaml)
-#
-#   DENY of known-bad scrapers and sources (via _deny-pathological.yaml):
-#     Alibaba Cloud (AS45102) and Huawei Cloud (AS136907) CIDR ranges,
-#     Cloudflare Workers, headless browsers, US AI scraper,
-#     custom-async-http-client
-#
-#   DENY of AI/LLM scrapers (via meta/ai-block-aggressive.yaml):
-#     GPTBot, ClaudeBot, CCBot, ChatGPT, ..., ai-search, ai-training
-#
-#   DENY of x.ai's scraper (crawlers/xai.yaml)
-#   DENY of aggressive Brazilian scrapers (bots/aggressive-brazilian-scrapers.yaml)
-#   CHALLENGE for Firefox AI previews (clients/x-firefox-ai.yaml)
-#
-#   WEIGH heuristics for BR/CN geo and Cloudflare/Huawei/Alibaba ASN
-#     (these rules require a Thoth subscription to actually load
-#     IP-metadata; without Thoth they are no-ops)
-#
-# The bundled default has no explicit catchall. Without one, Anubis's
-# built-in default for unmatched requests is ALLOW (see lib/anubis.go
-# `default/allow` check_result in the `check` function). That means a
-# policy that only imports the bundled default-config lets every
-# generic browser straight through, no challenge shown. The dist adds
-# an explicit `default-challenge` rule at the end to flip that
-# behaviour so unmatched browser-like requests get the PoW challenge.
-#
-# The dist's job is just to add what is specific to this deployment:
-# the user agents that should be allowed but are not in the bundled
-# default (like Gatus), per-stack exemptions, and the catchall
-# challenge rule. Do not duplicate the bundled rules above; if a bot
-# should be allowed or denied, edit the bundled files upstream
-# instead, or add an explicit rule here.
-#
-# Reference:
-#   https://anubis.techaro.lol/docs/admin/policy/
-#   https://anubis.techaro.lol/docs/admin/policy/expressions/
+## Anubis bot policy for a multi-service self-hosted instance.
+##
+## Intent:
+## - allow clearly benign clients and infrastructure probes;
+## - allow maintained upstream list of good search crawlers;
+## - keep API/federation machine endpoints usable;
+## - challenge suspicious traffic;
+## - hard-deny the really noisy scanner/scraper classes.
+##
+## Notes:
+## - Rule order matters. ALLOW/DENY/CHALLENGE are terminal actions.
+## - If no bot rule matches, Anubis defaults to allowing the request.
+## - Rules with multiple matchers/expressions are effectively ANDed on current
+##   Anubis releases.
+## - Host-specific rules require Anubis to see the original Host header.
 
 bots:
-  # Status checker the shared stack uses. The bundled Anubis default
-  # does not allow Gatus by user agent, so allow it explicitly. The
-  # pattern matches both `Gatus/<version>` and the Go default
-  # `Go-http-client/1.1`, which the bundled Gatus binary sends when no
-  # custom UA is configured.
-  - name: gatus
-    user_agent_regex: (?i:(gatus|go-http-client))
+  ###########################################################################
+  # Per-host / per-service machine endpoint bypasses.
+  #
+  # Put these before generic bot/browser challenge rules. Otherwise server-side
+  # API clients, webhooks, federation delivery, and health checks can get stuck
+  # behind a challenge they cannot solve.
+  ###########################################################################
+
+  # Forgejo on git.domain.tld:
+  # - /api and /api/* covers Forgejo API, including commit status updates from CI.
+  # - /login/oauth/access_token is needed by OAuth clients such as CI integrations.
+  #
+  # This is intentionally broad for the API. If you expose sensitive unauthenticated
+  # API routes later, narrow this rule by method, source IP, or path.
+  - name: forgejo-api
+    action: ALLOW
+    expression:
+      all:
+        - 'host.matches("^git\\.domain\\.tld(?::443)?$")'
+        - 'path.matches("^/(api(?:/|$)|login/oauth/access_token$)")'
+
+  # Optional: allow Forgejo smart HTTP Git endpoints for non-browser Git clients.
+  # Uncomment only if Anubis breaks git clone/fetch/push over HTTPS.
+  #
+  # - name: forgejo-git-smart-http
+  #   action: ALLOW
+  #   expression:
+  #     all:
+  #       - 'host.matches("^git\\.domain\\.tld(?::443)?$")'
+  #       - 'path.matches("^/.+\\.git/(?:info/refs|git-upload-pack|git-receive-pack)$")'
+  #       - 'userAgent.matches("^(git/|JGit/)")'
+
+  # Optional: Woodpecker CI on ci.domain.tld.
+  # Useful when Forgejo sends webhooks to Woodpecker and Woodpecker API clients
+  # must not be interrupted by Anubis challenges.
+  #
+  # - name: woodpecker-api-and-webhooks
+  #   action: ALLOW
+  #   expression:
+  #     all:
+  #       - 'host.matches("^ci\\.domain\\.tld(?::443)?$")'
+  #       - 'path.matches("^/(api(?:/|$)|hook$|webhook(?:/|$))")'
+
+  # Optional: GoToSocial on gts.domain.tld.
+  # Allows ActivityPub delivery/discovery and Mastodon-compatible API clients.
+  # GoToSocial/fediverse federation will break if inbox/webfinger/nodeinfo routes
+  # are challenged.
+  #
+  # - name: gotosocial-activitypub-and-api
+  #   action: ALLOW
+  #   expression:
+  #     all:
+  #       - 'host.matches("^gts\\.domain\\.tld(?::443)?$")'
+  #       - 'path.matches("^/(api(?:/|$)|users/[^/]+/(?:inbox|outbox|followers|following|collections/featured)(?:/|$)|inbox$|sharedInbox$|nodeinfo(?:/|$)|\\.well-known/(?:webfinger|nodeinfo|host-meta)(?:/|$))")'
+
+  # Optional example: allow only a JSON API on a specific host.
+  # This is safer than allowing all paths for a user-agent.
+  #
+  # - name: example-json-api-only
+  #   action: ALLOW
+  #   expression:
+  #     all:
+  #       - 'host.matches("^api\\.example\\.net(?::443)?$")'
+  #       - 'path.startsWith("/v1/")'
+  #       - '"Accept" in headers'
+  #       - 'headers["Accept"].contains("application/json")'
+
+  # Optional example: allow trusted internal monitors.
+  # Be careful: if Anubis sees only your reverse proxy IP as remoteAddress, this
+  # would allow everyone. Use only when real client IP handling is correct.
+  #
+  # - name: example-internal-monitoring
+  #   action: ALLOW
+  #   user_agent_regex: ^(?:Gatus/1\.0|Prometheus/.*)$
+  #   remote_addresses:
+  #     - 192.168.1.0/24
+  #     - 172.19.0.0/24
+
+  ###########################################################################
+  # Explicitly allowed non-browser infrastructure clients.
+  ###########################################################################
+
+  # Gatus default HTTP check user-agent.
+  # Better: restrict by remote_addresses if this Anubis instance sees Gatus'
+  # real source IP.
+  - name: gatus-default-client
+    user_agent_regex: ^Gatus/1\.0$
     action: ALLOW
 
-  # Per-stack exemptions
-  #
-  # Uncomment and edit rules below to exempt specific stacks (matched by
-  # `host`) or specific path prefixes within a stack from the Anubis
-  # challenge. The Anubis instance is shared by all stacks, so host-based
-  # conditions are the way to scope an exemption to a single service.
-  # Place exemptions BEFORE the import below so they take precedence
-  # over the bundled rules.
-  #
-  # Example: exempt the /api/webhooks path on app.example.com so webhook
-  # providers (GitHub, Stripe, etc.) can post without solving a challenge:
-  #
-  # - name: app-webhooks-exempt
-  #   expression:
-  #     all:
-  #       - host == "app.example.com"
-  #       - path.startsWith("/api/webhooks")
-  #   action: ALLOW
-  #
-  # Example: exempt a health check endpoint so an uptime monitor can probe
-  # the stack without solving a challenge:
-  #
-  # - name: app-healthz-exempt
-  #   expression:
-  #     all:
-  #       - host == "app.example.com"
-  #       - path == "/healthz"
-  #   action: ALLOW
-  #
-  # Add more `path.startsWith(...)` entries under `all:` to exempt multiple
-  # path prefixes on the same host. See the anubis README for the full
-  # step-by-step guide and the policy expression reference.
+  # Default Go net/http client.
+  # This is intentionally permissive and spoofable. Many bots and throwaway
+  # tools also use this UA. Keep this only if you really want generic Go clients
+  # to bypass challenges.
+  - name: golang-default-client
+    user_agent_regex: ^Go-http-client/(?:1\.1|2\.0)$
+    action: ALLOW
 
-  # Arbitrary IP blocklists (Tor exits, commercial scanner lists, ...)
-  #
-  # The bundled _deny-pathological.yaml already covers the cloud
-  # providers most commonly seen in DDoS traffic (Alibaba, Huawei).
-  # For other blocklists, convert them to a policy file with the
-  # `iplist2rule` tool, save the file somewhere in the stack's data
-  # volume, and import it here. The file's typical location is
-  # `config/ipblock.yaml` next to `policy.yml`:
-  #
-  #   go install github.com/TecharoHQ/anubis/utils/cmd/iplist2rule@latest
-  #   iplist2rule https://example.com/some-blocklist.txt ./ipblock.yaml
-  #
-  #   # In this file, add (above the default-config import):
-  #   - import: "./ipblock.yaml"
-  #
-  # See https://anubis.techaro.lol/docs/admin/iplist2rule/ for the full
-  # workflow and supported input formats.
+  ###########################################################################
+  # Upstream maintained allow/deny lists.
+  ###########################################################################
 
-  # Bundled Anubis default. See the comments at the top of this file for
-  # what it expands to. Keep this line near the end of the list so
-  # per-stack exemptions above take precedence.
-  - import: (data)/meta/default-config.yaml
+  # Good crawlers that are expected to respect robots policy:
+  # Google, Apple, Bing, DuckDuckGo, Qwant, Internet Archive, Kagi, Marginalia,
+  # Mojeek, Common Crawl, Wikimedia Citoid, Yandex, etc. Exact contents depend
+  # on your installed Anubis version.
+  - import: (data)/crawlers/_allow-good.yaml
 
-  # Default fallback. Anything that does not match a more specific rule
-  # is challenged. Without this rule, Anubis's built-in default for
-  # unmatched requests is ALLOW and a generic browser sails through
-  # without seeing the PoW page.
+  # Common public routes that should remain reachable.
+  - import: (data)/common/keep-internet-working.yaml
+
+  # Pathological bot/scanner rules maintained upstream. At the time of writing,
+  # this includes Cloudflare Workers abuse, headless browsers, us-ai-scraper,
+  # Custom-AsyncHttpClient, Alibaba Cloud, and Huawei Cloud.
+  - import: (data)/bots/_deny-pathological.yaml
+
+  # AI/LLM crawlers. Use the aggressive preset for a small self-hosted site.
+  # If this blocks too much, replace with:
+  # - import: (data)/meta/ai-block-moderate.yaml
+  # - import: (data)/meta/ai-block-permissive.yaml
+  - import: (data)/meta/ai-block-aggressive.yaml
+
+  # x.ai scraper pressure has been called out by newer upstream Anubis defaults,
+  # but some released/container builds do not ship (data)/crawlers/xai.yaml yet.
+  # Keep this commented unless `anubis` in your image can resolve it.
   #
-  # NOTE: the value MUST be a quoted YAML string ('true'), not a YAML
-  # boolean (true). Anubis's ExpressionOrList unmarshaler only accepts
-  # JSON strings or objects, and a bare `true` decodes to the JSON
-  # literal `true`, which trips the "this must be a string or an object"
-  # parse error. See the IMPORTANT block at the top of this file.
-  - name: default-challenge
-    expression: 'true'
+  # - import: (data)/crawlers/xai.yaml
+
+  ###########################################################################
+  # Extra hard-deny rules for noisy scanners and hostile automation.
+  ###########################################################################
+
+  - name: internet-wide-scanners
+    action: DENY
+    user_agent_regex: >-
+      (?i)(?:CensysInspect|zgrab|masscan|Nuclei|sqlmap|Nikto|OpenVAS|Nessus|Acunetix|Qualys|ZmEu|Morfeus|DirBuster|GoBuster|ffuf|wpscan|WhatWeb|Shodan|Palo Alto Networks|Expanse)
+
+  - name: abusive-cloud-scrapers
+    action: DENY
+    user_agent_regex: >-
+      (?i)(?:Alibaba|Aliyun|Huawei|HuaweiCloud|Tencent|Bytespider|PetalBot|BLEXBot|DataForSeoBot|SeekportBot|SemrushBot|AhrefsBot|DotBot|MJ12bot|Barkrowler)
+
+  - name: obvious-exploit-paths
+    action: DENY
+    path_regex: >-
+      (?i)^/(?:\.env|\.git/|wp-admin/|wp-login\.php|xmlrpc\.php|vendor/phpunit|cgi-bin/|boaform/|HNAP1|setup\.cgi|solr/|actuator/|manager/html|phpmyadmin|pma|_profiler|server-status)(?:/|$)
+
+  - name: cloudflare-workers
+    headers_regex:
+      CF-Worker: .*
+    action: DENY
+
+  ###########################################################################
+  # Suspicious clients: challenge, do not deny.
+  #
+  # Good crawlers and explicitly allowed clients above bypass these rules first.
+  ###########################################################################
+
+  - name: suspicious-bot-user-agents
     action: CHALLENGE
+    user_agent_regex: >-
+      (?i)(?:bot|crawler|spider|scraper|archiver|indexer|fetcher|harvest|extract|scan)
+    challenge:
+      algorithm: fast
+      difficulty: 4
+
+  - name: suspicious-http-libraries
+    action: CHALLENGE
+    user_agent_regex: >-
+      (?i)^(?:curl|Wget|python-requests|Python-urllib|aiohttp|httpx|libwww-perl|Java/|Apache-HttpClient|okhttp|Ruby|Mechanize|Scrapy|node-fetch|axios|undici|PostmanRuntime|Insomnia|HTTPie)
+    challenge:
+      algorithm: fast
+      difficulty: 3
+
+  - name: headless-or-automation-frameworks
+    action: CHALLENGE
+    user_agent_regex: >-
+      (?i)(?:HeadlessChrome|PhantomJS|SlimerJS|Selenium|Playwright|Puppeteer|Cypress|Chrome-Lighthouse)
+    challenge:
+      algorithm: fast
+      difficulty: 5
+
+  # Browser-like clients get weighted and then challenged by thresholds below.
+  # This keeps normal browsers usable while still forcing a proof-of-work gate.
+  - name: generic-browser
+    user_agent_regex: >-
+      Mozilla|Opera
+    action: WEIGH
+    weight:
+      adjust: 10
+
+  ###########################################################################
+  # Optional Thoth-only ASN / GeoIP rules.
+  #
+  # Uncomment only if your Anubis build/deployment has Thoth data available.
+  ###########################################################################
+
+  # - name: aggressive-cloud-asns
+  #   action: DENY
+  #   asns:
+  #     match:
+  #       - 45102  # Alibaba Cloud
+  #       - 136907 # Huawei Cloud
+  #       - 132203 # Tencent Cloud
+  #       - 14618  # AWS
+  #       - 16509  # AWS
+
+  # - name: high-scraper-pressure-countries
+  #   action: WEIGH
+  #   geoip:
+  #     countries:
+  #       - BR
+  #       - CN
+  #   weight:
+  #     adjust: 10
+
+openGraph:
+  enabled: false
+  considerHost: true
+  ttl: 24h
+
+# For a single Anubis instance this is okay. For production or multiple
+# instances, prefer bbolt or valkey.
+store:
+  backend: memory
+  parameters: {}
+
+# Returning 200 for CHALLENGE keeps some dumb scrapers satisfied without
+# revealing that they were blocked. DENY is 403 for clarity in logs.
+# If you want upstream default scraper-confusion behavior, set DENY to 200.
+status_codes:
+  CHALLENGE: 200
+  DENY: 403
+
+thresholds:
+  - name: minimal-suspicion
+    expression: weight <= 0
+    action: ALLOW
+
+  - name: mild-suspicion
+    expression:
+      all:
+        - weight > 0
+        - weight < 10
+    action: CHALLENGE
+    challenge:
+      algorithm: metarefresh
+      difficulty: 1
+
+  - name: moderate-suspicion
+    expression:
+      all:
+        - weight >= 10
+        - weight < 20
+    action: CHALLENGE
+    challenge:
+      algorithm: fast
+      difficulty: 2
+
+  - name: strong-suspicion
+    expression:
+      all:
+        - weight >= 20
+        - weight < 30
+    action: CHALLENGE
+    challenge:
+      algorithm: fast
+      difficulty: 4
+
+  - name: extreme-suspicion
+    expression: weight >= 30
+    action: CHALLENGE
+    challenge:
+      algorithm: fast
+      difficulty: 6
