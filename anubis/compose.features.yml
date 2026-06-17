@@ -8,8 +8,14 @@
 # exceptions, see the "How the integration works" section in README.md.
 #
 # A `traefik_exposed` variant for running Anubis on its own public host
-# (cross-origin challenge) is not implemented yet. See the "Advanced"
-# section in README.md and the tracking issue for the planned design.
+# (cross-origin challenge) is implemented as the third service block
+# below. It registers Anubis on a public hostname of its own
+# (TRAEFIK_HOST, e.g. anubis.example.com) using the standard 7-label
+# set, and relies on the Anubis environment variables PUBLIC_URL,
+# REDIRECT_DOMAINS, and COOKIE_DOMAIN to wire up the cross-origin
+# challenge and the open-redirector allowlist. See the "Using the
+# traefik_exposed variant" section in README.md and the tracking
+# issue for the design and security notes.
 
 services:
   default: {}
@@ -18,6 +24,38 @@ services:
     networks:
       - default
       - traefik
+
+  # Cross-origin / separate-host flow. Anubis is served on a public
+  # hostname of its own (TRAEFIK_HOST). Traefik reaches the container
+  # over the shared `traefik` network, so the service still needs to be
+  # on it. The new host router has higher priority than the
+  # `anubis-static` catch-all defined in
+  # traefik/config/dynamic/anubis.yml.dist, so it wins on its own host
+  # for the root path and for /.within.website/*; the catch-all still
+  # serves the in-site flow's static assets on the protected hosts.
+  #
+  # The `anubis@file` forwardAuth middleware is intentionally NOT
+  # attached to this router: Anubis would forwardAuth against itself
+  # and loop. Operators wanting the challenge host public must use
+  # TRAEFIK_ACCESS_POLICY=public-access@file (or equivalent) instead
+  # of the default ipAllowList.
+  traefik_exposed:
+    networks:
+      - default
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      # Note: TRAEFIK_HOST has no placeholder fallback. Per AGENTS.md
+      # ("Do not use placeholder values as Compose defaults"), an unset
+      # TRAEFIK_HOST must produce a configuration error, not a silently
+      # broken router pointing at a non-existent host. Operators fill
+      # in the value in .env from the .env.dist template.
+      traefik.http.routers.anubis.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.anubis.entrypoints: "${TRAEFIK_ENTRYPOINTS:-websecure}"
+      traefik.http.routers.anubis.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.routers.anubis.service: "anubis"
+      traefik.http.services.anubis.loadbalancer.server.port: "8923"
 
 networks:
   traefik:
