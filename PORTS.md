@@ -28,6 +28,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | folding-at-home         | foldingathome     | 7396                | 7396           | ✅       | TCP      | Distributed computing               |
 | forgejo                 | forgejo           | 3000                | 3000           | ✅       | TCP      | Git hosting                         |
 | forgejo                 | server            | 222                 | 22             | ❌       | TCP      | SSH Git access                      |
+| mcp-basic-memory        | mcp-basic-memory | 8415                | 8000           | ✅       | TCP      | Basic Memory MCP HTTP endpoint, localhost-bound |
 | mcp-forgejo             | mcp-forgejo       | 8412                | 8080           | ✅       | TCP      | Forgejo MCP HTTP endpoint, localhost-bound |
 | mcp-obscura             | mcp-obscura       | 8413                | 3000           | ✅       | TCP      | Obscura MCP HTTP endpoint, localhost-bound |
 | frigate                 | frigate           | 8971                | 8971           | ✅       | TCP      | Authenticated UI/API                |
