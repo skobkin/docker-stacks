@@ -1,0 +1,13 @@
+services:
+  # Same-host deployment: joins the 'logging' network and reaches
+  # VictoriaLogs via Docker DNS (VL_ADDRESS=victoria-logs).
+  default:
+    networks:
+      - default
+      - logging
+
+  # Remote deployment: fluent-bit runs on a different host than
+  # VictoriaLogs. Operator must set VL_ADDRESS to a reachable IP or DNS
+  # name in .env. The 'logging' network is not joined because it does
+  # not exist on the remote host.
+  remote: {}

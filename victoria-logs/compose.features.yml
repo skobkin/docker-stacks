@@ -1,0 +1,18 @@
+services:
+  default:
+    networks:
+      - default
+      - logging
+
+  traefik:
+    networks:
+      - default
+      - logging
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.victoria-logs.rule: "Host(`${VL_TRAEFIK_HOST:-logs.example.com}`)"
+      traefik.http.routers.victoria-logs.entrypoints: "${VL_TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.victoria-logs.middlewares: "${VL_TRAEFIK_MIDDLEWARES:-default-access@file,authelia@file}"
+      traefik.http.services.victoria-logs.loadbalancer.server.port: "${VL_BIND_PORT:-9428}"

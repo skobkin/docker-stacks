@@ -112,6 +112,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | tor-privoxy             | tor               | 5353                | 5353           | ❌       | TCP      | DNS                                 |
 | transmission            | transmission      | 9091                | 9091           | ✅       | TCP      | Torrent client                      |
 | transmission            | transmission      | 51413               | 51413          | ❌       | TCP/UDP  | BitTorrent                          |
+| victoria-logs           | victoria-logs     | 127.0.0.1:9428      | 9428           | ✅       | TCP      | Log storage, query, and web UI, localhost-bound |
 | woodpecker              | woodpecker-server | 8400                | 8000           | ✅       | TCP      | CI web UI                           |
 | woodpecker              | woodpecker-server | 9400                | 9000           | ❌       | TCP      | gRPC endpoint for agents            |
 | webhook-tester          | webhook-tester    | 8414                | 8080           | ✅       | TCP      | Webhook testing                     |

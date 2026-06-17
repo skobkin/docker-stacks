@@ -1,0 +1,35 @@
+# VictoriaLogs - log storage and web UI
+# https://docs.victoriametrics.com/victorialogs/
+
+services:
+  victoria-logs:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
+    image: "${VL_IMAGE_REPOSITORY:-victoriametrics/victoria-logs}:${VL_IMAGE_TAG:-v1.51.0}"
+    container_name: victoria-logs
+    command:
+      - "-storageDataPath=/victoria-logs-data"
+      - "-retentionPeriod=${VL_RETENTION_PERIOD:-30d}"
+      - "-retention.maxDiskSpaceUsageBytes=${VL_MAX_DISK_USAGE:-50GiB}"
+      - "-memory.allowedPercent=${VL_MEMORY_ALLOWED_PERCENT:-40}"
+      - "-envflag.enable"
+    volumes:
+      - "${VL_DATA_PATH:-./data}:/victoria-logs-data"
+    ports:
+      - "${VL_BIND_ADDRESS:-127.0.0.1}:${VL_BIND_PORT:-9428}:${VL_BIND_PORT:-9428}"
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  logging:
+    external: true
+    name: "${LOGGING_NETWORK:-logging}"
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"
