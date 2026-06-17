@@ -107,12 +107,7 @@ policy by default. To intentionally expose the endpoint publicly (e.g. for a
 publicly writable memory vault), override `TRAEFIK_ACCESS_POLICY` to
 `public-access@file`.
 
-## Healthchecks
-
-There are two healthcheck layers to be aware of, and both need attention for
-this stack.
-
-### Docker-level healthcheck (replaces the image's)
+## Healthcheck
 
 The upstream image's `HEALTHCHECK` directive runs `basic-memory --version`,
 which exercises the CLI binary and never touches the running SSE server. The
@@ -131,17 +126,6 @@ literal filename, so a naive `exec 3<>/dev/tcp/127.0.0.1/8000` under
 permanently. The image ships with `/bin/bash` (the non-root `appuser`'s login
 shell), so we run the probe under `bash -c`. `start_period: 30s` gives the
 uvicorn server time to start before the first probe.
-
-### Traefik-level healthcheck (the `traefik` variant)
-
-The `traefik` variant additionally configures the load-balancer healthcheck
-to expect a `404` response on `GET /`. Traefik v3.3+ adds a default probe that
-hits `GET /` every 5 s and treats any non-2xx response as unhealthy, which
-would hide the router from the dashboard. Basic Memory is an MCP-over-SSE
-server that only serves `/mcp` and `/messages` (both streaming) and returns
-`404` on every other path — there is no plain `/healthz` or `/` endpoint to
-probe. By matching `status=404` on `path=/`, the Traefik probe passes
-without modifying upstream.
 
 ## Image tag policy
 
