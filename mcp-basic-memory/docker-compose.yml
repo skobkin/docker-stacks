@@ -21,7 +21,13 @@ services:
     networks:
       - ai-tools
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8000"]
+      # The image's built-in HEALTHCHECK probes `basic-memory --version` and
+      # never tests the running SSE server. We override it with a TCP probe
+      # against the listening port. The image is python:3.12-slim-bookworm,
+      # so /bin/sh is dash and does not support /dev/tcp redirects — the
+      # healthcheck's CMD-SHELL must therefore run under bash (the image ships
+      # with /bin/bash for `appuser`).
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8000 || exit 1'"]
       interval: 30s
       timeout: 5s
       retries: 3
