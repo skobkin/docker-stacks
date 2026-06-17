@@ -8,38 +8,41 @@
 #   ALLOW     - pass the request through without a challenge
 #   DENY      - reject the request with HTTP 403
 #   CHALLENGE - issue the proof-of-work challenge
+#   WEIGH     - add weight toward the threshold system (Thoth-gated)
 #
 # The policy file is a YAML map. The `bots` key holds an ordered list of
 # rules; place the most specific matches first, the default catch-all
 # (matching everything) goes last. The other top-level keys
-# (`dnsbl`, `thresholds`, `status_codes`, ...) are optional and use the
+# (`dnsbl`, `status_codes`, `thresholds`, ...) are optional and use the
 # defaults when omitted -- see the Anubis docs for details.
+#
+# This dist file starts from Anubis's bundled default policy (`(data)/meta/
+# default-config.yaml`), which already provides:
+#   - DENY of pathological scanners and aggressive Brazilian scrapers
+#   - DENY of AI/LLM scrapers (GPTBot, ClaudeBot, CCBot, ChatGPT, ...)
+#   - DENY of x.ai's scraper
+#   - CHALLENGE for Firefox AI previews
+#   - ALLOW of major search engines (Google, Bing, DuckDuckGo, Kagi,
+#     Apple, Qwant, Internet Archive, Marginalia, Mojeek, Yandex, ...)
+#   - ALLOW of /.well-known/, /favicon.ico, /robots.txt, /sitemap.xml
+#     for any user agent
+#   - WEIGH heuristics for BR/CN geo and Cloudflare/Huawei/Alibaba ASN
+#     (note: these WEIGH rules require a Thoth subscription to actually
+#     load IP-metadata; without Thoth they are no-ops)
+#
+# The bundled default has no explicit catchall. Anubis's built-in
+# default is to CHALLENGE unmatched requests, and this file makes that
+# explicit with a `default-challenge` rule at the end.
 #
 # Reference:
 #   https://anubis.techaro.lol/docs/admin/policy/
 #   https://anubis.techaro.lol/docs/admin/policy/expressions/
 
 bots:
-  # Well-known good bots and status checkers. These clients cannot solve
-  # a proof-of-work challenge, so allow them through unconditionally.
-  - name: kagi
-    user_agent_regex: (?i:kagi)
-    action: ALLOW
-
+  # Status checker the shared stack uses. The bundled default does not
+  # allow Gatus by user agent, so allow it explicitly.
   - name: gatus
     user_agent_regex: (?i:gatus)
-    action: ALLOW
-
-  # Common paths that bots and crawlers probe and that are safe to serve
-  # without a challenge.
-  - name: well-known
-    user_agent_regex: (?i:bot|crawler|spider|slurp|facebookexternalhit)
-    path_regex: ^/.well-known/.*$
-    action: ALLOW
-
-  - name: favicon-and-robots
-    user_agent_regex: (?i:bot|crawler|spider|slurp|facebookexternalhit)
-    path_regex: ^/(favicon\.ico|robots\.txt)$
     action: ALLOW
 
   # Per-stack exemptions
@@ -48,6 +51,8 @@ bots:
   # `host`) or specific path prefixes within a stack from the Anubis
   # challenge. The Anubis instance is shared by all stacks, so host-based
   # conditions are the way to scope an exemption to a single service.
+  # Place exemptions BEFORE the `import: (data)/meta/default-config.yaml`
+  # line so they take precedence over the bundled rules.
   #
   # Example: exempt the /api/webhooks path on app.example.com so webhook
   # providers (GitHub, Stripe, etc.) can post without solving a challenge:
@@ -73,8 +78,43 @@ bots:
   # path prefixes on the same host. See the anubis README for the full
   # step-by-step guide and the policy expression reference.
 
-  # Default fallback. Anything that does not match a more specific rule is
-  # challenged. This is the Anubis default and must remain last.
+  # DDoS / IP-blocklist source bans
+  #
+  # To ban a specific CIDR range (e.g. an Alibaba Cloud scanner range
+  # observed in DDoS logs), add a rule that uses `remote_addresses` --
+  # a list of valid CIDR strings:
+  #
+  # - name: deny-alibaba-cloud
+  #   remote_addresses:
+  #     - 47.74.0.0/16
+  #     - 47.75.0.0/16
+  #   action: DENY
+  #
+  # For large blocklists (Tor exits, commercial scanner lists, ASN-wide
+  # ranges), use the `iplist2rule` tool to convert them into a generated
+  # policy file, then import it here:
+  #
+  #   go install github.com/TecharoHQ/anubis/utils/cmd/iplist2rule@latest
+  #   iplist2rule https://example.com/some-blocklist.txt ./ipblock.yaml
+  #
+  #   # In this file, add (above the default-config import):
+  #   - import: "./ipblock.yaml"
+  #
+  # See https://anubis.techaro.lol/docs/admin/iplist2rule/ for the full
+  # workflow and supported input formats.
+  #
+  # Note: the default-config's `aggressive-asns` WEIGH rule (Alibaba
+  # Cloud = ASN 45102) only fires when Anubis has a Thoth subscription
+  # configured to enrich requests with ASN metadata. Without Thoth, that
+  # rule is a no-op and you must DENY explicitly with `remote_addresses`.
+
+  # Bundled Anubis default. See the comments at the top of this file for
+  # what it expands to. Keep this line near the end of the list so
+  # per-stack exemptions above take precedence.
+  - import: (data)/meta/default-config.yaml
+
+  # Default fallback. Anything that does not match a more specific rule
+  # is challenged. This is the Anubis default and must remain last.
   - name: default-challenge
     expression: true
     action: CHALLENGE

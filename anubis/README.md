@@ -61,7 +61,7 @@ The order in the list is the order the middlewares run, and all of them run on e
 The Anubis instance is shared, so path exemptions are expressed as policy-file rules that match the request's `host` against the protected stack's `TRAEFIK_HOST`. To exempt a path for a specific stack:
 
 1. Find the stack's `TRAEFIK_HOST` from its `.env` (for example `forgejo.example.com`) and the path prefixes you want to exempt (for example `/api/webhooks` and `/.well-known/acme-challenge`).
-2. Edit `config/policy.yml` and add a rule under `bots:` (indented one extra level), modelled on the example block:
+2. Edit `config/policy.yml` and add a rule under `bots:`, **above** the `import: (data)/meta/default-config.yaml` line (place it under the `Per-stack exemptions` block) so the exemption takes precedence over the bundled default:
 
     ```yaml
     bots:
@@ -71,6 +71,7 @@ The Anubis instance is shared, so path exemptions are expressed as policy-file r
             - host == "forgejo.example.com"
             - path.startsWith("/api/webhooks")
         action: ALLOW
+      - import: (data)/meta/default-config.yaml
     ```
 
     To exempt multiple path prefixes for the same host, add more `path.startsWith(...)` clauses under the `all:` block, or split the rule into two `action: ALLOW` rules.
