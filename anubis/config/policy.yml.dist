@@ -16,6 +16,21 @@
 # (`dnsbl`, `status_codes`, `thresholds`, ...) are optional and use the
 # defaults when omitted -- see the Anubis docs for details.
 #
+# IMPORTANT: scalar fields whose Anubis type is ExpressionOrList
+# (`expression`, `all`, `any`) MUST be YAML strings, never YAML booleans.
+# Anubis's ExpressionOrList unmarshaler (lib/config/expressionorlist.go)
+# inspects the first JSON byte after YAML->JSON conversion and only
+# accepts `"` (string) or `{` (object). A YAML boolean (`true` / `false`)
+# decodes to JSON `true`/`false`, whose first byte is neither, and
+# Anubis fails to load the policy with:
+#
+#   can't parse policy config YAML ...: error unmarshaling JSON:
+#   while decoding JSON: config: this must be a string or an object
+#
+# That single error makes Anubis exit before opening any listener, so a
+# broken dist = no Anubis at all. Always write `expression: 'true'`
+# (quoted), never `expression: true` (bare).
+#
 # This dist file layers on top of Anubis's bundled default policy
 # (`(data)/meta/default-config.yaml`). The default policy already
 # implements the "good crawlers allowed, bad crawlers denied" split
@@ -45,25 +60,33 @@
 #     (these rules require a Thoth subscription to actually load
 #     IP-metadata; without Thoth they are no-ops)
 #
-# The bundled default has no explicit catchall. Anubis's built-in
-# default is to CHALLENGE unmatched requests, and this file makes that
-# explicit with a `default-challenge` rule at the end.
+# The bundled default has no explicit catchall. Without one, Anubis's
+# built-in default for unmatched requests is ALLOW (see lib/anubis.go
+# `default/allow` check_result in the `check` function). That means a
+# policy that only imports the bundled default-config lets every
+# generic browser straight through, no challenge shown. The dist adds
+# an explicit `default-challenge` rule at the end to flip that
+# behaviour so unmatched browser-like requests get the PoW challenge.
 #
 # The dist's job is just to add what is specific to this deployment:
 # the user agents that should be allowed but are not in the bundled
-# default (like Gatus) and per-stack exemptions. Do not duplicate the
-# bundled rules above; if a bot should be allowed or denied, edit the
-# bundled files upstream instead, or add an explicit rule here.
+# default (like Gatus), per-stack exemptions, and the catchall
+# challenge rule. Do not duplicate the bundled rules above; if a bot
+# should be allowed or denied, edit the bundled files upstream
+# instead, or add an explicit rule here.
 #
 # Reference:
 #   https://anubis.techaro.lol/docs/admin/policy/
 #   https://anubis.techaro.lol/docs/admin/policy/expressions/
 
 bots:
-  # Status checker the shared stack uses. The bundled default does not
-  # allow Gatus by user agent, so allow it explicitly.
+  # Status checker the shared stack uses. The bundled Anubis default
+  # does not allow Gatus by user agent, so allow it explicitly. The
+  # pattern matches both `Gatus/<version>` and the Go default
+  # `Go-http-client/1.1`, which the bundled Gatus binary sends when no
+  # custom UA is configured.
   - name: gatus
-    user_agent_regex: (?i:gatus)
+    user_agent_regex: (?i:(gatus|go-http-client))
     action: ALLOW
 
   # Per-stack exemptions
@@ -123,7 +146,15 @@ bots:
   - import: (data)/meta/default-config.yaml
 
   # Default fallback. Anything that does not match a more specific rule
-  # is challenged. This is the Anubis default and must remain last.
+  # is challenged. Without this rule, Anubis's built-in default for
+  # unmatched requests is ALLOW and a generic browser sails through
+  # without seeing the PoW page.
+  #
+  # NOTE: the value MUST be a quoted YAML string ('true'), not a YAML
+  # boolean (true). Anubis's ExpressionOrList unmarshaler only accepts
+  # JSON strings or objects, and a bare `true` decodes to the JSON
+  # literal `true`, which trips the "this must be a string or an object"
+  # parse error. See the IMPORTANT block at the top of this file.
   - name: default-challenge
-    expression: true
+    expression: 'true'
     action: CHALLENGE
