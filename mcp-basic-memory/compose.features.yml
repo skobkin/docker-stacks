@@ -1,0 +1,14 @@
+services:
+  default: {}
+
+  traefik:
+    networks:
+      - default
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.mcp-basic-memory.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.mcp-basic-memory.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.mcp-basic-memory.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.services.mcp-basic-memory.loadbalancer.server.port: "8000"

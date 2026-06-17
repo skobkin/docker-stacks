@@ -1,0 +1,44 @@
+# https://github.com/basicmachines-co/basic-memory
+
+services:
+  mcp-basic-memory:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
+    image: "ghcr.io/basicmachines-co/basic-memory:${IMAGE_TAG:-latest}"
+    container_name: mcp-basic-memory
+    ports:
+      - "${BIND_ADDR:-127.0.0.1}:${BIND_PORT:-8415}:8000/tcp"
+    env_file: .env
+    environment:
+      BASIC_MEMORY_DEFAULT_PROJECT: "${BASIC_MEMORY_DEFAULT_PROJECT:-main}"
+      BASIC_MEMORY_SYNC_CHANGES: "${BASIC_MEMORY_SYNC_CHANGES:-true}"
+      BASIC_MEMORY_LOG_LEVEL: "${BASIC_MEMORY_LOG_LEVEL:-INFO}"
+      BASIC_MEMORY_SYNC_DELAY: "${BASIC_MEMORY_SYNC_DELAY:-1000}"
+    volumes:
+      - "${HOST_MEMORY_DIR:-./memory}:/app/data:rw"
+      - "basic-memory-config:/app/.basic-memory:rw"
+    networks:
+      - ai-tools
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8000"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  ai-tools:
+    external: true
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"
+
+volumes:
+  basic-memory-config:
