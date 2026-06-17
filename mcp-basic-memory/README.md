@@ -107,6 +107,12 @@ policy by default. To intentionally expose the endpoint publicly (e.g. for a
 publicly writable memory vault), override `TRAEFIK_ACCESS_POLICY` to
 `public-access@file`.
 
+The `traefik` variant disables the load-balancer healthcheck because Basic
+Memory's HTTP server is an MCP-over-SSE endpoint on `/mcp` and does not
+respond with a plain 2xx to any probe path. Container reachability is checked
+by the Docker healthcheck (`/dev/tcp/127.0.0.1/8000`) defined in
+`docker-compose.yml`.
+
 ## Image tag policy
 
 `.env.dist` defaults `IMAGE_TAG=latest` because Basic Memory ships releases
