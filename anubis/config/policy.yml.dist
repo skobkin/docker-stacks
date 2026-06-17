@@ -47,7 +47,10 @@
 #
 # The bundled default has no explicit catchall. Anubis's built-in
 # default is to CHALLENGE unmatched requests, and this file makes that
-# explicit with a `default-challenge` rule at the end.
+# explicit with a `default-challenge` rule at the end. Note that
+# `expression` must be a quoted string (`'true'`), not a YAML/JSON
+# boolean (`true`) -- Anubis's ExpressionOrList unmarshaler rejects
+# boolean values for this field.
 #
 # The dist's job is just to add what is specific to this deployment:
 # the user agents that should be allowed but are not in the bundled
@@ -124,6 +127,7 @@ bots:
 
   # Default fallback. Anything that does not match a more specific rule
   # is challenged. This is the Anubis default and must remain last.
+  # `expression` is a quoted string, not a YAML/JSON boolean.
   - name: default-challenge
-    expression: true
+    expression: 'true'
     action: CHALLENGE
