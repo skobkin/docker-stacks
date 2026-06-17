@@ -12,6 +12,8 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | authelia                | authelia          | 9091                | 9091           | ✅       | TCP      | SSO portal and forward-auth API     |
 | beszel                  | beszel            | 8391                | 8090           | ✅       | TCP      | Monitoring hub web UI               |
 | BookLore                | booklore          | 6060                | 6060           | ✅       | TCP      | Book collection manager               |
+| bookwyrm                | bookwyrm-web      | 8430                | 8000           | ✅       | TCP      | Social reading platform              |
+| bookwyrm                | bookwyrm-flower   | 8440                | 8888           | ✅       | TCP      | Celery monitor, localhost-bound      |
 | beszel-agent            | beszel-agent      | disabled by default | 45876          | ❌       | TCP      | Enable by setting DISABLE_SSH=false |
 | castopod                | castopod          | 8393                | 8000           | ✅       | TCP      | Podcast hosting                     |
 | continuwuity            | continuwuity      | 6167                | 6167           | ✅       | TCP      | Matrix homeserver                   |

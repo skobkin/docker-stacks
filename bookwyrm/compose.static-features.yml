@@ -1,0 +1,38 @@
+services:
+  default: {}
+
+  databases:
+    networks:
+      - bookwyrm
+      - databases
+
+  traefik:
+    networks:
+      - bookwyrm
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      # Path-based router for static files. Higher priority than the web router
+      # in compose.features.yml so /static/ and /images/ go to the nginx sidecar.
+      traefik.http.routers.bookwyrm-static.rule: "Host(`${TRAEFIK_HOST}`) && (PathPrefix(`/static`) || PathPrefix(`/images`))"
+      traefik.http.routers.bookwyrm-static.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.bookwyrm-static.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.routers.bookwyrm-static.priority: "1"
+      traefik.http.routers.bookwyrm-static.service: "bookwyrm-static"
+      traefik.http.services.bookwyrm-static.loadbalancer.server.port: "${TRAEFIK_STATIC_SERVICE_PORT:-80}"
+
+  traefik_databases:
+    networks:
+      - bookwyrm
+      - traefik
+      - databases
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.bookwyrm-static.rule: "Host(`${TRAEFIK_HOST}`) && (PathPrefix(`/static`) || PathPrefix(`/images`))"
+      traefik.http.routers.bookwyrm-static.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.bookwyrm-static.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.routers.bookwyrm-static.priority: "1"
+      traefik.http.routers.bookwyrm-static.service: "bookwyrm-static"
+      traefik.http.services.bookwyrm-static.loadbalancer.server.port: "${TRAEFIK_STATIC_SERVICE_PORT:-80}"
