@@ -17,7 +17,7 @@ services:
       BASIC_MEMORY_SYNC_DELAY: "${BASIC_MEMORY_SYNC_DELAY:-1000}"
     volumes:
       - "${HOST_MEMORY_DIR:-./memory}:/app/data:rw"
-      - "basic-memory-config:/app/.basic-memory:rw"
+      - "${HOST_CONFIG_DIR:-./config}:/app/.basic-memory:rw"
     networks:
       - ai-tools
     healthcheck:
@@ -39,6 +39,3 @@ networks:
   traefik:
     external: true
     name: "${TRAEFIK_NETWORK:-traefik}"
-
-volumes:
-  basic-memory-config:

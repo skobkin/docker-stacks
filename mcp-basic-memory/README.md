@@ -34,14 +34,26 @@ docker network create ai-tools
 ## Memory directory
 
 The knowledge base lives at `/app/data` inside the container and is
-bind-mounted from `HOST_MEMORY_DIR` (default `./memory`). Use a **dedicated
-memory directory**, not your whole Obsidian vault — Basic Memory is designed
-to write and rewrite Markdown files in this directory as it indexes and
-synthesises notes, which is not appropriate for the rest of your vault.
+bind-mounted from `HOST_MEMORY_DIR` (default `./memory`). The stack ships
+this directory as empty with a `.gitignore` that ignores its contents — the
+files Basic Memory writes are runtime data and should not be committed. Use a
+**dedicated memory directory**, not your whole Obsidian vault — Basic Memory
+is designed to write and rewrite Markdown files in this directory as it
+indexes and synthesises notes, which is not appropriate for the rest of your
+vault.
 
 Because the directory is bind-mounted, you can open it directly in Obsidian
 (File → Open vault → Open folder as vault) to browse and edit notes with the
 full Obsidian experience.
+
+## Config directory
+
+The Basic Memory CLI config and SQLite knowledge-base index live at
+`/app/.basic-memory` inside the container and are bind-mounted from
+`HOST_CONFIG_DIR` (default `./config`). This directory is also shipped empty
+with a content-blocking `.gitignore`. Keeping the index on the host (instead
+of in a Docker named volume) means it backs up alongside the markdown and
+can be inspected or migrated without `docker volume` plumbing.
 
 ## Filesystem permissions
 
@@ -51,8 +63,8 @@ grant ownership before the first start so the container can read and write
 notes:
 
 ```shell
-mkdir -p memory
-chown -R 1000:1000 memory
+mkdir -p memory config
+chown -R 1000:1000 memory config
 ```
 
 If your host UID/GID is not 1000, you have two options:
