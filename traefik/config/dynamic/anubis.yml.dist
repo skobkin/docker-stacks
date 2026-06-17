@@ -45,5 +45,5 @@ http:
   services:
     anubis:
       loadbalancer:
-        server:
-          port: 8923
+        servers:
+          - url: "http://anubis:8923"

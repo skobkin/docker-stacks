@@ -9,68 +9,72 @@
 #   DENY      - reject the request with HTTP 403
 #   CHALLENGE - issue the proof-of-work challenge
 #
-# The policy file is a single list of rules. Place the most specific
-# matches first; the default catch-all (matching everything) goes last.
+# The policy file is a YAML map. The `bots` key holds an ordered list of
+# rules; place the most specific matches first, the default catch-all
+# (matching everything) goes last. The other top-level keys
+# (`dnsbl`, `thresholds`, `status_codes`, ...) are optional and use the
+# defaults when omitted -- see the Anubis docs for details.
 #
 # Reference:
 #   https://anubis.techaro.lol/docs/admin/policy/
 #   https://anubis.techaro.lol/docs/admin/policy/expressions/
 
-# Well-known good bots and status checkers. These clients cannot solve
-# a proof-of-work challenge, so allow them through unconditionally.
-- name: kagi
-  user_agent_regex: (?i:kagi)
-  action: ALLOW
+bots:
+  # Well-known good bots and status checkers. These clients cannot solve
+  # a proof-of-work challenge, so allow them through unconditionally.
+  - name: kagi
+    user_agent_regex: (?i:kagi)
+    action: ALLOW
 
-- name: gatus
-  user_agent_regex: (?i:gatus)
-  action: ALLOW
+  - name: gatus
+    user_agent_regex: (?i:gatus)
+    action: ALLOW
 
-# Common paths that bots and crawlers probe and that are safe to serve
-# without a challenge.
-- name: well-known
-  user_agent_regex: (?i:bot|crawler|spider|slurp|facebookexternalhit)
-  path_regex: ^/.well-known/.*$
-  action: ALLOW
+  # Common paths that bots and crawlers probe and that are safe to serve
+  # without a challenge.
+  - name: well-known
+    user_agent_regex: (?i:bot|crawler|spider|slurp|facebookexternalhit)
+    path_regex: ^/.well-known/.*$
+    action: ALLOW
 
-- name: favicon-and-robots
-  user_agent_regex: (?i:bot|crawler|spider|slurp|facebookexternalhit)
-  path_regex: ^/(favicon\.ico|robots\.txt)$
-  action: ALLOW
+  - name: favicon-and-robots
+    user_agent_regex: (?i:bot|crawler|spider|slurp|facebookexternalhit)
+    path_regex: ^/(favicon\.ico|robots\.txt)$
+    action: ALLOW
 
-# Per-stack exemptions
-#
-# Uncomment and edit rules below to exempt specific stacks (matched by
-# `host`) or specific path prefixes within a stack from the Anubis
-# challenge. The Anubis instance is shared by all stacks, so host-based
-# conditions are the way to scope an exemption to a single service.
-#
-# Example: exempt the /api/webhooks path on app.example.com so webhook
-# providers (GitHub, Stripe, etc.) can post without solving a challenge:
-#
-#- name: app-webhooks-exempt
-#  expression:
-#    all:
-#      - host == "app.example.com"
-#      - path.startsWith("/api/webhooks")
-#  action: ALLOW
-#
-# Example: exempt a health check endpoint so an uptime monitor can probe
-# the stack without solving a challenge:
-#
-#- name: app-healthz-exempt
-#  expression:
-#    all:
-#      - host == "app.example.com"
-#      - path == "/healthz"
-#  action: ALLOW
-#
-# Add more `path.startsWith(...)` entries under `all:` to exempt multiple
-# path prefixes on the same host. See the anubis README for the full
-# step-by-step guide and the policy expression reference.
+  # Per-stack exemptions
+  #
+  # Uncomment and edit rules below to exempt specific stacks (matched by
+  # `host`) or specific path prefixes within a stack from the Anubis
+  # challenge. The Anubis instance is shared by all stacks, so host-based
+  # conditions are the way to scope an exemption to a single service.
+  #
+  # Example: exempt the /api/webhooks path on app.example.com so webhook
+  # providers (GitHub, Stripe, etc.) can post without solving a challenge:
+  #
+  # - name: app-webhooks-exempt
+  #   expression:
+  #     all:
+  #       - host == "app.example.com"
+  #       - path.startsWith("/api/webhooks")
+  #   action: ALLOW
+  #
+  # Example: exempt a health check endpoint so an uptime monitor can probe
+  # the stack without solving a challenge:
+  #
+  # - name: app-healthz-exempt
+  #   expression:
+  #     all:
+  #       - host == "app.example.com"
+  #       - path == "/healthz"
+  #   action: ALLOW
+  #
+  # Add more `path.startsWith(...)` entries under `all:` to exempt multiple
+  # path prefixes on the same host. See the anubis README for the full
+  # step-by-step guide and the policy expression reference.
 
-# Default fallback. Anything that does not match a more specific rule is
-# challenged. This is the Anubis default and must remain last.
-- name: default-challenge
-  expression: true
-  action: CHALLENGE
+  # Default fallback. Anything that does not match a more specific rule is
+  # challenged. This is the Anubis default and must remain last.
+  - name: default-challenge
+    expression: true
+    action: CHALLENGE
