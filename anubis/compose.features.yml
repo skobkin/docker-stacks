@@ -1,3 +1,16 @@
+# Compose variants for the Anubis stack.
+#
+# The default `traefik` variant only attaches the Anubis container to the
+# shared `traefik` Docker network. Traefik reaches Anubis for forwardAuth
+# at http://anubis:8923 on that network, but Anubis is not exposed on a
+# public hostname. The Anubis challenge is served on the same host as the
+# protected application (in-site challenge). For the rationale and the
+# exceptions, see the "How the integration works" section in README.md.
+#
+# A `traefik_exposed` variant for running Anubis on its own public host
+# (cross-origin challenge) is not implemented yet. See the "Advanced"
+# section in README.md and the tracking issue for the planned design.
+
 services:
   default: {}
 
@@ -5,13 +18,6 @@ services:
     networks:
       - default
       - traefik
-    labels:
-      traefik.enable: "true"
-      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
-      traefik.http.routers.anubis.rule: "Host(`${TRAEFIK_HOST}`)"
-      traefik.http.routers.anubis.entrypoints: "${TRAEFIK_ENTRYPOINTS:-websecure}"
-      traefik.http.routers.anubis.service: anubis
-      traefik.http.services.anubis.loadbalancer.server.port: "${TRAEFIK_SERVICE_PORT:-8923}"
 
 networks:
   traefik:

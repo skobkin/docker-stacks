@@ -16,11 +16,6 @@ services:
       BIND: ":8923"
       # Policy file path inside the container. Matches the bind mount below.
       POLICY_FNAME: "/config/policy.yml"
-      # Required operator-supplied values. Set them in .env. See README for
-      # what each one does and why each is required.
-      REDIRECT_DOMAINS: "${REDIRECT_DOMAINS}"
-      PUBLIC_URL: "${PUBLIC_URL}"
-      COOKIE_DOMAIN: "${COOKIE_DOMAIN}"
       # Trailing-space value is the documented Anubis convention for
       # redirect-mode operation. Do not change unless you know why.
       TARGET: " "

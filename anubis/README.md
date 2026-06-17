@@ -4,13 +4,15 @@ This stack runs [Anubis](https://anubis.techaro.lol/) as a shared AI-bot firewal
 
 ## How the integration works
 
-The Traefik file-provider config in [`traefik/config/dynamic/anubis.yml.dist`](../traefik/config/dynamic/anubis.yml.dist) defines three objects:
+The default flow is **in-site**: Anubis is not exposed on a public hostname of its own. The Traefik file-provider config in [`traefik/config/dynamic/anubis.yml.dist`](../traefik/config/dynamic/anubis.yml.dist) defines three objects:
 
 - `anubis@file` — the `forwardAuth` middleware that calls Anubis on the shared `traefik` network at `http://anubis:8923/.within.website/x/cmd/anubis/api/check`.
 - `anubis-static@file` — a low-priority catch-all router that matches `PathPrefix("/.within.website/")` on `websecure` and serves the Anubis challenge page and its static assets. The Anubis 401 response body is HTML that references same-origin assets under `/.within.website/` (CSS, JS for the PoW solver); this catch-all routes those requests to Anubis.
 - `anubis@file` (service) — the upstream that both the forwardAuth middleware and the catch-all router talk to.
 
 When a request hits a protected stack, Traefik runs the middlewares in the order they appear in the router's `middlewares:` list. The `forwardAuth` middleware proxies the request to Anubis, which inspects the policy file. If the policy says `ALLOW`, Traefik forwards the original request to the application. If the policy says `CHALLENGE`, Anubis returns HTTP 401 with the challenge HTML; Traefik passes that 401 (and the body) to the browser, which then loads the same-origin challenge assets via the `anubis-static` catch-all router.
+
+The challenge HTML uses **relative URLs** for its form `action=` and asset references. The browser resolves them to the protected host the user is actually on (`forgejo.example.com`, `woodpecker.example.com`, etc.), so a single Anubis instance works for an arbitrary number of protected hosts without per-host config. Each protected host is its own origin from the cookie's perspective, which means the user solves the challenge once per host. This is by design: it keeps the cookie scoped to a single origin and avoids any cross-host trust surface.
 
 Middleware order matters: ALL middlewares in the list run on every request. The existing `default-access@file` middleware in this repo is an `ipAllowList`; when it returns 403, Traefik short-circuits the request and Anubis never sees it. Anubis only ever sees requests that pass the `ipAllowList`. A request from a client in the allow list still goes through both Anubis and the application — there is no implicit "LAN clients skip the challenge" behaviour. The Anubis policy file is the only place to express that kind of exemption.
 
@@ -23,23 +25,7 @@ nano -w .env
 docker compose up -d
 ```
 
-Before starting Anubis, set the required values in `.env`:
-
-- `TRAEFIK_HOST` — the public hostname Anubis itself is reachable on, for example `anubis.example.com`. Traefik issues a Let's Encrypt certificate for this host and serves Anubis on `https://anubis.example.com/`.
-- `REDIRECT_DOMAINS` — a security allowlist. After a successful challenge, Anubis only redirects the browser to a hostname that appears in this list. Without it Anubis would behave as an open redirector and could be abused for phishing. List every public hostname Anubis protects, for example `app.example.com,other.example.com`.
-- `PUBLIC_URL` — the public URL Anubis uses to build absolute redirect URLs and to scope the challenge cookie. It must point at the same host as `TRAEFIK_HOST` above, including scheme, with no trailing slash, for example `https://anubis.example.com`.
-- `COOKIE_DOMAIN` — scopes the Anubis cookie across subdomains. A leading dot means the cookie is shared across all subdomains of the parent domain, for example `.example.com` covers `app.example.com` and `other.example.com`. Without it, users would have to solve the challenge on every subdomain.
-
-Example for a single protected host:
-
-```dotenv
-TRAEFIK_HOST=anubis.example.com
-PUBLIC_URL=https://anubis.example.com
-REDIRECT_DOMAINS=app.example.com
-COOKIE_DOMAIN=.example.com
-```
-
-After `docker compose up -d`, Anubis is reachable on the shared `traefik` network as `anubis:8923`. It also binds to `127.0.0.1:8923` on the host for direct verification and debugging. Traefik serves it on `https://${TRAEFIK_HOST}/`.
+The default `.env` has no required values beyond `IMAGE_TAG` (defaults to `latest`) and the bind/network knobs. After `docker compose up -d`, Anubis is reachable on the shared `traefik` network as `anubis:8923` and on `127.0.0.1:8923` on the host for direct verification and debugging.
 
 ## Enabling Anubis on a Traefik-proxied stack
 
@@ -74,14 +60,14 @@ The order in the list is the order the middlewares run, and all of them run on e
 
 The Anubis instance is shared, so path exemptions are expressed as policy-file rules that match the request's `host` against the protected stack's `TRAEFIK_HOST`. To exempt a path for a specific stack:
 
-1. Find the stack's `TRAEFIK_HOST` from its `.env` (for example `app.example.com`) and the path prefixes you want to exempt (for example `/api/webhooks` and `/.well-known/acme-challenge`).
+1. Find the stack's `TRAEFIK_HOST` from its `.env` (for example `forgejo.example.com`) and the path prefixes you want to exempt (for example `/api/webhooks` and `/.well-known/acme-challenge`).
 2. Edit `config/policy.yml` and add a rule under the `# Per-stack exemptions` section, modelled on the example block:
 
     ```yaml
-    - name: app-webhooks-exempt
+    - name: forgejo-webhooks-exempt
       expression:
         all:
-          - host == "app.example.com"
+          - host == "forgejo.example.com"
           - path.startsWith("/api/webhooks")
       action: ALLOW
     ```
@@ -97,10 +83,10 @@ The Anubis instance is shared, so path exemptions are expressed as policy-file r
 4. Verify with `curl`:
 
     ```shell
-    curl -I https://app.example.com/api/webhooks
+    curl -I https://forgejo.example.com/api/webhooks
     ```
 
-    The response should come from the application, not the Anubis challenge page. A request to a non-exempt path on the same host (`curl -I https://app.example.com/`) should still return the Anubis challenge, which proves the exemption is scoped to the chosen paths only.
+    The response should come from the application, not the Anubis challenge page. A request to a non-exempt path on the same host (`curl -I https://forgejo.example.com/`) should still return the Anubis challenge, which proves the exemption is scoped to the chosen paths only.
 
 Common exemption patterns:
 
@@ -114,7 +100,6 @@ The Anubis policy expression language supports more conditions than `host ==` an
 ## Customization recommendations
 
 - **Tune challenge difficulty.** The `DIFFICULTY` environment variable (4 by default) controls the proof-of-work cost. Increase it to slow down scrapers further; decrease it when legitimate users complain about slow challenges. See the [Anubis configuration documentation](https://anubis.techaro.lol/docs/).
-- **Set `COOKIE_DOMAIN` for cross-subdomain SSO.** When multiple stacks share a parent domain (for example `app.example.com` and `other.example.com`), a cookie domain of `.example.com` lets a single solved challenge cover every subdomain. Without it, users have to solve the challenge again on each subdomain.
 - **Use the policy file for known-good bots.** The default `policy.yml.dist` already allows Kagi (search engine) and Gatus (status checker) by user-agent. To allow other known-good bots, uptime monitors, or RSS readers, add `user_agent_regex` matches with `action: ALLOW` near the top of the policy file. See the [Anubis policy documentation](https://anubis.techaro.lol/docs/admin/policy/).
 - **Allowlist trusted subnets.** Office, VPN, or monitoring subnets can be exempt from the challenge entirely by adding a `default-access@file` `ipAllowList` rule in the Anubis policy, or by combining Anubis with the existing `default-access@file` middleware (which already runs first when `TRAEFIK_ACCESS_POLICY=default-access@file,anubis@file`).
 - **Pin the image tag for reproducibility.** The default `IMAGE_TAG=latest` rolls forward. Set a specific version in `.env` if you want reproducible builds.
@@ -126,15 +111,28 @@ The Anubis policy expression language supports more conditions than `host ==` an
 After the Anubis stack is up and the Traefik file-provider config is in place, check the wiring:
 
 ```shell
-# Anubis itself is reachable on its public hostname.
-curl -I https://anubis.example.com/
-# Anubis forwardAuth endpoint is reachable from the host (returns 401/302/200).
+# Anubis forwardAuth endpoint is reachable from the host (returns 401).
 curl -I http://127.0.0.1:8923/.within.website/x/cmd/anubis/api/check
 # A protected stack returns the Anubis challenge instead of the application.
-curl -I https://app.example.com/
+curl -I https://forgejo.example.com/
 # A path exempt in policy.yml returns the application response.
-curl -I https://app.example.com/api/webhooks
+curl -I https://forgejo.example.com/api/webhooks
 ```
+
+## Advanced: Anubis on a separate public host (cross-origin challenge)
+
+The default in-site flow is sufficient for the vast majority of deployments. A **separate-host** flow (Anubis on its own public hostname, e.g. `anubis.example.com`, with the challenge served from that origin and the user redirected back to the protected host on success) is not implemented yet in this repository. The compose `traefik_exposed` variant, the `Host(`${TRAEFIK_HOST}`)` Traefik labels, and the cross-origin cookie handling are the work tracked by the linked issue.
+
+For documentation purposes, the variables the future `traefik_exposed` variant would consume and **why** each one matters:
+
+- `TRAEFIK_HOST` — the public hostname Anubis itself is reachable on, for example `anubis.example.com`. Traefik issues a Let's Encrypt certificate for this host and serves Anubis on `https://anubis.example.com/`.
+- `REDIRECT_DOMAINS` — a security allowlist. After a successful challenge, Anubis only redirects the browser to a hostname that appears in this list. Without it, Anubis would behave as an open redirector and could be abused for phishing. It must list **every** public hostname Anubis protects (for example `forgejo.example.com,woodpecker.example.com,castopod.example.com`). Operators running a single Anubis instance to protect a dozen stacks must enumerate all twelve in this list.
+- `PUBLIC_URL` — the absolute origin the Anubis challenge page is served from. The Anubis container uses it to build the form `action=` URL and the success redirect target. It must point at the public host you will expose Anubis on, including scheme, with no trailing slash, for example `https://anubis.example.com`. In a single-instance setup this is the same as `TRAEFIK_HOST` with the scheme.
+- `COOKIE_DOMAIN` — scopes the Anubis cookie across subdomains. A leading dot means the cookie is shared across all subdomains of the parent domain, for example `.example.com` covers `forgejo.example.com` and `woodpecker.example.com`. Without it, users have to solve the challenge on every subdomain.
+
+None of these are needed for the default in-site flow, and the default `.env.dist` only references them in a commented "Advanced" section at the bottom. The Anubis image, policy file, and forwardAuth middleware are unchanged between the two flows; the only thing the separate-host flow adds is the cross-origin challenge and the open-redirector surface that comes with it.
+
+Tracking issue: <https://git.skobk.in/skobkin/docker-stacks/issues/333>.
 
 ## References
 

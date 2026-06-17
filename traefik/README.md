@@ -131,6 +131,8 @@ The tracked `config/dynamic/anubis.yml.dist` template defines three objects:
 
 Anubis is a proof-of-work challenge that issues a small challenge to suspicious clients before they reach the application. It is shared across stacks: the operator runs the Anubis stack on the same `traefik` network and opts individual stacks into the middleware.
 
+The default flow is **in-site**: Anubis is not exposed on a public hostname of its own. The challenge is served on the same host as the protected application, with relative URLs in the challenge HTML that resolve to the protected host the user is actually on. A single Anubis instance therefore works for an arbitrary number of protected hosts (`forgejo.example.com`, `woodpecker.example.com`, ...) without per-host config. Each protected host is its own origin from the cookie's perspective, so the user solves the challenge once per host — by design, to keep the cookie scoped to a single origin.
+
 To enable it:
 
 1. Run the Anubis stack on the same external `traefik` network.
@@ -148,7 +150,7 @@ To enable it:
 
     The order in the comma-separated list is the order the middlewares run, and all of them run on every request that reaches the router. `default-access@file` is an `ipAllowList`; when it returns 403, Anubis is never consulted. For requests that pass the allow list, Anubis runs next and either allows the request through or returns 401 with the challenge page. The Anubis 401 body is HTML that references same-origin assets under `/.within.website/`; the `anubis-static` catch-all router in the same file-provider config serves those assets from the Anubis service on every host that has Anubis in its access policy.
 
-For per-stack path exemption (for example webhook receivers or ACME HTTP-01 challenges), edit the Anubis policy file. The full step-by-step guide lives in the [Anubis stack README](../anubis/README.md).
+For per-stack path exemption (for example webhook receivers or ACME HTTP-01 challenges), edit the Anubis policy file. The full step-by-step guide, including the **Advanced: Anubis on a separate public host** section that describes a future `traefik_exposed` variant and the variables it would require, lives in the [Anubis stack README](../anubis/README.md).
 
 ## Certificates
 
