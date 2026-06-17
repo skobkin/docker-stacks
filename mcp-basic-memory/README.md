@@ -107,11 +107,15 @@ policy by default. To intentionally expose the endpoint publicly (e.g. for a
 publicly writable memory vault), override `TRAEFIK_ACCESS_POLICY` to
 `public-access@file`.
 
-The `traefik` variant disables the load-balancer healthcheck because Basic
-Memory's HTTP server is an MCP-over-SSE endpoint on `/mcp` and does not
-respond with a plain 2xx to any probe path. Container reachability is checked
-by the Docker healthcheck (`/dev/tcp/127.0.0.1/8000`) defined in
-`docker-compose.yml`.
+The `traefik` variant configures the load-balancer healthcheck to expect a
+`404` response on `GET /`. Traefik v3.3+ adds a default healthcheck that probes
+`GET /` every 5 s and treats any non-2xx response as unhealthy, which would
+hide the router from the dashboard. Basic Memory is an MCP-over-SSE server
+that only serves `/mcp` and `/messages` (both streaming) and returns `404` on
+every other path — there is no plain `/healthz` or `/` endpoint to probe. By
+matching `status=404` on `path=/`, the probe passes without modifying upstream.
+Container reachability is checked by the Docker healthcheck
+(`/dev/tcp/127.0.0.1/8000`) defined in `docker-compose.yml`.
 
 ## Image tag policy
 
