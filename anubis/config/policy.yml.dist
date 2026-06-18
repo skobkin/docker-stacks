@@ -93,6 +93,91 @@ bots:
   #     - 192.168.1.0/24
   #     - 172.19.0.0/24
 
+  # Good crawlers that are expected to respect robots policy:
+  # Google, Apple, Bing, DuckDuckGo, Qwant, Internet Archive, Kagi, Marginalia,
+  # Mojeek, Common Crawl, Wikimedia Citoid, Yandex, etc. Exact contents depend
+  # on your installed Anubis version.
+  #
+  # Keep this before emergency Forgejo deny rules. Some legitimate crawler UAs
+  # contain "Mozilla" and may request deep links without a Referer.
+  - import: (data)/crawlers/_allow-good.yaml
+
+  ###########################################################################
+  # Forgejo emergency anti-DDoS rules.
+  #
+  # These target web UI scraping of expensive repository history/file routes.
+  # They intentionally do NOT affect:
+  # - Forgejo API rules above;
+  # - good search crawlers allowed below;
+  # - optional Git smart HTTP rule above, if you enable it.
+  #
+  # Tradeoff: direct external links to old commit/tree/raw/blame pages may be
+  # blocked or strongly challenged while these rules are enabled. Normal browsing
+  # from inside Forgejo should still work because it carries a same-host Referer.
+  ###########################################################################
+
+  # The current attack pattern: browser-looking clients hit expensive deep
+  # commit tree/raw/blame/history pages. Challenge these hard regardless of
+  # Referer.
+  - name: forgejo-challenge-deep-history-pages
+    action: CHALLENGE
+    expression:
+      all:
+        - 'host.matches("^git\\.domain\\.tld(?::443)?$")'
+        - 'method in ["GET", "HEAD"]'
+        - 'userAgent.matches("(?i)(Mozilla|Chrome|Firefox|Safari|AppleWebKit|Gecko)")'
+        - 'path.matches("^/[^/]+/[^/]+/(?:src/commit/[0-9a-f]{40}(?:/|$)|raw/commit/[0-9a-f]{40}(?:/|$)|blame/commit/[0-9a-f]{40}(?:/|$)|commits/commit/[0-9a-f]{40}(?:/|$)|commit/[0-9a-f]{40}(?:/|$))")'
+    challenge:
+      algorithm: fast
+      difficulty: 8
+
+  # Strongly challenge other Forgejo web UI repository pages. This catches
+  # browser-looking scrapers before the generic low-difficulty browser rule.
+  - name: forgejo-challenge-repo-web-ui
+    action: CHALLENGE
+    expression:
+      all:
+        - 'host.matches("^git\\.domain\\.tld(?::443)?$")'
+        - 'method in ["GET", "HEAD"]'
+        - 'userAgent.matches("(?i)(Mozilla|Chrome|Firefox|Safari|AppleWebKit|Gecko)")'
+        - 'path.matches("^/[^/]+/[^/]+/(?:src|raw|blame|commits|commit|compare|pulls|issues|releases|activity|graph)(?:/|$)")'
+    challenge:
+      algorithm: fast
+      difficulty: 5
+
+  # Diagnostic rule. Temporarily uncomment to prove whether git.domain.tld
+  # requests are evaluated by Anubis at all:
+  #
+  #   curl -kI https://git.domain.tld/.anubis-policy-test
+  #
+  # Expected while enabled: Anubis challenge response/log entry.
+  # If Forgejo or Traefik answers instead, the request is bypassing Anubis.
+  #
+  # - name: forgejo-anubis-policy-test
+  #   action: CHALLENGE
+  #   expression:
+  #     all:
+  #       - 'host.matches("^git\\.domain\\.tld(?::443)?$")'
+  #       - 'path == "/.anubis-policy-test"'
+  #   challenge:
+  #     algorithm: fast
+  #     difficulty: 1
+
+  # Optional harsher mode:
+  # During a heavy attack, uncomment this to deny *all* direct no-referrer access
+  # to Forgejo repo pages, not just commit-SHA history routes. This can break
+  # external links to files/repositories, so keep it as an emergency switch.
+  #
+  # - name: forgejo-deny-direct-repo-web-ui-emergency
+  #   action: DENY
+  #   expression:
+  #     all:
+  #       - 'host.matches("^git\\.domain\\.tld(?::443)?$")'
+  #       - 'method == "GET"'
+  #       - 'userAgent.matches("(?i)(Mozilla|Chrome|Firefox|Safari|AppleWebKit|Gecko)")'
+  #       - 'path.matches("^/[^/]+/[^/]+/(?:src|raw|blame|commits|commit)(?:/|$)")'
+  #       - 'missingHeader(headers, "Referer")'
+
   ###########################################################################
   # Explicitly allowed non-browser infrastructure clients.
   ###########################################################################
@@ -115,12 +200,6 @@ bots:
   ###########################################################################
   # Upstream maintained allow/deny lists.
   ###########################################################################
-
-  # Good crawlers that are expected to respect robots policy:
-  # Google, Apple, Bing, DuckDuckGo, Qwant, Internet Archive, Kagi, Marginalia,
-  # Mojeek, Common Crawl, Wikimedia Citoid, Yandex, etc. Exact contents depend
-  # on your installed Anubis version.
-  - import: (data)/crawlers/_allow-good.yaml
 
   # Common public routes that should remain reachable.
   - import: (data)/common/keep-internet-working.yaml
@@ -178,7 +257,7 @@ bots:
       (?i)(?:bot|crawler|spider|scraper|archiver|indexer|fetcher|harvest|extract|scan)
     challenge:
       algorithm: fast
-      difficulty: 4
+      difficulty: 8
 
   - name: suspicious-http-libraries
     action: CHALLENGE
@@ -186,7 +265,7 @@ bots:
       (?i)^(?:curl|Wget|python-requests|Python-urllib|aiohttp|httpx|libwww-perl|Java/|Apache-HttpClient|okhttp|Ruby|Mechanize|Scrapy|node-fetch|axios|undici|PostmanRuntime|Insomnia|HTTPie)
     challenge:
       algorithm: fast
-      difficulty: 3
+      difficulty: 7
 
   - name: headless-or-automation-frameworks
     action: CHALLENGE
@@ -194,16 +273,18 @@ bots:
       (?i)(?:HeadlessChrome|PhantomJS|SlimerJS|Selenium|Playwright|Puppeteer|Cypress|Chrome-Lighthouse)
     challenge:
       algorithm: fast
-      difficulty: 5
+      difficulty: 9
 
-  # Browser-like clients get weighted and then challenged by thresholds below.
-  # This keeps normal browsers usable while still forcing a proof-of-work gate.
+  # Browser-like clients get a direct proof-of-work challenge.
+  # This is intentionally stricter than upstream defaults for periods when
+  # browser-looking botnets are scraping Forgejo through the web UI.
   - name: generic-browser
     user_agent_regex: >-
       Mozilla|Opera
-    action: WEIGH
-    weight:
-      adjust: 10
+    action: CHALLENGE
+    challenge:
+      algorithm: fast
+      difficulty: 5
 
   ###########################################################################
   # Optional Thoth-only ASN / GeoIP rules.
@@ -241,11 +322,15 @@ store:
   backend: memory
   parameters: {}
 
-# Returning 200 for CHALLENGE keeps some dumb scrapers satisfied without
-# revealing that they were blocked. DENY is 403 for clarity in logs.
-# If you want upstream default scraper-confusion behavior, set DENY to 200.
+# IMPORTANT for Traefik forwardAuth:
+# - Any 2xx response from the auth service means "allowed".
+# - Therefore CHALLENGE must NOT be 200 when Anubis is used as forwardAuth.
+# - Use 401 so Traefik stops the request and returns/displays Anubis' challenge.
+#
+# The upstream default CHALLENGE: 200 is useful in reverse-proxy mode to confuse
+# dumb scrapers, but it bypasses protection in forwardAuth mode.
 status_codes:
-  CHALLENGE: 200
+  CHALLENGE: 401
   DENY: 403
 
 thresholds:
@@ -260,8 +345,8 @@ thresholds:
         - weight < 10
     action: CHALLENGE
     challenge:
-      algorithm: metarefresh
-      difficulty: 1
+      algorithm: fast
+      difficulty: 4
 
   - name: moderate-suspicion
     expression:
@@ -271,7 +356,7 @@ thresholds:
     action: CHALLENGE
     challenge:
       algorithm: fast
-      difficulty: 2
+      difficulty: 5
 
   - name: strong-suspicion
     expression:
@@ -281,11 +366,11 @@ thresholds:
     action: CHALLENGE
     challenge:
       algorithm: fast
-      difficulty: 4
+      difficulty: 8
 
   - name: extreme-suspicion
     expression: weight >= 30
     action: CHALLENGE
     challenge:
       algorithm: fast
-      difficulty: 6
+      difficulty: 10

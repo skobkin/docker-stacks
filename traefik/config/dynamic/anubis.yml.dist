@@ -12,6 +12,8 @@ http:
         authRequestHeaders:
           - "Accept"
           - "Cookie"
+          - "User-Agent"
+          - "Referer"
           - "X-Forwarded-Method"
           - "X-Forwarded-Proto"
           - "X-Forwarded-Host"
