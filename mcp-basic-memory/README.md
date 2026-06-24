@@ -2,7 +2,7 @@
 
 [Basic Memory](https://github.com/basicmachines-co/basic-memory) turns an
 Obsidian-compatible Markdown vault into a queryable knowledge base for LLM
-clients over the Model Context Protocol. The HTTP/SSE transport runs on
+clients over the Model Context Protocol. The streamable HTTP transport runs on
 container port `8000` and exposes the MCP endpoint at `/mcp`.
 
 ## Setup
@@ -77,8 +77,8 @@ If your host UID/GID is not 1000, you have two options:
 
 ## Authentication
 
-The HTTP/SSE endpoint is **unauthenticated upstream** — Basic Memory's own
-documentation warns:
+The streamable HTTP endpoint is **unauthenticated upstream** — Basic Memory's
+own documentation warns:
 
 > the HTTP endpoints have no authorization. They should not be exposed on a
 > public network.
@@ -87,6 +87,23 @@ For the default `localhost` binding, protect access with the network layer
 above (LAN, VPN, Tailnet, SSH tunnel). For the Traefik variant below, the
 default `default-access@file` middleware routes requests through Authelia
 before they reach the MCP server.
+
+## Transport
+
+The container runs the MCP server with the modern streamable HTTP transport
+(MCP spec 2025-03-26) by default. Streamable HTTP is required by Codex and
+accepted by OpenCode and Claude Code. The upstream image's `CMD` defaults to
+the deprecated SSE transport, so the stack overrides it in `docker-compose.yml`.
+
+`BASIC_MEMORY_TRANSPORT` in `.env` selects the transport:
+
+- `streamable-http` (default) — recommended; required by Codex.
+- `sse` — legacy; upstream marks it as deprecated. Use only if you need to
+  roll back to a client that does not support streamable HTTP yet.
+
+The transport is the only MCP-server flag the stack exposes; `--host`,
+`--port`, and `--path` are hardcoded to the upstream defaults (`0.0.0.0`,
+`8000`, `/mcp`).
 
 ## Traefik
 
@@ -110,9 +127,9 @@ publicly writable memory vault), override `TRAEFIK_ACCESS_POLICY` to
 ## Healthcheck
 
 The upstream image's `HEALTHCHECK` directive runs `basic-memory --version`,
-which exercises the CLI binary and never touches the running SSE server. The
-`docker-compose.yml` healthcheck overrides it with a TCP probe of the
-listening port:
+which exercises the CLI binary and never touches the running streamable HTTP
+server. The `docker-compose.yml` healthcheck overrides it with a TCP probe of
+the listening port:
 
 ```yaml
 healthcheck:

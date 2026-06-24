@@ -1,3 +1,34 @@
+## 2026-06-24 - Basic Memory MCP switched to streamable HTTP transport
+
+### Affected stacks
+
+- `mcp-basic-memory`
+
+### Explanation
+
+The Basic Memory container now runs MCP with the streamable HTTP transport
+(`basic-memory mcp --transport streamable-http`) instead of SSE. Streamable
+HTTP is the modern MCP transport (spec 2025-03-26); the upstream image's
+`CMD` still defaults to the deprecated SSE transport, so the stack now
+overrides it in `docker-compose.yml`. This unblocks Codex, which sends the
+MCP `initialize` handshake as `POST /mcp` and previously received
+`HTTP 405 Method Not Allowed` from the SSE-only backend. OpenCode and
+Claude Code accept either transport and continue to work without
+configuration changes.
+
+The listening port (container `8000`), endpoint path (`/mcp`), and host
+binding (`0.0.0.0`) are unchanged. The new `BASIC_MEMORY_TRANSPORT` env
+var defaults to `streamable-http`.
+
+### Migration
+
+1. Recreate the stack with `cd mcp-basic-memory && docker compose up -d`.
+   The healthcheck (TCP probe of port `8000`) continues to verify the
+   listener.
+2. To roll back to the legacy SSE transport (not recommended — upstream
+   marks SSE as deprecated), set `BASIC_MEMORY_TRANSPORT=sse` in
+   `mcp-basic-memory/.env` and recreate the container.
+
 ## 2026-06-12 - Abandoned stacks removed
 
 ### Affected stacks
