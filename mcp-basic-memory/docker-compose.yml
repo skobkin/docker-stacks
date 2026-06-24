@@ -30,28 +30,34 @@ services:
       - "${BIND_ADDR:-127.0.0.1}:${BIND_PORT:-8415}:8000/tcp"
     env_file: .env
     environment:
+      # Redirect the CLI's config dir (resolve_data_dir() → BASIC_MEMORY_CONFIG_DIR)
+      # to the bind-mounted HOST_CONFIG_DIR. Without this, the upstream image
+      # falls back to ~/.basic-memory (/home/appuser/.basic-memory inside the
+      # container) and the HOST_CONFIG_DIR mount becomes a silent no-op.
+      BASIC_MEMORY_CONFIG_DIR: /app/data/basic-memory
       BASIC_MEMORY_DEFAULT_PROJECT: "${BASIC_MEMORY_DEFAULT_PROJECT:-main}"
       BASIC_MEMORY_SYNC_CHANGES: "${BASIC_MEMORY_SYNC_CHANGES:-true}"
       BASIC_MEMORY_LOG_LEVEL: "${BASIC_MEMORY_LOG_LEVEL:-INFO}"
       BASIC_MEMORY_SYNC_DELAY: "${BASIC_MEMORY_SYNC_DELAY:-1000}"
     volumes:
       # HOST_MEMORY_DIR is the vault root — one subdirectory per project
-      # containing the markdown files Basic Memory indexes. Backed up to
+      # containing the markdown files Basic Memory indexes. The Dockerfile
+      # sets BASIC_MEMORY_PROJECT_ROOT=/app/data, which constrains all
+      # project paths to live under this mount; in practice each project
+      # gets a subdirectory like /app/data/<project-name>. Backed up to
       # preserve the notes themselves.
       #
-      # HOST_CONFIG_DIR is the CLI's working state — config.json and the
-      # SQLite index (memory.db). The upstream image sets
-      # BASIC_MEMORY_HOME=/app/data/basic-memory (a subdirectory of the
-      # vault) and BasicMemoryConfig.model_post_init creates the default
-      # 'main' project at that same path; the mount target therefore
-      # matches the upstream HOME so the index lives where the CLI
-      # expects. On the host the two bind mounts are independent — the
-      # config is a subdir of the vault inside the container but a
-      # separate directory on the host — so each can be backed up,
-      # restored, or wiped independently. Operators who do not want the
-      # implicit 'main' default project can `project remove main` after
-      # the first start, or set BASIC_MEMORY_DEFAULT_PROJECT to one of
-      # the on-disk projects and remove 'main' separately.
+      # HOST_CONFIG_DIR holds the CLI's working state — config.json, the
+      # SQLite index (memory.db), watch-status.json, and the implicit
+      # 'main' project (whose path defaults to BASIC_MEMORY_HOME, which the
+      # Dockerfile sets to /app/data/basic-memory). On the host the two
+      # bind mounts are independent — the config is a subdir of the vault
+      # inside the container but a separate directory on the host — so each
+      # can be backed up, restored, or wiped independently. Operators who
+      # do not want the implicit 'main' default project can
+      # `basic-memory project remove main` after the first start, or set
+      # BASIC_MEMORY_DEFAULT_PROJECT to one of the on-disk projects and
+      # remove 'main' separately.
       - "${HOST_MEMORY_DIR:-./memory}:/app/data:rw"
       - "${HOST_CONFIG_DIR:-./config}:/app/data/basic-memory:rw"
     networks:

@@ -54,23 +54,27 @@ markdown can be backed up, restored, or wiped independently:
 | Host path | Container path | Contents | Back up to preserve |
 |---|---|---|---|
 | `HOST_MEMORY_DIR` (default `./memory`) | `/app/data` | One subdirectory per project with the markdown notes | The notes themselves |
-| `HOST_CONFIG_DIR` (default `./config`) | `/app/data/basic-memory` | `config.json`, `memory.db` (the SQLite index); also the default `main` project (see below) | The search/relations graph without rebuilding it |
+| `HOST_CONFIG_DIR` (default `./config`) | `/app/data/basic-memory` | `config.json`, `memory.db` (the SQLite index), `watch-status.json`, `.bmignore`; also the implicit `main` project (see below) | The search/relations graph without rebuilding it |
 
-The upstream image sets `BASIC_MEMORY_HOME=/app/data/basic-memory` in its
-`Dockerfile`, and `BasicMemoryConfig.model_post_init` (in upstream
-`config.py`) creates the default `main` project at that same path on first
-start. The `HOST_CONFIG_DIR` mount therefore targets the upstream HOME so
-the index lands where the CLI expects. Inside the container the config
-directory is a subdirectory of the vault mount (`/app/data/basic-memory`
-inside `/app/data`); on the host the two bind mounts are independent, so
-the index can be backed up separately from the notes.
+Upstream separates two concerns that look like one path:
 
-The default `main` project is created at `BASIC_MEMORY_HOME` by upstream's
-own logic — not by the stack — so it shares its path with the config and
-index files. If you have notes in `main` it works, but the stack is
-designed around per-project subdirectories of `HOST_MEMORY_DIR`. The
-cleanest way to opt out of the implicit `main` is to remove it after the
-first start:
+- `BASIC_MEMORY_CONFIG_DIR` — the CLI's "config dir" returned by
+  `resolve_data_dir()` in upstream `config.py`. The SQLite index,
+  `config.json`, `watch-status.json`, and `.bmignore` all live here. The
+  default when unset is `~/.basic-memory` (i.e.
+  `/home/appuser/.basic-memory/` inside the container). The
+  `docker-compose.yml` overrides this to `/app/data/basic-memory` so the
+  bind mount is honoured.
+- `BASIC_MEMORY_HOME` — the default path for the implicit `main` project.
+  The Dockerfile sets this to `/app/data/basic-memory`, which coincides
+  with `BASIC_MEMORY_CONFIG_DIR` by design. On the first start,
+  `BasicMemoryConfig.model_post_init` creates `main` at this path.
+
+With both pointing at the same dir, the index and the implicit `main`
+project vault live side by side under `HOST_CONFIG_DIR`. If you have notes
+in `main` it works, but the stack is designed around per-project
+subdirectories of `HOST_MEMORY_DIR`. The cleanest way to opt out of the
+implicit `main` is to remove it after the first start:
 
 ```shell
 docker compose exec mcp-basic-memory basic-memory project remove main
@@ -149,6 +153,13 @@ registered projects. The MCP server's background `WatchService` then
 indexes each registered project's files on disk into the search index
 automatically.
 
+> **Path constraint.** The upstream image sets
+> `BASIC_MEMORY_PROJECT_ROOT=/app/data`, so `project add` rejects any
+> path outside `/app/data/`. If you have a project whose vault lives
+> elsewhere (e.g. an older deployment that registered it at
+> `/basic-memory` instead of `/app/data/basic-memory`), `project remove`
+> it first and re-add it with the correct path.
+
 A loop is convenient for many projects:
 
 ```shell
@@ -180,19 +191,16 @@ with:
 docker compose logs -f mcp-basic-memory
 ```
 
-For the migrating-from-old-layout case, the index is already on disk
-but at the old path. Copy it across before recreating, or let the MCP
-server rebuild it from the markdown on next start:
+For the migrating-from-old-layout case, the previous index lived in
+the container's home directory (`/home/appuser/.basic-memory/`) which
+was never bind-mounted to the host, so it was lost on every recreate
+anyway. Wipe the config dir and start clean — the markdown on
+`HOST_MEMORY_DIR` is the source of truth:
 
 ```shell
-# Option A — preserve the existing index (faster, no re-indexing needed)
-cp -a "${HOST_MEMORY_DIR:-./memory}/basic-memory/." "${HOST_CONFIG_DIR:-./config}/"
-docker compose up -d --force-recreate
-
-# Option B — start clean and let the background sync rebuild from the markdown
 rm -rf "${HOST_CONFIG_DIR:-./config}"/*
 docker compose up -d --force-recreate
-# Then re-register any on-disk projects (see above) and run
+# Then re-register each on-disk project (see above) and run
 # `basic-memory reindex --full` if the search index looks empty.
 ```
 
