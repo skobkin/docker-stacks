@@ -34,28 +34,26 @@ services:
       BASIC_MEMORY_SYNC_CHANGES: "${BASIC_MEMORY_SYNC_CHANGES:-true}"
       BASIC_MEMORY_LOG_LEVEL: "${BASIC_MEMORY_LOG_LEVEL:-INFO}"
       BASIC_MEMORY_SYNC_DELAY: "${BASIC_MEMORY_SYNC_DELAY:-1000}"
-      # Override the upstream default of BASIC_MEMORY_HOME=/app/data/basic-memory
-      # so the CLI's SQLite index and config.json live on the HOST_CONFIG_DIR
-      # bind mount instead of being buried inside the vault. This makes the
-      # index independent of the markdown — they can be backed up, restored,
-      # or wiped separately. BASIC_MEMORY_PROJECT_ROOT keeps the upstream
-      # default of /app/data (the vault root) — only the index location moves.
-      BASIC_MEMORY_HOME: /app/.basic-memory
-      BASIC_MEMORY_PROJECT_ROOT: /app/data
     volumes:
       # HOST_MEMORY_DIR is the vault root — one subdirectory per project
       # containing the markdown files Basic Memory indexes. Backed up to
       # preserve the notes themselves.
       #
-      # HOST_CONFIG_DIR is the CLI's working state — config.json, the
-      # SQLite index (memory.db), and per-project metadata. Backed up to
-      # preserve the search/relations graph without rebuilding it. See
-      # the BASIC_MEMORY_HOME override in the environment block above,
-      # which redirects the upstream default of /app/data/basic-memory
-      # (a subdirectory of the vault) to /app/.basic-memory so the two
-      # bind mounts hold independent data.
+      # HOST_CONFIG_DIR is the CLI's working state — config.json and the
+      # SQLite index (memory.db). The upstream image sets
+      # BASIC_MEMORY_HOME=/app/data/basic-memory (a subdirectory of the
+      # vault) and BasicMemoryConfig.model_post_init creates the default
+      # 'main' project at that same path; the mount target therefore
+      # matches the upstream HOME so the index lives where the CLI
+      # expects. On the host the two bind mounts are independent — the
+      # config is a subdir of the vault inside the container but a
+      # separate directory on the host — so each can be backed up,
+      # restored, or wiped independently. Operators who do not want the
+      # implicit 'main' default project can `project remove main` after
+      # the first start, or set BASIC_MEMORY_DEFAULT_PROJECT to one of
+      # the on-disk projects and remove 'main' separately.
       - "${HOST_MEMORY_DIR:-./memory}:/app/data:rw"
-      - "${HOST_CONFIG_DIR:-./config}:/app/.basic-memory:rw"
+      - "${HOST_CONFIG_DIR:-./config}:/app/data/basic-memory:rw"
     networks:
       - ai-tools
     healthcheck:

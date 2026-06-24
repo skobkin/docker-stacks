@@ -21,22 +21,23 @@ so the stack now overrides it in `docker-compose.yml`. The listening port
 are unchanged. The new `BASIC_MEMORY_TRANSPORT` env var defaults to
 `streamable-http`.
 
-**Persistent index on the config bind mount.** The compose file now
-overrides the upstream default of `BASIC_MEMORY_HOME=/app/data/basic-memory`
-(a hidden subdirectory of the vault) to `BASIC_MEMORY_HOME=/app/.basic-memory`.
-The CLI's SQLite index (`memory.db`) and per-project metadata
-(`config.json`) therefore live on the `HOST_CONFIG_DIR` bind mount (default
-`./config`) instead of being buried inside `HOST_MEMORY_DIR`. This makes
-the `HOST_CONFIG_DIR` mount serve the purpose its name suggests — the
-stack now genuinely splits "what I wrote" (`HOST_MEMORY_DIR`) from
-"the search index over what I wrote" (`HOST_CONFIG_DIR`). Both can be
-backed up, restored, or wiped independently. The previous layout was
-internally inconsistent: `HOST_CONFIG_DIR` mounted `/app/.basic-memory`
-but the CLI never read that path, so the mount was a silent no-op and
-the index drifted on any host that did not happen to back up the
-hidden `./memory/basic-memory/` subdirectory. `BASIC_MEMORY_PROJECT_ROOT`
-keeps the upstream default of `/app/data`, so the markdown vault itself
-is unchanged — only the index location moves.
+**Config bind mount points at the upstream HOME.** The previous layout
+mounted `HOST_CONFIG_DIR` to `/app/.basic-memory` inside the container,
+but the upstream image sets `BASIC_MEMORY_HOME=/app/data/basic-memory`
+in its `Dockerfile`, so the mount was a silent no-op and the index
+drifted into the hidden `./memory/basic-memory/` subdirectory on any
+host that did not happen to back it up. The compose file now mounts
+`HOST_CONFIG_DIR` to `/app/data/basic-memory` — the upstream HOME — so
+`config.json` and `memory.db` actually live on `HOST_CONFIG_DIR`. On
+the host the two bind mounts are independent, so the index and the
+notes can be backed up, restored, or wiped separately. Inside the
+container the config directory is a subdirectory of the vault mount
+(`/app/data/basic-memory` inside `/app/data`); that is upstream's
+design, not the stack's. The default `main` project is also created
+at `BASIC_MEMORY_HOME` by upstream's own `model_post_init`, so it
+shares the same path as the index; the stack does not move it. Use
+`basic-memory project remove main` after the first start if you do
+not want the implicit `main` default.
 
 The container's `command:` does **not** run `basic-memory sync` on start.
 The index is expected to be persistent across recreates and re-syncing
@@ -54,13 +55,18 @@ explicit recovery path.
 1. Pull the updated `mcp-basic-memory/docker-compose.yml` and recreate
    the stack: `cd mcp-basic-memory && docker compose up -d --force-recreate`.
    The new container runs with `--transport streamable-http` and the
-   `BASIC_MEMORY_HOME=/app/.basic-memory` redirect.
+   `HOST_CONFIG_DIR` mount now targets `/app/data/basic-memory` instead
+   of the old `/app/.basic-memory`.
 
 2. **If you are upgrading from a previous version of this stack** that
    was running with the old layout (index at
    `${HOST_MEMORY_DIR:-./memory}/basic-memory/`), copy the existing index
    to the new location **before** the first recreate, otherwise the new
-   container starts with a fresh empty index:
+   container starts with a fresh empty index. The host source dir
+   (`${HOST_MEMORY_DIR}/basic-memory/`) is the same as the previous
+   in-container HOME; the host target dir (`${HOST_CONFIG_DIR}`) is the
+   same path the new in-container HOME (`/app/data/basic-memory`) maps
+   to. So the migration is a straight host-to-host copy:
 
    ```shell
    cp -a "${HOST_MEMORY_DIR:-./memory}/basic-memory/." \
@@ -87,14 +93,22 @@ explicit recovery path.
    docker compose exec mcp-basic-memory basic-memory reindex --full
    ```
 
+   Note: the previous version of this upgrade note described a
+   `BASIC_MEMORY_HOME=/app/.basic-memory` compose override. That
+   override was reverted before release because upstream's
+   `model_post_init` creates the default `main` project at
+   `BASIC_MEMORY_HOME` — overriding the env var moved `main` to
+   `/app/.basic-memory`, where it shared its path with the (now-empty)
+   config mount, and `project list` showed the unexpected
+   `/app/.basic-memory` Local Path for `main`. The fix is to use the
+   upstream HOME directly.
+
 3. To roll back, edit `mcp-basic-memory/.env` and set
    `BASIC_MEMORY_TRANSPORT=sse` to restore the legacy transport, and
-   remove the two new `BASIC_MEMORY_HOME` / `BASIC_MEMORY_PROJECT_ROOT`
-   lines from the `environment:` block of `mcp-basic-memory/docker-compose.yml`
-   to restore the old index layout (placing the index at
-   `${HOST_MEMORY_DIR}/basic-memory/`). There is no env-var toggle for
-   the index location — the `BASIC_MEMORY_HOME` redirect is a
-   compose-level override.
+   change the `HOST_CONFIG_DIR` mount in `mcp-basic-memory/docker-compose.yml`
+   back to the old `/app/.basic-memory:rw` target to restore the old
+   index layout (the index will then need to be moved back to
+   `${HOST_MEMORY_DIR}/basic-memory/`).
 
 ## 2026-06-12 - Abandoned stacks removed
 

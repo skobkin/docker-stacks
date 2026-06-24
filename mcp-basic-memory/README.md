@@ -54,14 +54,30 @@ markdown can be backed up, restored, or wiped independently:
 | Host path | Container path | Contents | Back up to preserve |
 |---|---|---|---|
 | `HOST_MEMORY_DIR` (default `./memory`) | `/app/data` | One subdirectory per project with the markdown notes | The notes themselves |
-| `HOST_CONFIG_DIR` (default `./config`) | `/app/.basic-memory` | `config.json`, `memory.db` (the SQLite index), per-project metadata | The search/relations graph without rebuilding it |
+| `HOST_CONFIG_DIR` (default `./config`) | `/app/data/basic-memory` | `config.json`, `memory.db` (the SQLite index); also the default `main` project (see below) | The search/relations graph without rebuilding it |
 
-The compose file overrides the upstream default of
-`BASIC_MEMORY_HOME=/app/data/basic-memory` (a subdirectory of the vault) to
-`BASIC_MEMORY_HOME=/app/.basic-memory` so the two bind mounts hold
-independent data. This is the only way the `HOST_CONFIG_DIR` mount serves a
-real purpose; without the override the CLI never reads `/app/.basic-memory`
-and `./config/` would be a no-op.
+The upstream image sets `BASIC_MEMORY_HOME=/app/data/basic-memory` in its
+`Dockerfile`, and `BasicMemoryConfig.model_post_init` (in upstream
+`config.py`) creates the default `main` project at that same path on first
+start. The `HOST_CONFIG_DIR` mount therefore targets the upstream HOME so
+the index lands where the CLI expects. Inside the container the config
+directory is a subdirectory of the vault mount (`/app/data/basic-memory`
+inside `/app/data`); on the host the two bind mounts are independent, so
+the index can be backed up separately from the notes.
+
+The default `main` project is created at `BASIC_MEMORY_HOME` by upstream's
+own logic — not by the stack — so it shares its path with the config and
+index files. If you have notes in `main` it works, but the stack is
+designed around per-project subdirectories of `HOST_MEMORY_DIR`. The
+cleanest way to opt out of the implicit `main` is to remove it after the
+first start:
+
+```shell
+docker compose exec mcp-basic-memory basic-memory project remove main
+# Then set BASIC_MEMORY_DEFAULT_PROJECT in .env to one of the real projects
+# (e.g. docker-stacks) so the MCP `default_project` resolution still finds
+# a valid project.
+```
 
 If you ever need to wipe just the index (for example to test a clean
 re-sync, or to recover from index corruption), `rm -rf ${HOST_CONFIG_DIR}/*`
