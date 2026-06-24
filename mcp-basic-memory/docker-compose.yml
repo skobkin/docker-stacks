@@ -7,14 +7,6 @@ services:
       service: "${COMPOSE_VARIANT:-default}"
     image: "ghcr.io/basicmachines-co/basic-memory:${IMAGE_TAG:-latest}"
     container_name: mcp-basic-memory
-    # Override the upstream image's CMD (`--transport sse`) to use the modern
-    # streamable HTTP transport. Required for Codex, which sends the MCP
-    # `initialize` handshake as POST /mcp and got HTTP 405 from the SSE-only
-    # backend. OpenCode and Claude Code accept either transport, so they keep
-    # working unchanged. The transport flag is parameterised via .env to allow
-    # rollback to the deprecated SSE transport if needed; host, port, and path
-    # are hardcoded because they match upstream defaults and are not expected
-    # to vary.
     command:
       - basic-memory
       - mcp
@@ -30,45 +22,22 @@ services:
       - "${BIND_ADDR:-127.0.0.1}:${BIND_PORT:-8415}:8000/tcp"
     env_file: .env
     environment:
-      # Redirect the CLI's config dir (resolve_data_dir() → BASIC_MEMORY_CONFIG_DIR)
-      # to the bind-mounted HOST_CONFIG_DIR. Without this, the upstream image
-      # falls back to ~/.basic-memory (/home/appuser/.basic-memory inside the
-      # container) and the HOST_CONFIG_DIR mount becomes a silent no-op.
+      # BASIC_MEMORY_CONFIG_DIR is what resolve_data_dir() honours; without
+      # this the CLI writes to ~/.basic-memory and HOST_CONFIG_DIR is a no-op.
       BASIC_MEMORY_CONFIG_DIR: /app/data/basic-memory
       BASIC_MEMORY_DEFAULT_PROJECT: "${BASIC_MEMORY_DEFAULT_PROJECT:-main}"
       BASIC_MEMORY_SYNC_CHANGES: "${BASIC_MEMORY_SYNC_CHANGES:-true}"
       BASIC_MEMORY_LOG_LEVEL: "${BASIC_MEMORY_LOG_LEVEL:-INFO}"
       BASIC_MEMORY_SYNC_DELAY: "${BASIC_MEMORY_SYNC_DELAY:-1000}"
     volumes:
-      # HOST_MEMORY_DIR is the vault root — one subdirectory per project
-      # containing the markdown files Basic Memory indexes. The Dockerfile
-      # sets BASIC_MEMORY_PROJECT_ROOT=/app/data, which constrains all
-      # project paths to live under this mount; in practice each project
-      # gets a subdirectory like /app/data/<project-name>. Backed up to
-      # preserve the notes themselves.
-      #
-      # HOST_CONFIG_DIR holds the CLI's working state — config.json, the
-      # SQLite index (memory.db), watch-status.json, and the implicit
-      # 'main' project (whose path defaults to BASIC_MEMORY_HOME, which the
-      # Dockerfile sets to /app/data/basic-memory). On the host the two
-      # bind mounts are independent — the config is a subdir of the vault
-      # inside the container but a separate directory on the host — so each
-      # can be backed up, restored, or wiped independently. Operators who
-      # do not want the implicit 'main' default project can
-      # `basic-memory project remove main` after the first start, or set
-      # BASIC_MEMORY_DEFAULT_PROJECT to one of the on-disk projects and
-      # remove 'main' separately.
       - "${HOST_MEMORY_DIR:-./memory}:/app/data:rw"
       - "${HOST_CONFIG_DIR:-./config}:/app/data/basic-memory:rw"
     networks:
       - ai-tools
     healthcheck:
-      # The image's built-in HEALTHCHECK probes `basic-memory --version` and
-      # never tests the running streamable HTTP server. We override it with a
-      # TCP probe against the listening port. The image is
-      # python:3.12-slim-bookworm, so /bin/sh is dash and does not support
-      # /dev/tcp redirects — the healthcheck's CMD-SHELL must therefore run
-      # under bash (the image ships with /bin/bash for `appuser`).
+      # Override the upstream HEALTHCHECK (which probes `basic-memory --version`
+      # and never touches the listener). dash lacks /dev/tcp, so the probe
+      # runs under bash.
       test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8000 || exit 1'"]
       interval: 30s
       timeout: 5s

@@ -20,8 +20,8 @@ http://127.0.0.1:8415/mcp
 ```
 
 The port is bound to localhost by default. Change `BIND_ADDR` only when the
-endpoint is protected by an appropriate network or access-control layer such
-as a VPN, Tailnet, or Authelia in front of Traefik.
+endpoint is protected by an appropriate network or access-control layer such as
+a VPN, Tailnet, or Authelia in front of Traefik.
 
 This service joins the external [`ai-tools`](../_docs/ai_tools_network.md)
 Docker network so MCP clients and other AI services can reach it as
@@ -48,122 +48,48 @@ full Obsidian experience.
 
 ## Data integrity
 
-Basic Memory state is split across the two bind mounts so the index and the
+Basic Memory state is split across two bind mounts so the index and the
 markdown can be backed up, restored, or wiped independently:
 
-| Host path | Container path | Contents | Back up to preserve |
-|---|---|---|---|
-| `HOST_MEMORY_DIR` (default `./memory`) | `/app/data` | One subdirectory per project with the markdown notes | The notes themselves |
-| `HOST_CONFIG_DIR` (default `./config`) | `/app/data/basic-memory` | `config.json`, `memory.db` (the SQLite index), `watch-status.json`, `.bmignore`; also the implicit `main` project (see below) | The search/relations graph without rebuilding it |
+| Host path | Container path | Contents |
+|---|---|---|
+| `HOST_MEMORY_DIR` (default `./memory`) | `/app/data` | One subdirectory per project with the markdown notes |
+| `HOST_CONFIG_DIR` (default `./config`) | `/app/data/basic-memory` | `config.json`, `memory.db` (SQLite index), `watch-status.json`, `.bmignore`; also the implicit `main` project |
 
-Upstream separates two concerns that look like one path:
+The implicit `main` project (from the upstream image's
+`BASIC_MEMORY_HOME=/app/data/basic-memory`) shares the second path by
+upstream's design. Remove it with `basic-memory project remove main` after
+the first start if you do not want a default project.
 
-- `BASIC_MEMORY_CONFIG_DIR` — the CLI's "config dir" returned by
-  `resolve_data_dir()` in upstream `config.py`. The SQLite index,
-  `config.json`, `watch-status.json`, and `.bmignore` all live here. The
-  default when unset is `~/.basic-memory` (i.e.
-  `/home/appuser/.basic-memory/` inside the container). The
-  `docker-compose.yml` overrides this to `/app/data/basic-memory` so the
-  bind mount is honoured.
-- `BASIC_MEMORY_HOME` — the default path for the implicit `main` project.
-  The Dockerfile sets this to `/app/data/basic-memory`, which coincides
-  with `BASIC_MEMORY_CONFIG_DIR` by design. On the first start,
-  `BasicMemoryConfig.model_post_init` creates `main` at this path.
+To wipe just the index, `rm -rf ${HOST_CONFIG_DIR}/*` is safe — the vault
+on `HOST_MEMORY_DIR` is untouched. See [Maintenance](#maintenance) for how
+to rebuild.
 
-With both pointing at the same dir, the index and the implicit `main`
-project vault live side by side under `HOST_CONFIG_DIR`. If you have notes
-in `main` it works, but the stack is designed around per-project
-subdirectories of `HOST_MEMORY_DIR`. The cleanest way to opt out of the
-implicit `main` is to remove it after the first start:
+## Maintenance
+
+Three commands manage the index from outside the MCP protocol. Run them
+inside the running container:
 
 ```shell
-docker compose exec mcp-basic-memory basic-memory project remove main
-# Then set BASIC_MEMORY_DEFAULT_PROJECT in .env to one of the real projects
-# (e.g. docker-stacks) so the MCP `default_project` resolution still finds
-# a valid project.
+docker compose exec mcp-basic-memory basic-memory <command>
 ```
 
-If you ever need to wipe just the index (for example to test a clean
-re-sync, or to recover from index corruption), `rm -rf ${HOST_CONFIG_DIR}/*`
-is safe — the vault on `HOST_MEMORY_DIR` is untouched and the index can be
-rebuilt with [Repairing index](#repairing-index) below.
+| Command | Purpose |
+|---|---|
+| `basic-memory project add <name> <path>` | Register an on-disk project directory in the database. Required for each project under `HOST_MEMORY_DIR/` — the MCP server does not auto-discover them. |
+| `basic-memory status` | Show how much of the on-disk state is reflected in the database (which projects are registered, which files are indexed, how much is pending). |
+| `basic-memory reindex` | Re-read the files on disk and update the database. Use `--full` for a complete rebuild; without it, only changed files are re-scanned. |
 
-## Repairing index
-
-The container does not run a background `sync` on start — the SQLite
-index at `HOST_CONFIG_DIR/memory.db` and the project registry in
-`HOST_CONFIG_DIR/config.json` are expected to be persistent across
-recreates, so a normal start should not need to rebuild anything. Use the
-manual recovery procedure below when state genuinely needs rebuilding.
-
-> The `latest` upstream image does **not** expose a top-level `sync`
-> command. The two commands that matter for recovery are
-> [`project add`](https://github.com/basicmachines-co/basic-memory/blob/main/docs/SPEC-PER-PROJECT-ROUTING.md)
-> (registers an existing on-disk directory as a project — required because
-> the MCP server does **not** auto-discover subdirectories of
-> `BASIC_MEMORY_PROJECT_ROOT`) and
-> [`reindex`](https://github.com/basicmachines-co/basic-memory/blob/main/src/basic_memory/cli/commands/db.py)
-> (rebuilds the search/vector indexes for already-registered projects).
-
-When to repair:
-
-- **Index was wiped.** `${HOST_CONFIG_DIR}` is empty or missing
-  `memory.db` — for example after a fresh host setup, a partial restore
-  from backup, or a manual `rm -rf`. The MCP server will start but
-  `list_memory_projects` will show only the default `main`.
-- **Projects on disk are not registered.** You have directories under
-  `HOST_MEMORY_DIR/` that should appear as projects, but the MCP
-  `list_projects` tool returns only the default `main`. The MCP server
-  does not auto-discover subdirectories of `BASIC_MEMORY_PROJECT_ROOT`,
-  so each one has to be registered with `project add`.
-- **Index is stale.** You added or edited notes on disk while the MCP
-  container was down (or via a non-container Basic Memory CLI) and want
-  the search index to pick them up.
-- **Migrating from the old layout.** You previously ran a version of this
-  stack where the index lived at `${HOST_MEMORY_DIR}/basic-memory/` (a
-  subdirectory of the vault) and want to move it to the new
-  `HOST_CONFIG_DIR` mount.
-
-### Re-registering projects on disk
-
-The MCP server reads the project list from `HOST_CONFIG_DIR/config.json`
-and the `projects` SQLite table. When the index is fresh but the vault
-already contains project directories, register each one explicitly. From
-the stack directory:
+Project paths must live under `/app/data/` (the upstream image sets
+`BASIC_MEMORY_PROJECT_ROOT=/app/data`). A typical registration:
 
 ```shell
-cd mcp-basic-memory
-
-# List what is on disk first — each top-level directory under
-# HOST_MEMORY_DIR is a candidate project.
-ls -1 "${HOST_MEMORY_DIR:-./memory}"
-
-# Register each one. <name> is the display name in the MCP `list_projects`
-# tool; <path> is the absolute path inside the container (/app/data maps
-# to HOST_MEMORY_DIR on the host).
-docker compose exec mcp-basic-memory basic-memory project add docker-stacks /app/data/docker-stacks
-docker compose exec mcp-basic-memory basic-memory project add slopgame     /app/data/slopgame
-# Repeat for any other directories shown by `ls -1`.
+docker compose exec mcp-basic-memory basic-memory project add your-project /app/data/your-project
 ```
 
-`project add` writes to `HOST_CONFIG_DIR/config.json` and the
-`projects` SQLite table in the same database the MCP server reads, so
-no container restart is needed — the next MCP request sees the
-registered projects. The MCP server's background `WatchService` then
-indexes each registered project's files on disk into the search index
-automatically.
-
-> **Path constraint.** The upstream image sets
-> `BASIC_MEMORY_PROJECT_ROOT=/app/data`, so `project add` rejects any
-> path outside `/app/data/`. If you have a project whose vault lives
-> elsewhere (e.g. an older deployment that registered it at
-> `/basic-memory` instead of `/app/data/basic-memory`), `project remove`
-> it first and re-add it with the correct path.
-
-A loop is convenient for many projects:
+To register everything under the vault root at once:
 
 ```shell
-cd mcp-basic-memory
 for d in "${HOST_MEMORY_DIR:-./memory}"/*/; do
   [ -d "$d" ] || continue
   name=$(basename "$d")
@@ -171,46 +97,8 @@ for d in "${HOST_MEMORY_DIR:-./memory}"/*/; do
 done
 ```
 
-### Force a full reindex
-
-If the projects are registered but the search index is stale (for
-example after editing many files while the container was down), force a
-full re-scan of every registered project:
-
-```shell
-cd mcp-basic-memory
-docker compose exec mcp-basic-memory basic-memory reindex --full
-```
-
-`reindex --full` rebuilds the file-backed full-text search index and
-re-embeds notes (when semantic search is enabled). It does not change
-the project list — for that, use `project add` above. Watch progress
-with:
-
-```shell
-docker compose logs -f mcp-basic-memory
-```
-
-For the migrating-from-old-layout case, the previous index lived in
-the container's home directory (`/home/appuser/.basic-memory/`) which
-was never bind-mounted to the host, so it was lost on every recreate
-anyway. Wipe the config dir and start clean — the markdown on
-`HOST_MEMORY_DIR` is the source of truth:
-
-```shell
-rm -rf "${HOST_CONFIG_DIR:-./config}"/*
-docker compose up -d --force-recreate
-# Then re-register each on-disk project (see above) and run
-# `basic-memory reindex --full` if the search index looks empty.
-```
-
-If the rebuild succeeds but only some projects reappear, or
-`project add` errors out, the most likely cause is a permissions
-mismatch: the `appuser` (UID/GID 1000) inside the container cannot
-read one of the project directories. See
-[Filesystem permissions](#filesystem-permissions) and run
-`chown -R 1000:1000 ${HOST_MEMORY_DIR} ${HOST_CONFIG_DIR}` before
-retrying.
+If the search index looks empty after edits on the host while the container
+was down, run `basic-memory reindex --full` to rebuild it.
 
 ## Filesystem permissions
 
@@ -294,12 +182,9 @@ healthcheck:
 ```
 
 The image is `python:3.12-slim-bookworm`, so `/bin/sh` is **dash**, not bash.
-dash does not support `/dev/tcp/host/port` redirects and treats the path as a
-literal filename, so a naive `exec 3<>/dev/tcp/127.0.0.1/8000` under
-`CMD-SHELL` fails on every probe and Docker marks the container unhealthy
-permanently. The image ships with `/bin/bash` (the non-root `appuser`'s login
-shell), so we run the probe under `bash -c`. `start_period: 30s` gives the
-uvicorn server time to start before the first probe.
+dash does not support `/dev/tcp/host/port` redirects, so the probe runs under
+`bash -c`. `start_period: 30s` gives the uvicorn server time to start before
+the first probe.
 
 ## Image tag policy
 

@@ -4,101 +4,37 @@
 
 - `mcp-basic-memory`
 
-### Explanation
+### Changes
 
-Two changes to the Basic Memory MCP stack ship together:
-
-**Streamable HTTP transport.** The container now runs MCP with the
-streamable HTTP transport (`basic-memory mcp --transport streamable-http`)
-instead of the deprecated SSE transport. Streamable HTTP is the modern MCP
-transport (spec 2025-03-26) and is required by Codex, which sends the MCP
-`initialize` handshake as `POST /mcp` and previously received
-`HTTP 405 Method Not Allowed` from the SSE-only backend. OpenCode and
-Claude Code accept either transport and continue to work without
-configuration changes. The upstream image's `CMD` still defaults to SSE,
-so the stack now overrides it in `docker-compose.yml`. The listening port
-(container `8000`), endpoint path (`/mcp`), and host binding (`0.0.0.0`)
-are unchanged. The new `BASIC_MEMORY_TRANSPORT` env var defaults to
-`streamable-http`.
-
-**Config bind mount points at the upstream config dir, and the
-`BASIC_MEMORY_CONFIG_DIR` override pins it there.** The previous layout
-mounted `HOST_CONFIG_DIR` to `/app/.basic-memory` inside the container,
-but the upstream image does not use `/app/.basic-memory` for anything.
-The CLI's `resolve_data_dir()` defaults to `~/.basic-memory` (i.e.
-`/home/appuser/.basic-memory/` inside the container), so the old mount
-was a silent no-op and the index drifted into the container's home
-directory, off the bind mount. The compose file now mounts
-`HOST_CONFIG_DIR` to `/app/data/basic-memory` and sets
-`BASIC_MEMORY_CONFIG_DIR=/app/data/basic-memory` so `resolve_data_dir()`
-returns the bind-mounted path. `config.json`, `memory.db`,
-`watch-status.json`, and `.bmignore` now actually live on
-`HOST_CONFIG_DIR`. The Dockerfile also sets
-`BASIC_MEMORY_HOME=/app/data/basic-memory`, so the implicit `main`
-project (created by `BasicMemoryConfig.model_post_init`) shares the
-same path by upstream's design. On the host the two bind mounts are
-independent, so the index and the notes can be backed up, restored, or
-wiped separately. Inside the container the config directory is a
-subdirectory of the vault mount (`/app/data/basic-memory` inside
-`/app/data`); that is upstream's design, not the stack's. Use
-`basic-memory project remove main` after the first start if you do
-not want the implicit `main` default.
-
-The container's `command:` does **not** run `basic-memory sync` on start.
-The index is expected to be persistent across recreates and re-syncing
-on every boot would mask real index-loss bugs. A new "Repairing index"
-section in `mcp-basic-memory/README.md` documents the manual recovery
-procedure (`docker compose exec mcp-basic-memory basic-memory project add …`
-followed by `basic-memory reindex --full`) for the cases where state
-genuinely needs rebuilding — fresh host, partial restore, or migration
-from the old layout. Note that the current `latest` upstream image does
-not expose a top-level `sync` command; project registration is the
-explicit recovery path.
+- **Transport.** Container now runs with `--transport streamable-http`
+  (default). Required by Codex; OpenCode and Claude Code accept either.
+  Override `BASIC_MEMORY_TRANSPORT=sse` for the legacy transport.
+- **Index persistence.** `HOST_CONFIG_DIR` is now mounted to
+  `/app/data/basic-memory` and `BASIC_MEMORY_CONFIG_DIR=/app/data/basic-memory`
+  is set in the compose file, so the SQLite index (`memory.db`),
+  `config.json`, `watch-status.json`, and `.bmignore` actually live on
+  the host path. The implicit `main` project (from upstream's
+  `BASIC_MEMORY_HOME=/app/data/basic-memory`) shares the same path.
 
 ### Migration
 
-1. Pull the updated `mcp-basic-memory/docker-compose.yml` and recreate
-   the stack: `cd mcp-basic-memory && docker compose up -d --force-recreate`.
-   The new container runs with `--transport streamable-http`, the
-   `HOST_CONFIG_DIR` mount now targets `/app/data/basic-memory`, and a
-   new `BASIC_MEMORY_CONFIG_DIR=/app/data/basic-memory` env var pins
-   `resolve_data_dir()` to that path.
-
-2. The new container starts with a fresh, empty index. The MCP server
-   does not auto-discover subdirectories of `BASIC_MEMORY_PROJECT_ROOT`,
-   so each project directory under `${HOST_MEMORY_DIR:-./memory}/` has
-   to be registered explicitly:
-
-   ```shell
-   cd mcp-basic-memory
-   for d in "${HOST_MEMORY_DIR:-./memory}"/*/; do
-     [ -d "$d" ] || continue
-     name=$(basename "$d")
-     docker compose exec mcp-basic-memory basic-memory project add "$name" "/app/data/$name"
-   done
-   # Optional: force a full rebuild of the search/vector indexes
-   docker compose exec mcp-basic-memory basic-memory reindex --full
-   ```
-
-   If a previous run of this stack left project registrations in the
-   old index, they are almost certainly at paths without the
-   `/app/data/` prefix (for example `basic-memory → /basic-memory`
-   rather than `/app/data/basic-memory`), because the upstream image
-   sets `BASIC_MEMORY_PROJECT_ROOT=/app/data` and rejects any other
-   path. Wipe the old config and start clean:
+1. `cd mcp-basic-memory && docker compose up -d --force-recreate`.
+2. Wipe the old config and re-register each on-disk project. The
+   upstream image sets `BASIC_MEMORY_PROJECT_ROOT=/app/data`, so any
+   registrations from a previous layout (paths without the `/app/data/`
+   prefix) are rejected — start clean:
 
    ```shell
    cd mcp-basic-memory
    rm -rf "${HOST_CONFIG_DIR:-./config}"/*
    docker compose up -d --force-recreate
-   # Then re-register each on-disk project as shown above.
+   for d in "${HOST_MEMORY_DIR:-./memory}"/*/; do
+     [ -d "$d" ] || continue
+     name=$(basename "$d")
+     docker compose exec mcp-basic-memory basic-memory project add "$name" "/app/data/$name"
+   done
+   docker compose exec mcp-basic-memory basic-memory reindex --full
    ```
-
-3. To roll back the transport only (the new layout is otherwise
-   required for the index to persist), edit `mcp-basic-memory/.env` and
-   set `BASIC_MEMORY_TRANSPORT=sse`. The bind mount layout is the
-   same as on the previous layout in terms of what the host sees; the
-   container now uses it correctly.
 
 ## 2026-06-12 - Abandoned stacks removed
 
