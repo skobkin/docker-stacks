@@ -42,9 +42,12 @@ The container's `command:` does **not** run `basic-memory sync` on start.
 The index is expected to be persistent across recreates and re-syncing
 on every boot would mask real index-loss bugs. A new "Repairing index"
 section in `mcp-basic-memory/README.md` documents the manual recovery
-procedure (`docker compose exec mcp-basic-memory basic-memory sync`) for
-the cases where the index genuinely needs rebuilding — fresh host,
-partial restore, or migration from the old layout.
+procedure (`docker compose exec mcp-basic-memory basic-memory project add …`
+followed by `basic-memory reindex --full`) for the cases where state
+genuinely needs rebuilding — fresh host, partial restore, or migration
+from the old layout. Note that the current `latest` upstream image does
+not expose a top-level `sync` command; project registration is the
+explicit recovery path.
 
 ### Migration
 
@@ -67,10 +70,22 @@ partial restore, or migration from the old layout.
 
    Operators who do not have an existing index to migrate (the previous
    container was running with an empty `./memory/basic-memory/`), or who
-   don't mind waiting for a rebuild, can skip the `cp` and instead run
-   `docker compose exec mcp-basic-memory basic-memory sync` once after
-   recreating — the sync walks the vault and rebuilds the index from
-   the markdown.
+   don't mind waiting for a rebuild, can skip the `cp` and instead start
+   clean and re-register the on-disk projects. The MCP server does not
+   auto-discover subdirectories of `BASIC_MEMORY_PROJECT_ROOT`, so each
+   project directory under `${HOST_MEMORY_DIR:-./memory}/` has to be
+   registered explicitly:
+
+   ```shell
+   cd mcp-basic-memory
+   for d in "${HOST_MEMORY_DIR:-./memory}"/*/; do
+     [ -d "$d" ] || continue
+     name=$(basename "$d")
+     docker compose exec mcp-basic-memory basic-memory project add "$name" "/app/data/$name"
+   done
+   # Optional: force a full rebuild of the search/vector indexes
+   docker compose exec mcp-basic-memory basic-memory reindex --full
+   ```
 
 3. To roll back, edit `mcp-basic-memory/.env` and set
    `BASIC_MEMORY_TRANSPORT=sse` to restore the legacy transport, and

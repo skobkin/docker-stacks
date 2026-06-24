@@ -70,10 +70,20 @@ rebuilt with [Repairing index](#repairing-index) below.
 
 ## Repairing index
 
-The container does not run `basic-memory sync` on start — the SQLite index
-at `HOST_CONFIG_DIR/memory.db` is expected to be persistent across
+The container does not run a background `sync` on start — the SQLite
+index at `HOST_CONFIG_DIR/memory.db` and the project registry in
+`HOST_CONFIG_DIR/config.json` are expected to be persistent across
 recreates, so a normal start should not need to rebuild anything. Use the
-manual recovery procedure below when the index genuinely needs rebuilding.
+manual recovery procedure below when state genuinely needs rebuilding.
+
+> The `latest` upstream image does **not** expose a top-level `sync`
+> command. The two commands that matter for recovery are
+> [`project add`](https://github.com/basicmachines-co/basic-memory/blob/main/docs/SPEC-PER-PROJECT-ROUTING.md)
+> (registers an existing on-disk directory as a project — required because
+> the MCP server does **not** auto-discover subdirectories of
+> `BASIC_MEMORY_PROJECT_ROOT`) and
+> [`reindex`](https://github.com/basicmachines-co/basic-memory/blob/main/src/basic_memory/cli/commands/db.py)
+> (rebuilds the search/vector indexes for already-registered projects).
 
 When to repair:
 
@@ -81,51 +91,101 @@ When to repair:
   `memory.db` — for example after a fresh host setup, a partial restore
   from backup, or a manual `rm -rf`. The MCP server will start but
   `list_memory_projects` will show only the default `main`.
+- **Projects on disk are not registered.** You have directories under
+  `HOST_MEMORY_DIR/` that should appear as projects, but the MCP
+  `list_projects` tool returns only the default `main`. The MCP server
+  does not auto-discover subdirectories of `BASIC_MEMORY_PROJECT_ROOT`,
+  so each one has to be registered with `project add`.
 - **Index is stale.** You added or edited notes on disk while the MCP
   container was down (or via a non-container Basic Memory CLI) and want
-  the index to pick them up.
+  the search index to pick them up.
 - **Migrating from the old layout.** You previously ran a version of this
   stack where the index lived at `${HOST_MEMORY_DIR}/basic-memory/` (a
   subdirectory of the vault) and want to move it to the new
   `HOST_CONFIG_DIR` mount.
 
-The repair walks `BASIC_MEMORY_PROJECT_ROOT` (= `/app/data` =
-`HOST_MEMORY_DIR`) and reconciles `HOST_CONFIG_DIR/memory.db` against the
-current markdown. It is idempotent: an already-in-sync index exits
-quickly with no visible work; a missing or stale index rebuilds whatever
-is needed.
+### Re-registering projects on disk
+
+The MCP server reads the project list from `HOST_CONFIG_DIR/config.json`
+and the `projects` SQLite table. When the index is fresh but the vault
+already contains project directories, register each one explicitly. From
+the stack directory:
 
 ```shell
 cd mcp-basic-memory
-docker compose exec mcp-basic-memory basic-memory sync
+
+# List what is on disk first — each top-level directory under
+# HOST_MEMORY_DIR is a candidate project.
+ls -1 "${HOST_MEMORY_DIR:-./memory}"
+
+# Register each one. <name> is the display name in the MCP `list_projects`
+# tool; <path> is the absolute path inside the container (/app/data maps
+# to HOST_MEMORY_DIR on the host).
+docker compose exec mcp-basic-memory basic-memory project add docker-stacks /app/data/docker-stacks
+docker compose exec mcp-basic-memory basic-memory project add slopgame     /app/data/slopgame
+# Repeat for any other directories shown by `ls -1`.
 ```
 
-Sync writes to the same SQLite database the MCP server reads, so no
-container restart is needed afterward — the next MCP request sees the
-rebuilt index. Watch progress with:
+`project add` writes to `HOST_CONFIG_DIR/config.json` and the
+`projects` SQLite table in the same database the MCP server reads, so
+no container restart is needed — the next MCP request sees the
+registered projects. The MCP server's background `WatchService` then
+indexes each registered project's files on disk into the search index
+automatically.
+
+A loop is convenient for many projects:
+
+```shell
+cd mcp-basic-memory
+for d in "${HOST_MEMORY_DIR:-./memory}"/*/; do
+  [ -d "$d" ] || continue
+  name=$(basename "$d")
+  docker compose exec mcp-basic-memory basic-memory project add "$name" "/app/data/$name"
+done
+```
+
+### Force a full reindex
+
+If the projects are registered but the search index is stale (for
+example after editing many files while the container was down), force a
+full re-scan of every registered project:
+
+```shell
+cd mcp-basic-memory
+docker compose exec mcp-basic-memory basic-memory reindex --full
+```
+
+`reindex --full` rebuilds the file-backed full-text search index and
+re-embeds notes (when semantic search is enabled). It does not change
+the project list — for that, use `project add` above. Watch progress
+with:
 
 ```shell
 docker compose logs -f mcp-basic-memory
 ```
 
-For the migrating-from-old-layout case, the index is already on disk but
-at the old path. Copy it across before recreating, or just let the sync
-rebuild it:
+For the migrating-from-old-layout case, the index is already on disk
+but at the old path. Copy it across before recreating, or let the MCP
+server rebuild it from the markdown on next start:
 
 ```shell
 # Option A — preserve the existing index (faster, no re-indexing needed)
 cp -a "${HOST_MEMORY_DIR:-./memory}/basic-memory/." "${HOST_CONFIG_DIR:-./config}/"
 docker compose up -d --force-recreate
 
-# Option B — start clean and let sync rebuild from the markdown
-docker compose exec mcp-basic-memory basic-memory sync
+# Option B — start clean and let the background sync rebuild from the markdown
+rm -rf "${HOST_CONFIG_DIR:-./config}"/*
+docker compose up -d --force-recreate
+# Then re-register any on-disk projects (see above) and run
+# `basic-memory reindex --full` if the search index looks empty.
 ```
 
-If the rebuild succeeds but only some projects reappear, or sync errors
-out, the most likely cause is a permissions mismatch: the `appuser`
-(UID/GID 1000) inside the container cannot read one of the project
-directories. See [Filesystem permissions](#filesystem-permissions) and
-run `chown -R 1000:1000 ${HOST_MEMORY_DIR} ${HOST_CONFIG_DIR}` before
+If the rebuild succeeds but only some projects reappear, or
+`project add` errors out, the most likely cause is a permissions
+mismatch: the `appuser` (UID/GID 1000) inside the container cannot
+read one of the project directories. See
+[Filesystem permissions](#filesystem-permissions) and run
+`chown -R 1000:1000 ${HOST_MEMORY_DIR} ${HOST_CONFIG_DIR}` before
 retrying.
 
 ## Filesystem permissions
