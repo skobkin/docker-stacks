@@ -34,18 +34,37 @@ services:
       BASIC_MEMORY_SYNC_CHANGES: "${BASIC_MEMORY_SYNC_CHANGES:-true}"
       BASIC_MEMORY_LOG_LEVEL: "${BASIC_MEMORY_LOG_LEVEL:-INFO}"
       BASIC_MEMORY_SYNC_DELAY: "${BASIC_MEMORY_SYNC_DELAY:-1000}"
+      # Override the upstream default of BASIC_MEMORY_HOME=/app/data/basic-memory
+      # so the CLI's SQLite index and config.json live on the HOST_CONFIG_DIR
+      # bind mount instead of being buried inside the vault. This makes the
+      # index independent of the markdown — they can be backed up, restored,
+      # or wiped separately. BASIC_MEMORY_PROJECT_ROOT keeps the upstream
+      # default of /app/data (the vault root) — only the index location moves.
+      BASIC_MEMORY_HOME: /app/.basic-memory
+      BASIC_MEMORY_PROJECT_ROOT: /app/data
     volumes:
+      # HOST_MEMORY_DIR is the vault root — one subdirectory per project
+      # containing the markdown files Basic Memory indexes. Backed up to
+      # preserve the notes themselves.
+      #
+      # HOST_CONFIG_DIR is the CLI's working state — config.json, the
+      # SQLite index (memory.db), and per-project metadata. Backed up to
+      # preserve the search/relations graph without rebuilding it. See
+      # the BASIC_MEMORY_HOME override in the environment block above,
+      # which redirects the upstream default of /app/data/basic-memory
+      # (a subdirectory of the vault) to /app/.basic-memory so the two
+      # bind mounts hold independent data.
       - "${HOST_MEMORY_DIR:-./memory}:/app/data:rw"
       - "${HOST_CONFIG_DIR:-./config}:/app/.basic-memory:rw"
     networks:
       - ai-tools
     healthcheck:
       # The image's built-in HEALTHCHECK probes `basic-memory --version` and
-      # never tests the running SSE server. We override it with a TCP probe
-      # against the listening port. The image is python:3.12-slim-bookworm,
-      # so /bin/sh is dash and does not support /dev/tcp redirects — the
-      # healthcheck's CMD-SHELL must therefore run under bash (the image ships
-      # with /bin/bash for `appuser`).
+      # never tests the running streamable HTTP server. We override it with a
+      # TCP probe against the listening port. The image is
+      # python:3.12-slim-bookworm, so /bin/sh is dash and does not support
+      # /dev/tcp redirects — the healthcheck's CMD-SHELL must therefore run
+      # under bash (the image ships with /bin/bash for `appuser`).
       test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8000 || exit 1'"]
       interval: 30s
       timeout: 5s

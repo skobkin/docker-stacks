@@ -1,4 +1,4 @@
-## 2026-06-24 - Basic Memory MCP switched to streamable HTTP transport
+## 2026-06-25 - Basic Memory MCP: streamable HTTP transport and persistent index
 
 ### Affected stacks
 
@@ -6,28 +6,80 @@
 
 ### Explanation
 
-The Basic Memory container now runs MCP with the streamable HTTP transport
-(`basic-memory mcp --transport streamable-http`) instead of SSE. Streamable
-HTTP is the modern MCP transport (spec 2025-03-26); the upstream image's
-`CMD` still defaults to the deprecated SSE transport, so the stack now
-overrides it in `docker-compose.yml`. This unblocks Codex, which sends the
-MCP `initialize` handshake as `POST /mcp` and previously received
+Two changes to the Basic Memory MCP stack ship together:
+
+**Streamable HTTP transport.** The container now runs MCP with the
+streamable HTTP transport (`basic-memory mcp --transport streamable-http`)
+instead of the deprecated SSE transport. Streamable HTTP is the modern MCP
+transport (spec 2025-03-26) and is required by Codex, which sends the MCP
+`initialize` handshake as `POST /mcp` and previously received
 `HTTP 405 Method Not Allowed` from the SSE-only backend. OpenCode and
 Claude Code accept either transport and continue to work without
-configuration changes.
+configuration changes. The upstream image's `CMD` still defaults to SSE,
+so the stack now overrides it in `docker-compose.yml`. The listening port
+(container `8000`), endpoint path (`/mcp`), and host binding (`0.0.0.0`)
+are unchanged. The new `BASIC_MEMORY_TRANSPORT` env var defaults to
+`streamable-http`.
 
-The listening port (container `8000`), endpoint path (`/mcp`), and host
-binding (`0.0.0.0`) are unchanged. The new `BASIC_MEMORY_TRANSPORT` env
-var defaults to `streamable-http`.
+**Persistent index on the config bind mount.** The compose file now
+overrides the upstream default of `BASIC_MEMORY_HOME=/app/data/basic-memory`
+(a hidden subdirectory of the vault) to `BASIC_MEMORY_HOME=/app/.basic-memory`.
+The CLI's SQLite index (`memory.db`) and per-project metadata
+(`config.json`) therefore live on the `HOST_CONFIG_DIR` bind mount (default
+`./config`) instead of being buried inside `HOST_MEMORY_DIR`. This makes
+the `HOST_CONFIG_DIR` mount serve the purpose its name suggests — the
+stack now genuinely splits "what I wrote" (`HOST_MEMORY_DIR`) from
+"the search index over what I wrote" (`HOST_CONFIG_DIR`). Both can be
+backed up, restored, or wiped independently. The previous layout was
+internally inconsistent: `HOST_CONFIG_DIR` mounted `/app/.basic-memory`
+but the CLI never read that path, so the mount was a silent no-op and
+the index drifted on any host that did not happen to back up the
+hidden `./memory/basic-memory/` subdirectory. `BASIC_MEMORY_PROJECT_ROOT`
+keeps the upstream default of `/app/data`, so the markdown vault itself
+is unchanged — only the index location moves.
+
+The container's `command:` does **not** run `basic-memory sync` on start.
+The index is expected to be persistent across recreates and re-syncing
+on every boot would mask real index-loss bugs. A new "Repairing index"
+section in `mcp-basic-memory/README.md` documents the manual recovery
+procedure (`docker compose exec mcp-basic-memory basic-memory sync`) for
+the cases where the index genuinely needs rebuilding — fresh host,
+partial restore, or migration from the old layout.
 
 ### Migration
 
-1. Recreate the stack with `cd mcp-basic-memory && docker compose up -d`.
-   The healthcheck (TCP probe of port `8000`) continues to verify the
-   listener.
-2. To roll back to the legacy SSE transport (not recommended — upstream
-   marks SSE as deprecated), set `BASIC_MEMORY_TRANSPORT=sse` in
-   `mcp-basic-memory/.env` and recreate the container.
+1. Pull the updated `mcp-basic-memory/docker-compose.yml` and recreate
+   the stack: `cd mcp-basic-memory && docker compose up -d --force-recreate`.
+   The new container runs with `--transport streamable-http` and the
+   `BASIC_MEMORY_HOME=/app/.basic-memory` redirect.
+
+2. **If you are upgrading from a previous version of this stack** that
+   was running with the old layout (index at
+   `${HOST_MEMORY_DIR:-./memory}/basic-memory/`), copy the existing index
+   to the new location **before** the first recreate, otherwise the new
+   container starts with a fresh empty index:
+
+   ```shell
+   cp -a "${HOST_MEMORY_DIR:-./memory}/basic-memory/." \
+         "${HOST_CONFIG_DIR:-./config}/"
+   cd mcp-basic-memory && docker compose up -d --force-recreate
+   ```
+
+   Operators who do not have an existing index to migrate (the previous
+   container was running with an empty `./memory/basic-memory/`), or who
+   don't mind waiting for a rebuild, can skip the `cp` and instead run
+   `docker compose exec mcp-basic-memory basic-memory sync` once after
+   recreating — the sync walks the vault and rebuilds the index from
+   the markdown.
+
+3. To roll back, edit `mcp-basic-memory/.env` and set
+   `BASIC_MEMORY_TRANSPORT=sse` to restore the legacy transport, and
+   remove the two new `BASIC_MEMORY_HOME` / `BASIC_MEMORY_PROJECT_ROOT`
+   lines from the `environment:` block of `mcp-basic-memory/docker-compose.yml`
+   to restore the old index layout (placing the index at
+   `${HOST_MEMORY_DIR}/basic-memory/`). There is no env-var toggle for
+   the index location — the `BASIC_MEMORY_HOME` redirect is a
+   compose-level override.
 
 ## 2026-06-12 - Abandoned stacks removed
 

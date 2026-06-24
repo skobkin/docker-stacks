@@ -46,14 +46,87 @@ Because the directory is bind-mounted, you can open it directly in Obsidian
 (File → Open vault → Open folder as vault) to browse and edit notes with the
 full Obsidian experience.
 
-## Config directory
+## Data integrity
 
-The Basic Memory CLI config and SQLite knowledge-base index live at
-`/app/.basic-memory` inside the container and are bind-mounted from
-`HOST_CONFIG_DIR` (default `./config`). This directory is also shipped empty
-with a content-blocking `.gitignore`. Keeping the index on the host (instead
-of in a Docker named volume) means it backs up alongside the markdown and
-can be inspected or migrated without `docker volume` plumbing.
+Basic Memory state is split across the two bind mounts so the index and the
+markdown can be backed up, restored, or wiped independently:
+
+| Host path | Container path | Contents | Back up to preserve |
+|---|---|---|---|
+| `HOST_MEMORY_DIR` (default `./memory`) | `/app/data` | One subdirectory per project with the markdown notes | The notes themselves |
+| `HOST_CONFIG_DIR` (default `./config`) | `/app/.basic-memory` | `config.json`, `memory.db` (the SQLite index), per-project metadata | The search/relations graph without rebuilding it |
+
+The compose file overrides the upstream default of
+`BASIC_MEMORY_HOME=/app/data/basic-memory` (a subdirectory of the vault) to
+`BASIC_MEMORY_HOME=/app/.basic-memory` so the two bind mounts hold
+independent data. This is the only way the `HOST_CONFIG_DIR` mount serves a
+real purpose; without the override the CLI never reads `/app/.basic-memory`
+and `./config/` would be a no-op.
+
+If you ever need to wipe just the index (for example to test a clean
+re-sync, or to recover from index corruption), `rm -rf ${HOST_CONFIG_DIR}/*`
+is safe — the vault on `HOST_MEMORY_DIR` is untouched and the index can be
+rebuilt with [Repairing index](#repairing-index) below.
+
+## Repairing index
+
+The container does not run `basic-memory sync` on start — the SQLite index
+at `HOST_CONFIG_DIR/memory.db` is expected to be persistent across
+recreates, so a normal start should not need to rebuild anything. Use the
+manual recovery procedure below when the index genuinely needs rebuilding.
+
+When to repair:
+
+- **Index was wiped.** `${HOST_CONFIG_DIR}` is empty or missing
+  `memory.db` — for example after a fresh host setup, a partial restore
+  from backup, or a manual `rm -rf`. The MCP server will start but
+  `list_memory_projects` will show only the default `main`.
+- **Index is stale.** You added or edited notes on disk while the MCP
+  container was down (or via a non-container Basic Memory CLI) and want
+  the index to pick them up.
+- **Migrating from the old layout.** You previously ran a version of this
+  stack where the index lived at `${HOST_MEMORY_DIR}/basic-memory/` (a
+  subdirectory of the vault) and want to move it to the new
+  `HOST_CONFIG_DIR` mount.
+
+The repair walks `BASIC_MEMORY_PROJECT_ROOT` (= `/app/data` =
+`HOST_MEMORY_DIR`) and reconciles `HOST_CONFIG_DIR/memory.db` against the
+current markdown. It is idempotent: an already-in-sync index exits
+quickly with no visible work; a missing or stale index rebuilds whatever
+is needed.
+
+```shell
+cd mcp-basic-memory
+docker compose exec mcp-basic-memory basic-memory sync
+```
+
+Sync writes to the same SQLite database the MCP server reads, so no
+container restart is needed afterward — the next MCP request sees the
+rebuilt index. Watch progress with:
+
+```shell
+docker compose logs -f mcp-basic-memory
+```
+
+For the migrating-from-old-layout case, the index is already on disk but
+at the old path. Copy it across before recreating, or just let the sync
+rebuild it:
+
+```shell
+# Option A — preserve the existing index (faster, no re-indexing needed)
+cp -a "${HOST_MEMORY_DIR:-./memory}/basic-memory/." "${HOST_CONFIG_DIR:-./config}/"
+docker compose up -d --force-recreate
+
+# Option B — start clean and let sync rebuild from the markdown
+docker compose exec mcp-basic-memory basic-memory sync
+```
+
+If the rebuild succeeds but only some projects reappear, or sync errors
+out, the most likely cause is a permissions mismatch: the `appuser`
+(UID/GID 1000) inside the container cannot read one of the project
+directories. See [Filesystem permissions](#filesystem-permissions) and
+run `chown -R 1000:1000 ${HOST_MEMORY_DIR} ${HOST_CONFIG_DIR}` before
+retrying.
 
 ## Filesystem permissions
 
