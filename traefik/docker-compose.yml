@@ -11,6 +11,8 @@ services:
       - "${HTTPS_UDP_BIND_ADDR:-0.0.0.0}:${HTTPS_UDP_BIND_PORT:-443}:443/udp"
       - "${MATRIX_FEDERATION_BIND_ADDR:-0.0.0.0}:${MATRIX_FEDERATION_BIND_PORT:-8448}:8448/tcp"
       - "${GRPC_BIND_ADDR:-0.0.0.0}:${GRPC_BIND_PORT:-9443}:9443/tcp"
+      - "${MTLS_BIND_ADDR:-0.0.0.0}:${MTLS_BIND_PORT:-10443}:10443/tcp"
+      - "${MTLS_UDP_BIND_ADDR:-0.0.0.0}:${MTLS_UDP_BIND_PORT:-10443}:10443/udp"
     volumes:
       - "${CONFIG_PATH:-./config}:/etc/traefik:ro"
       - "${DATA_PATH:-./data}:/var/lib/traefik"

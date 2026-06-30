@@ -1,0 +1,55 @@
+# Reusable mutual-TLS (client-certificate) primitives.
+#
+# Activate by copying this template to the live file-provider path:
+#   cp config/dynamic/mtls.yml.dist config/dynamic/mtls.yml
+# Then place the client CA bundle at secrets/mtls/client-ca.crt (gitignored).
+# The existing ./secrets:/run/secrets/traefik:ro mount exposes it inside the
+# container at /run/secrets/traefik/mtls/client-ca.crt.
+#
+# Enforcement is a TLS option, applied at the TLS handshake, NOT an HTTP
+# middleware. Apply it either per-router with:
+#   traefik.http.routers.<r>.tls.options=mtls@file
+# or, for the dedicated mTLS entrypoint, at the entrypoint level in .env:
+#   TRAEFIK_ENTRYPOINTS_WEBMTLS_HTTP_TLS_OPTIONS=mtls@file
+# so every router on that entrypoint inherits mTLS automatically.
+#
+# Requires Traefik >= 3.7.5: earlier v3.7.3/v3.7.4 silently dropped different
+# tls.options for the same host across entrypoints (upstream #13314), which
+# means mTLS would be bypassed. Watch the logs for:
+#   "Found different TLS options for routers on the same host"
+
+tls:
+  options:
+    # Strict mTLS: every connection MUST present a client certificate signed by
+    # the configured CA, or the TLS handshake fails. Best for API / automated /
+    # service-to-service clients that always carry a cert.
+    mtls:
+      minVersion: VersionTLS12
+      clientAuth:
+        caFiles:
+          - /run/secrets/traefik/mtls/client-ca.crt
+        clientAuthType: RequireAndVerifyClientCert
+
+    # Soft mTLS: a presented certificate is verified if given, but clients may
+    # also connect without one. Useful while migrating clients onto certs, or as
+    # an additional identity channel layered on Authelia/session auth. NOTE: this
+    # does NOT authenticate anyone by itself - pair it with forward-auth or
+    # basic-auth for real access control.
+    mtls-optional:
+      minVersion: VersionTLS12
+      clientAuth:
+        caFiles:
+          - /run/secrets/traefik/mtls/client-ca.crt
+        clientAuthType: VerifyClientCertIfGiven
+
+http:
+  middlewares:
+    # Forwards the client certificate (when one was presented) to the backend in
+    # headers so the backend can do its OWN authorization on cert data. This is
+    # an HTTP middleware, so it goes in the middlewares= list. It does NOT
+    # enforce verification on its own and is NOT a substitute for a tls.options
+    # clientAuth setting - it only relays what Traefik saw. Layer it ON TOP of
+    # mtls@file, not in place of it.
+    forward-client-cert:
+      passTLSClientCert:
+        pem: true

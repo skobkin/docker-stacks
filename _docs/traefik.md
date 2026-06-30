@@ -31,6 +31,7 @@ Most of these stacks:
 - `TRAEFIK_SERVICE_PORT=<container-http-port>`: internal container port that Traefik should forward to when the stack exposes this knob
 - `TRAEFIK_GRPC_ENTRYPOINT=grpcsecure`: shared Traefik entrypoint for gRPC-over-HTTPS routers
 - `TRAEFIK_GRPC_SERVICE_PORT=<container-grpc-port>`: internal container gRPC port that Traefik should forward to when the stack exposes this knob
+- `MTLS_BIND_PORT=10443` (Traefik stack): host port for the optional `webmtls` mutual-TLS (client-certificate) entrypoint. A proxied service opts in by adding a second router on `webmtls` while keeping its normal `websecure` router. Disabled unless the Traefik stack enables the entrypoint; see the [Traefik stack README](../traefik/README.md#optional-mutual-tls-client-certificate-auth) for the full workflow
 
 ## Access Policy
 
@@ -59,6 +60,14 @@ The tracked `anubis.yml.dist` template also defines an `anubis-static` low-prior
 The default flow is **in-site**: Anubis is not exposed on a public hostname of its own. The challenge is served on the same host as the protected application, with relative URLs that resolve to the protected host the user is actually on. A single Anubis instance therefore works for an arbitrary number of protected hosts without per-host config. Each protected host is its own origin from the cookie's perspective, so the user solves the challenge once per host — by design, to keep the cookie scoped to a single origin.
 
 Stacks that already opt into `public-access@file` or `public-auth-access@file` (Authelia SSO) can stack Anubis on top in the same way. The order in the list is the order the middlewares run, and all of them run on every request that reaches the router. `default-access@file` is an `ipAllowList`; when it returns 403, Anubis is never consulted. For requests that pass the allow list, Anubis runs next and either allows the request through or returns 401 with the challenge page. Per-stack path exemptions are configured in the Anubis policy file — see the [Anubis stack README](../anubis/README.md) for the step-by-step guide, including the **Advanced: Anubis on a separate public host** section that describes a future `traefik_exposed` variant and the variables it would require.
+
+### Optional mutual-TLS (client certificate) auth
+
+Mutual TLS is **orthogonal to `TRAEFIK_ACCESS_POLICY`**: it is enforced at the TLS handshake via a `tls.options` `clientAuth` setting, before any HTTP middleware runs. A request that fails the client-certificate check never reaches `default-access@file` or Authelia at all, so mTLS cannot be applied conditionally by source IP on a single hostname.
+
+The supported shape is a dedicated `webmtls` entrypoint on its own port (`MTLS_BIND_PORT`, default `10443`), enabled in the Traefik stack. A service keeps its normal LAN-only `websecure` router (gated by `default-access@file`) and adds a second router on `webmtls` that is reachable from the WAN only with a valid client certificate.
+
+The Traefik stack ships strict (`mtls@file`), soft (`mtls-optional@file`), and cert-relay (`forward-client-cert@file`) primitives. It requires Traefik >= 3.7.5 — a regression in v3.7.3/v3.7.4 silently dropped mTLS for the same host across entrypoints (upstream [#13314](https://github.com/traefik/traefik/issues/13314)). See the [Traefik stack README](../traefik/README.md#optional-mutual-tls-client-certificate-auth) for enabling the entrypoint, provisioning client certificates, and the per-stack opt-in labels.
 
 ## Unknown Host Redirect
 

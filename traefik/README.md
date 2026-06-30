@@ -152,6 +152,96 @@ To enable it:
 
 For per-stack path exemption (for example webhook receivers or ACME HTTP-01 challenges), edit the Anubis policy file. The full step-by-step guide, including the **Advanced: Anubis on a separate public host** section that describes a future `traefik_exposed` variant and the variables it would require, lives in the [Anubis stack README](../anubis/README.md).
 
+## Optional mutual-TLS (client certificate) auth
+
+Mutual TLS authenticates a client by requiring it to present a certificate signed by a CA you control. In Traefik this is enforced at the **TLS handshake** via a `tls.options` `clientAuth` setting, not as an HTTP middleware, so the cert is checked before any request (or HTTP middleware like `default-access@file`) runs.
+
+This means mTLS **cannot be applied conditionally by source IP on a single hostname**: by the time an `ipAllowList` middleware sees the client IP, the cert has already been demanded. The supported way to get "LAN-friendly on one port, cert-gated on another" is a **dedicated mTLS entrypoint on a separate port**. A service keeps its normal LAN-only `:443` router and adds a second router on the mTLS port that is reachable from the WAN only with a valid client certificate.
+
+> Requires Traefik **>= 3.7.5**. The same hostname served on two entrypoints with different `tls.options` was broken by a regression in v3.7.3/v3.7.4 (upstream [#13314](https://github.com/traefik/traefik/issues/13314), fixed in [#13329](https://github.com/traefik/traefik/pull/13329)), which silently dropped mTLS. The rolling `IMAGE_TAG=v3` is currently safe (>= 3.7.6). After enabling mTLS, watch the logs for `Found different TLS options for routers on the same host` - if it appears, mTLS is silently off (bad/old image) and must not be trusted.
+
+The tracked `config/dynamic/mtls.yml.dist` template defines three objects:
+
+- `mtls@file` (TLS option): strict - `RequireAndVerifyClientCert`. The handshake fails for any client without a valid cert. Best for API / automated / service-to-service clients.
+- `mtls-optional@file` (TLS option): soft - `VerifyClientCertIfGiven`. Verifies a cert if one is sent but does not require one. Useful during gradual rollout or as an extra identity channel on top of Authelia. Does not authenticate by itself; pair it with forward-auth or basic-auth.
+- `forward-client-cert@file` (HTTP middleware): `passTLSClientCert` that relays the presented cert to the backend in headers, so the backend can do its own authorization. This does **not** enforce verification; layer it on top of `mtls@file`, not in place of it.
+
+To enable it:
+
+1. Copy the template to the live file-provider path:
+
+    ```shell
+    cp config/dynamic/mtls.yml.dist config/dynamic/mtls.yml
+    ```
+
+2. Provision a client CA and a client certificate (see [Client certificates](#client-certificates) below).
+
+3. Enable the dedicated `webmtls` entrypoint in `.env` by uncommenting the `TRAEFIK_ENTRYPOINTS_WEBMTLS_*` block. Its `TLS_OPTIONS=mtls@file` makes every router on that entrypoint require a client cert. Publish the port (`MTLS_BIND_PORT`, default `10443`) and open it on the host firewall for WAN access.
+
+4. Recreate Traefik:
+
+    ```shell
+    docker compose up -d
+    ```
+
+A service then opts in with a **second router** on `webmtls`, leaving its LAN-only `:443` router untouched:
+
+```yaml
+    labels:
+      # Existing LAN-only router on :443 - default-access@file blocks everyone
+      # outside the trusted subnet. Unchanged.
+      traefik.http.routers.home-assistant.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.home-assistant.entrypoints: "websecure"
+      traefik.http.routers.home-assistant.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+
+      # New WAN-reachable router on the mTLS port. The client cert is required by
+      # the entrypoint's tls.options=mtls@file, so no per-router tls.options label.
+      traefik.http.routers.home-assistant-mtls.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.home-assistant-mtls.entrypoints: "webmtls"
+      traefik.http.routers.home-assistant-mtls.service: "home-assistant"
+      # Optional: forward the cert to the backend for its own authorization.
+      traefik.http.routers.home-assistant-mtls.middlewares: "forward-client-cert@file"
+```
+
+ACME HTTP-01 is unaffected: it runs on the plaintext `web` entrypoint. The `webmtls` router gets its Let's Encrypt server certificate from the same `default` certresolver; `tls.options` only adds the client-certificate requirement.
+
+### Client certificates
+
+There is no PKI in this repository. Create a local CA and client certificates under the gitignored `secrets/mtls/` tree:
+
+```shell
+install -d secrets/mtls/clients
+
+# Local CA (keep ca.key offline after signing clients)
+openssl genrsa -out secrets/mtls/ca.key 4096
+openssl req -x509 -new -nodes -key secrets/mtls/ca.key -sha256 -days 3650 \
+  -subj "/CN=docker-stacks local client CA" -out secrets/mtls/ca.crt
+chmod 600 secrets/mtls/ca.key
+
+# The file the template references as caFiles
+cp secrets/mtls/ca.crt secrets/mtls/client-ca.crt
+
+# A client certificate
+openssl genrsa -out secrets/mtls/clients/alice.key 2048
+openssl req -new -key secrets/mtls/clients/alice.key -subj "/CN=alice" \
+  -out secrets/mtls/clients/alice.csr
+openssl x509 -req -in secrets/mtls/clients/alice.csr \
+  -CA secrets/mtls/ca.crt -CAkey secrets/mtls/ca.key -CAcreateserial \
+  -days 825 -sha256 -out secrets/mtls/clients/alice.crt
+```
+
+Present a client certificate with curl:
+
+```shell
+curl --cert secrets/mtls/clients/alice.crt \
+     --key  secrets/mtls/clients/alice.key \
+     https://home-assistant.example.com:10443/
+```
+
+Without a client certificate, the TLS handshake fails (no HTTP response at all), which is the expected behavior of `RequireAndVerifyClientCert`.
+
+Traefik does not reliably prompt browsers for a client certificate (upstream [#10643](https://github.com/traefik/traefik/issues/10643)), and OS-level browser cert selection often sends nothing and produces a confusing handshake failure. mTLS here is therefore best suited to **API, automated, and service-to-service clients** that present a certificate through tooling. For human/browser-facing endpoints, prefer Authelia (`public-auth-access@file`) or the Anubis challenge.
+
 ## Certificates
 
 This stack defaults to:
@@ -205,7 +295,7 @@ This stack keeps example templates in Git and ignores the live local copies you 
 - `secrets/*.dist`: tracked examples
 - `secrets/*`: live secret files, ignored by Git
 
-Before first start, copy `dashboard.yml.dist`, `shared.yml.dist`, and `default-access.yml.dist` from `.dist` to `.yml`. Copy `public-access.yml.dist` only when you intentionally use `TRAEFIK_ACCESS_POLICY=public-access@file`, `TRAEFIK_ACCESS_POLICY=public-auth-access@file`, or `TRAEFIK_DASHBOARD_MIDDLEWARES=public-auth-access@file`. Copy `anubis.yml.dist` only when you intentionally run the Anubis stack and want to opt stacks into `anubis@file`. Copy `unknown-host-redirect.yml.dist` only when you want unmatched hostnames to redirect to a canonical URL. For the dashboard password file, generate a real `dashboard.htpasswd` instead of reusing the example.
+Before first start, copy `dashboard.yml.dist`, `shared.yml.dist`, and `default-access.yml.dist` from `.dist` to `.yml`. Copy `public-access.yml.dist` only when you intentionally use `TRAEFIK_ACCESS_POLICY=public-access@file`, `TRAEFIK_ACCESS_POLICY=public-auth-access@file`, or `TRAEFIK_DASHBOARD_MIDDLEWARES=public-auth-access@file`. Copy `anubis.yml.dist` only when you intentionally run the Anubis stack and want to opt stacks into `anubis@file`. Copy `unknown-host-redirect.yml.dist` only when you want unmatched hostnames to redirect to a canonical URL. Copy `mtls.yml.dist` only when you intentionally enable mutual-TLS client-certificate auth and have placed a client CA at `secrets/mtls/client-ca.crt`. For the dashboard password file, generate a real `dashboard.htpasswd` instead of reusing the example.
 
 ## Reusable file-provider config
 
@@ -220,6 +310,7 @@ Included reusable objects:
 - `public-auth-access@file`: optional Authelia forward-auth policy for stacks that set `TRAEFIK_ACCESS_POLICY=public-auth-access@file`
 - `anubis@file`: optional Anubis forward-auth policy and `anubis-static` low-priority catch-all router that serves the Anubis challenge assets on every host under `PathPrefix("/.within.website/")`; both load when stacks set `TRAEFIK_ACCESS_POLICY=...anubis@file` and run the Anubis stack on the shared `traefik` network
 - `unknown-host-redirect@file`: optional catch-all redirect router and middleware for hostnames not matched by more specific routers
+- `mtls@file` / `mtls-optional@file`: optional mutual-TLS `tls.options` (strict / soft client-certificate verification), plus `forward-client-cert@file`: middleware that relays a presented client cert to the backend; all load when you copy `mtls.yml.dist` to `mtls.yml` — see [Optional mutual-TLS auth](#optional-mutual-tls-client-certificate-auth)
 - `dashboard-chain@file`: dashboard auth chain
 - `chain-default@file`: light shared middleware chain
 - `redirect-to-https@file`: shared router-level HTTP to HTTPS redirect middleware
@@ -236,6 +327,7 @@ The tracked templates live in:
 - `config/dynamic/shared.yml.dist`
 - `config/dynamic/static-files.yml.dist`
 - `config/dynamic/unknown-host-redirect.yml.dist`
+- `config/dynamic/mtls.yml.dist`
 
 Typical uses:
 
@@ -244,6 +336,7 @@ Typical uses:
 - SSO single-stack override: run the Authelia stack, copy `public-access.yml.dist` to `public-access.yml`, then set `TRAEFIK_ACCESS_POLICY=public-auth-access@file` in that stack
 - AI-bot firewall: run the Anubis stack on the `traefik` network, copy `anubis.yml.dist` to `anubis.yml`, then set `TRAEFIK_ACCESS_POLICY=default-access@file,anubis@file` (or another access policy followed by `,anubis@file`) in the target stack
 - unmatched host redirect: copy `unknown-host-redirect.yml.dist` to `unknown-host-redirect.yml`, then replace `https://traefik.example.com/` with the canonical URL for requests whose host does not match any stack or dynamic router
+- mutual-TLS client-cert auth: copy `mtls.yml.dist` to `mtls.yml`, place a client CA at `secrets/mtls/client-ca.crt`, enable the `webmtls` entrypoint, then add a second router on that entrypoint to the stack that needs WAN access — see [Optional mutual-TLS auth](#optional-mutual-tls-client-certificate-auth)
 - router-level HTTPS redirect: add `redirect-to-https@file` to routers that should redirect plain HTTP requests to HTTPS
 - larger uploads: add `upload-250m@file` to the router middleware list
 - common compression: add `chain-default@file`
@@ -313,6 +406,7 @@ Add service-specific extras only when needed:
 
 - uploads: `...,upload-250m@file`
 - long-lived upstreams: `traefik.http.services.app.loadbalancer.serversTransport=long-lived@file`
+- WAN access with a client certificate: add a second router on the `webmtls` entrypoint (see [Optional mutual-TLS auth](#optional-mutual-tls-client-certificate-auth))
 
 For shared Traefik usage across stacks in this repository, see [Common Traefik Usage](../_docs/traefik.md).
 
