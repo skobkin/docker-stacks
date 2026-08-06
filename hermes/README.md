@@ -28,6 +28,21 @@ Before first start, edit dashboard credentials in `.env`. This Compose template 
 
 The default dashboard URL is `http://127.0.0.1:8410`.
 
+## Terminal backends
+
+The default `local` backend runs terminal commands inside the Hermes container. To run commands on a remote machine instead, set the following in `${HOST_DATA_DIR:-./data}/config.yaml`:
+
+```yaml
+terminal:
+  backend: ssh
+```
+
+Then configure the commented `TERMINAL_SSH_*` options in `.env`. Set `TERMINAL_SSH_KEY_FILE` to the host path of the private key and keep `TERMINAL_SSH_KEY=/run/secrets/terminal_key`; Compose mounts that key read-only at the conventional runtime-secrets location. Hermes connects non-interactively and accepts a previously unseen host key on first use.
+
+Private keys should remain mode `0600`. Hermes runs as UID/GID `10000:10000` by default, so either make the key owned by that UID/GID or set `HERMES_UID` and `HERMES_GID` in `.env` to the key owner's numeric IDs.
+
+See the [official terminal backend documentation](https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/configuration.md#terminal-backend-configuration) for other supported backends and configuration options.
+
 ## Variants
 
 Set `COMPOSE_VARIANT` in `.env`:

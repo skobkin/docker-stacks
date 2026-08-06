@@ -10,6 +10,7 @@ services:
       - "${DASHBOARD_BIND_ADDR:-127.0.0.1}:${DASHBOARD_BIND_PORT:-8410}:9119/tcp"
     volumes:
       - "${HOST_DATA_DIR:-./data}:/opt/data"
+      - "${TERMINAL_SSH_KEY_FILE:-/dev/null}:/run/secrets/terminal_key:ro"
       - /etc/localtime:/etc/localtime:ro
     env_file: .env
     environment:
