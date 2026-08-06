@@ -1,11 +1,11 @@
-# https://codeberg.org/goern/forgejo-mcp
+# https://git.b4mad.industries/agentic-forges/forgejo-mcp
 
 services:
   mcp-forgejo:
     extends:
       file: ./compose.features.yml
       service: "${COMPOSE_VARIANT:-default}"
-    image: "codeberg.org/goern/forgejo-mcp:${IMAGE_TAG:-latest}"
+    image: "git.b4mad.industries/agentic-forges/forgejo-mcp:${IMAGE_TAG:-latest}"
     container_name: mcp-forgejo
     command:
       - "--transport"

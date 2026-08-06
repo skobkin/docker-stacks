@@ -1,6 +1,6 @@
 # Forgejo MCP
 
-[Forgejo MCP](https://codeberg.org/goern/forgejo-mcp) exposes Forgejo repositories, issues, pull requests, files, and other API operations to MCP clients over streamable HTTP.
+[Forgejo MCP](https://git.b4mad.industries/agentic-forges/forgejo-mcp) exposes Forgejo repositories, issues, pull requests, files, and other API operations to MCP clients over streamable HTTP.
 
 ## Setup
 
@@ -37,7 +37,7 @@ The schemes are case-insensitive. This per-request authentication allows differe
 
 `FORGEJO_ACCESS_TOKEN` is optional. When set in `.env`, it becomes the global fallback identity for requests without an authorization token. A token supplied in the request header takes precedence over that fallback.
 
-See the upstream [multi-tenant HTTP guide](https://github.com/goern/forgejo-mcp/blob/main/demos/multi-tenant-http.md) for protocol-level examples.
+See the upstream [multi-tenant HTTP guide](https://git.b4mad.industries/agentic-forges/forgejo-mcp/src/branch/main/demos/multi-tenant-http.md) for protocol-level examples.
 
 ## Proxy Variant
 
