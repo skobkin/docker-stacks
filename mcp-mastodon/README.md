@@ -10,12 +10,14 @@ nano -w .env
 docker compose up -d
 ```
 
-Set `MASTODON_MCP_MASTODON__BASE_URL` to the base URL of the Mastodon-compatible instance, then set the access token via one of:
+Set `MASTODON_MCP_MASTODON__BASE_URL` to the base URL of the Mastodon-compatible instance. The stack ships in `MASTODON_MCP_AUTH__MODE=request-header` (set in `docker-compose.yml`), so the MCP client sends the Mastodon access token on every request in `MASTODON_MCP_AUTH__REQUEST_HEADER` (default `X-Mastodon-Access-Token`); no token is configured server-side.
 
-- `MASTODON_MCP_AUTH__TOKEN` (default; inline token in `.env`), or
-- `MASTODON_MCP_AUTH__TOKEN_FILE` (uncomment the line in `.env.dist` and
-  unmask it) together with a token file mounted at that path. The upstream
-  rejects both being set at the same time.
+To run the server with a single baked-in identity instead, edit `docker-compose.yml` to set `MASTODON_MCP_AUTH__MODE` to `static` or `hybrid`, then uncomment one of:
+
+- `MASTODON_MCP_AUTH__TOKEN` — inline token in `.env`.
+- `MASTODON_MCP_AUTH__TOKEN_FILE` — path to a token file mounted into the container (Docker secret or read-only bind mount).
+
+The upstream rejects both static sources being set at the same time. Any reverse proxy must forward `MASTODON_MCP_AUTH__REQUEST_HEADER` verbatim or `request-header` and `hybrid` modes silently break — see the *Reverse-proxy caveat* below.
 
 The default MCP client URL is:
 
@@ -33,12 +35,12 @@ docker network create ai-tools
 
 ## Authentication
 
-Three modes, selected by `MASTODON_MCP_AUTH__MODE`:
+Three modes, selected by `MASTODON_MCP_AUTH__MODE` (in `docker-compose.yml`):
 
-- `static` (default): token or token file from configuration.
-- `request-header`: the token arrives on each MCP request via the configured
-  Streamable HTTP header (default `X-Mastodon-Access-Token`). Requires the
-  streamable HTTP transport.
+- `request-header` (default): the token arrives on each MCP request via the
+  configured Streamable HTTP header (default `X-Mastodon-Access-Token`).
+  Requires the streamable HTTP transport.
+- `static`: token or token file from configuration.
 - `hybrid`: request header first, then the configured static fallback.
 
 Per the upstream safety rules, access tokens are never accepted from MCP tool input or output. Tokens are only resolved from configuration or the configured request header.

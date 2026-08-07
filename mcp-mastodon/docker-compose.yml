@@ -16,11 +16,13 @@ services:
     env_file: .env
     environment:
       MASTODON_MCP_MASTODON__BASE_URL: "${MASTODON_MCP_MASTODON__BASE_URL:?}"
-      # Use static auth with the inline token from MASTODON_MCP_AUTH__TOKEN
-      # (see .env.dist). Set MASTODON_MCP_AUTH__TOKEN_FILE instead and
-      # unmask TOKEN if you prefer a mounted token file; the upstream
-      # validator rejects the two sources being set at the same time.
-      MASTODON_MCP_AUTH__MODE: "${MASTODON_MCP_AUTH__MODE:-static}"
+      # Stack default: request-header auth so the MCP client supplies the
+      # Mastodon access token on every request (header X-Mastodon-Access-Token
+      # by default). The upstream's own default is "static", so this is set
+      # explicitly here rather than left to .env. Switching to "static" or
+      # "hybrid" requires editing this line and uncommenting the matching
+      # auth knobs in .env.dist.
+      MASTODON_MCP_AUTH__MODE: "request-header"
     networks:
       - ai-tools
     restart: unless-stopped
