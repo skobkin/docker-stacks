@@ -10,9 +10,9 @@ nano -w .env
 docker compose up -d
 ```
 
-Set `MASTODON_MCP_MASTODON__BASE_URL` to the base URL of the Mastodon-compatible instance. The stack ships in `MASTODON_MCP_AUTH__MODE=request-header` (set in `docker-compose.yml`), so the MCP client sends the Mastodon access token on every request in `MASTODON_MCP_AUTH__REQUEST_HEADER` (default `X-Mastodon-Access-Token`); no token is configured server-side.
+Set `MASTODON_MCP_MASTODON__BASE_URL` to the base URL of the Mastodon-compatible instance. The stack ships in `MASTODON_MCP_AUTH__MODE=request-header`, so the MCP client sends the Mastodon access token on every request in `MASTODON_MCP_AUTH__REQUEST_HEADER` (default `X-Mastodon-Access-Token`); no token is configured server-side.
 
-To run the server with a single baked-in identity instead, edit `docker-compose.yml` to set `MASTODON_MCP_AUTH__MODE` to `static` or `hybrid`, then uncomment one of:
+To run the server with a single baked-in identity instead, change `MASTODON_MCP_AUTH__MODE` in `.env` to `static` or `hybrid`, then uncomment one of:
 
 - `MASTODON_MCP_AUTH__TOKEN` — inline token in `.env`.
 - `MASTODON_MCP_AUTH__TOKEN_FILE` — path to a token file mounted into the container (Docker secret or read-only bind mount).
@@ -35,7 +35,7 @@ docker network create ai-tools
 
 ## Authentication
 
-Three modes, selected by `MASTODON_MCP_AUTH__MODE` (in `docker-compose.yml`):
+Three modes, selected by `MASTODON_MCP_AUTH__MODE` in `.env`:
 
 - `request-header` (default): the token arrives on each MCP request via the
   configured Streamable HTTP header (default `X-Mastodon-Access-Token`).
