@@ -10,11 +10,12 @@ nano -w .env
 docker compose up -d
 ```
 
-Set `MASTODON_MCP_MASTODON__BASE_URL` to the base URL of the Mastodon-compatible instance. Mount the Mastodon access token into the container at the path given by `MASTODON_MCP_AUTH__TOKEN_FILE` (default `/run/secrets/mastodon-token`). The simplest way is a Docker secret or a read-only bind mount of a file outside the stack tree:
+Set `MASTODON_MCP_MASTODON__BASE_URL` to the base URL of the Mastodon-compatible instance, then set the access token via one of:
 
-```shell
-docker secret create mastodon-token ./mastodon-token
-```
+- `MASTODON_MCP_AUTH__TOKEN` (default; inline token in `.env`), or
+- `MASTODON_MCP_AUTH__TOKEN_FILE` (uncomment the line in `.env.dist` and
+  unmask it) together with a token file mounted at that path. The upstream
+  rejects both being set at the same time.
 
 The default MCP client URL is:
 
@@ -48,7 +49,10 @@ When the MCP server runs behind a reverse proxy, the proxy must forward the conf
 
 ## Proxy Variant
 
-Set `COMPOSE_VARIANT=proxy` when the server needs the external `proxy` network for outbound access through a service such as Mihomo. Create that network as documented in the shared [`proxy` network guide](../_docs/proxy_network.md), then uncomment the relevant proxy variables in `.env`.
+Set `COMPOSE_VARIANT=proxy` when the server needs the external `proxy` network for outbound access through a service such as Mihomo. Create that network as documented in the shared [`proxy` network guide](../_docs/proxy_network.md), then uncomment the relevant proxy variables in `.env`. Two equivalent forms are available:
+
+- The Go-style `HTTP_PROXY` / `HTTPS_PROXY` / `NO_PROXY` triple (honoured because `MASTODON_MCP_HTTP__PROXY_FROM_ENVIRONMENT` defaults to `true`).
+- The explicit upstream override `MASTODON_MCP_HTTP__PROXY_URL=socks5://mihomo:1050` (recommended when only one proxy is needed; it bypasses the environment lookup).
 
 ## Traefik
 
