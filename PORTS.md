@@ -41,6 +41,8 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | hedgedoc                | hedgedoc          | 8394                | 8394           | ✅       | TCP      | Collaborative editor                |
 | hermes                  | hermes            | 8410                | 9119           | ✅       | TCP      | Authenticated dashboard             |
 | hermes                  | hermes            | 8642                | 8642           | ✅       | TCP      | API server, disabled unless API variant is selected |
+| hindsight               | hindsight         | 8417                | 8888           | ✅       | TCP      | Memory API and MCP, localhost-bound |
+| hindsight               | hindsight         | 8418                | 9999           | ✅       | TCP      | Control Plane UI, localhost-bound   |
 | home-assistant          | homeassistant     | *host mode*         | *host mode*    | ✅       | -        | IoT hub                             |
 | i2pd                    | i2pd              | 7070                | 7070           | ✅       | TCP      | Web interface                       |
 | i2pd                    | i2pd              | 4444                | 4444           | ❌       | TCP      | HTTP proxy                          |

@@ -1,0 +1,46 @@
+# https://github.com/vectorize-io/hindsight
+
+services:
+  hindsight:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
+    image: "ghcr.io/vectorize-io/hindsight:${IMAGE_TAG:-0.9}"
+    container_name: hindsight
+    ports:
+      - "${API_BIND_ADDR:-127.0.0.1}:${API_BIND_PORT:-8417}:8888/tcp"
+      - "${UI_BIND_ADDR:-127.0.0.1}:${UI_BIND_PORT:-8418}:9999/tcp"
+    env_file: .env
+    environment:
+      HINDSIGHT_API_WORKER_ID: "${HINDSIGHT_API_WORKER_ID:-hindsight-1}"
+      HINDSIGHT_API_TENANT_EXTENSION: "hindsight_api.extensions.builtin.tenant:ApiKeyTenantExtension"
+      HINDSIGHT_API_TENANT_API_KEY: "${HINDSIGHT_API_KEY:?Set HINDSIGHT_API_KEY in .env}"
+      HINDSIGHT_API_MCP_AUTH_TOKEN: "${HINDSIGHT_API_KEY:?Set HINDSIGHT_API_KEY in .env}"
+      HINDSIGHT_CP_DATAPLANE_API_KEY: "${HINDSIGHT_API_KEY:?Set HINDSIGHT_API_KEY in .env}"
+      HINDSIGHT_CP_ACCESS_KEY: "${HINDSIGHT_CP_ACCESS_KEY:?Set HINDSIGHT_CP_ACCESS_KEY in .env}"
+    volumes:
+      - "${HOST_DATA_DIR:-./data}:/home/hindsight/.pg0:rw"
+      - /etc/localtime:/etc/localtime:ro
+    shm_size: "${SHM_SIZE:-1g}"
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8888/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5m
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+    networks:
+      - ai-tools
+
+networks:
+  ai-tools:
+    external: true
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"
