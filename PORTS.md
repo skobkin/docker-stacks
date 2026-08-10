@@ -31,6 +31,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | mcp-basic-memory        | mcp-basic-memory | 8415                | 8000           | ✅       | TCP      | Basic Memory MCP HTTP endpoint, localhost-bound |
 | mcp-forgejo             | mcp-forgejo       | 8412                | 8080           | ✅       | TCP      | Forgejo MCP HTTP endpoint, localhost-bound |
 | mcp-mastodon            | mcp-mastodon      | 8416                | 8080           | ✅       | TCP      | Mastodon MCP HTTP endpoint, localhost-bound |
+| mcp-miniflux            | mcp-miniflux      | 8417                | 8080           | ✅       | TCP      | Miniflux MCP HTTP endpoint, localhost-bound |
 | mcp-obscura             | mcp-obscura       | 8413                | 3000           | ✅       | TCP      | Obscura MCP HTTP endpoint, localhost-bound |
 | frigate                 | frigate           | 8971                | 8971           | ✅       | TCP      | Authenticated UI/API                |
 | frigate                 | frigate           | 8554                | 8554           | ❌       | TCP      | RTSP restream                       |

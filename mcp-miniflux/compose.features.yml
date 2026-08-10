@@ -1,0 +1,20 @@
+services:
+  default: {}
+
+  # NOTE: the `proxy` and `traefik_proxy` variants from the other mcp-*
+  # stacks are intentionally omitted. The upstream
+  # `miniflux.app/v2/client` Go client used by this server does not honour
+  # HTTP_PROXY / HTTPS_PROXY, so a `proxy` variant would be a silent
+  # no-op. Track the missing feature in the upstream fork repo.
+
+  traefik:
+    networks:
+      - default
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.mcp-miniflux.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.mcp-miniflux.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.mcp-miniflux.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.services.mcp-miniflux.loadbalancer.server.port: "8080"

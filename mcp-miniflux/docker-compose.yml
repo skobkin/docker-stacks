@@ -1,0 +1,49 @@
+# https://git.skobk.in/skobkin/miniflux-mcp-hardened
+# https://hub.docker.com/r/skobkin/miniflux-mcp-hardened
+
+services:
+  mcp-miniflux:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
+    image: "skobkin/miniflux-mcp-hardened:${IMAGE_TAG:-latest}"
+    container_name: mcp-miniflux
+    # Upstream Dockerfile only ships `EXPOSE 8080` and `CMD ["./miniflux-mcp"]`,
+    # so we have to flip the transport to streamable HTTP ourselves and supply
+    # the Bearer token. The image listens on :8080 inside the container and
+    # serves /mcp (Bearer-protected) plus /healthz (no auth).
+    environment:
+      MCP_TRANSPORT: streamable-http
+      # The upstream fails fast on startup if MINIFLUX_URL is unset or if
+      # neither MINIFLUX_API_KEY nor (MINIFLUX_USERNAME + MINIFLUX_PASSWORD)
+      # are set. Required values come from .env via env_file below.
+      MINIFLUX_URL: "${MINIFLUX_URL:?}"
+    env_file: .env
+    ports:
+      - "${BIND_ADDR:-127.0.0.1}:${BIND_PORT:-8417}:8080/tcp"
+    networks:
+      - ai-tools
+    # The upstream runs Healthcheck() + Me() against Miniflux on startup; if
+    # either fails the container will log.Fatal. We can't healthcheck on
+    # /mcp (Bearer-protected) without baking the token in, but /healthz is
+    # exposed unauthenticated on the same port, so we probe it instead.
+    # dash (the alpine shell) lacks /dev/tcp, so run the probe under bash.
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080 || exit 1'"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  ai-tools:
+    external: true
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"
