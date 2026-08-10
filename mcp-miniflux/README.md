@@ -49,7 +49,7 @@ The Traefik client URL is:
 https://mcp-miniflux.example.com/mcp
 ```
 
-The router uses the shared `websecure` entrypoint and `default-access@file` policy by default. Review the common [Traefik usage guide](../_docs/traefik.md) and [network setup](../_docs/traefik_network.md) before enabling this variant. Traefik's Docker provider honours the stack's `healthcheck`, so a broken Miniflux backend (and therefore a broken MCP) takes the router out of rotation automatically.
+The router uses the shared `websecure` entrypoint and `default-access@file` policy by default. Review the common [Traefik usage guide](../_docs/traefik.md) and [network setup](../_docs/traefik_network.md) before enabling this variant. The image has no shell (it's `FROM scratch`), so no `healthcheck:` is declared — Traefik relies on the container being running and the binary's startup-time `Healthcheck()` + `Me()` against Miniflux, which fail-fast on bad credentials.
 
 Do not expose this endpoint publicly without an appropriate access policy. The Bearer token is the only thing protecting `/mcp`, and any reverse-proxy authentication must preserve the `Authorization` header or use a different mechanism.
 
