@@ -8,7 +8,6 @@ services:
       service: "${COMPOSE_VARIANT:-default}"
     image: "skobkin/miniflux-mcp-hardened:${IMAGE_TAG:-latest}"
     container_name: mcp-miniflux
-    # Image is FROM scratch with no shell — no healthcheck can be declared.
     environment:
       MINIFLUX_URL: "${MINIFLUX_URL:?}"  # upstream fails fast without this
     env_file: .env
