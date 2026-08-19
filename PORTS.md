@@ -65,7 +65,6 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | llama-swap              | llama-swap        | 8011                | 8080           | ✅       | TCP      | OpenAI-compatible model router      |
 | magnetico-web           | magnetico-web     | 8080                | 80             | ✅       | TCP      | Torrent search                      |
 | magneticod              | magneticod        | varies              | varies         | ❌       | UDP      | DHT crawler                         |
-| minimax-openai-image-proxy | minimax-openai-image-proxy | 8407     | 8080           | ✅       | TCP      | OpenAI-compatible image-generation proxy |
 | mariadb                 | mariadb           | 3306                | 3306           | ❌       | TCP      | Shared MariaDB server               |
 | mastodon-fe-gts         | masto-fe          | 8398                | 80             | ✅       | TCP      | Mastodon frontend                   |
 | meshtastic-web          | meshtastic-web    | 8397                | 8080           | ✅       | TCP      | LoRa mesh UI                        |
@@ -76,6 +75,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | mihomo                  | mihomo            | 12345               | 12345          | ❌       | TCP/UDP  | TProxy, matches v2fly defaults      |
 | mihomo                  | mihomo            | 9092                | 9090           | ✅       | TCP      | Mihomo controller API               |
 | miniflux                | miniflux          | 8390                | 8080           | ✅       | TCP      | Minimalist RSS reader               |
+| minimax-openai-image-proxy | minimax-openai-image-proxy | 8407     | 8080           | ✅       | TCP      | OpenAI-compatible image-generation proxy |
 | mosquitto               | mosquitto         | 1883                | 1883           | ❌       | TCP      | MQTT broker                         |
 | mosquitto               | mosquitto         | 1884                | 1884           | ❌       | TCP      | WebSocket                           |
 | mox                     | mox               | *host mode*         | *host mode*    | ✅       | -        | Mail server (host network)          |
