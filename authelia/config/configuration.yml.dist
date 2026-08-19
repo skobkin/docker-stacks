@@ -62,6 +62,12 @@ access_control:
 
 session:
   name: authelia_session
+  # Use a unique cookie name per Authelia instance when running multiple
+  # Authelia deployments on hierarchical subdomains (e.g. auth.domain.tld
+  # and auth.sub.domain.tld). Otherwise the parent-domain session cookie
+  # is sent to the child hosts as well, and the child Authelia sees a
+  # cookie name it doesn't recognize and fails to authenticate.
+  # See authelia/README.md for details.
   same_site: lax
   inactivity: 1 week
   expiration: 1 months

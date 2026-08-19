@@ -103,6 +103,21 @@ notifier:
 
 That path is plaintext SMTP on the Docker network unless you configure a TLS-capable SMTP relay.
 
+## Running multiple Authelia instances on hierarchical subdomains
+
+Two Authelia deployments on nested domains collide through cookies. If one instance protects `*.domain.tld` and another protects `*.sub.domain.tld`, both set the same session cookie name (`authelia_session` by default). The parent-domain cookie is sent to every host under the parent domain, so the child Authelia sees the parent's session cookie and fails to authenticate.
+
+The fix is to give each instance a distinct `session.name` in `config/configuration.yml`:
+
+```yaml
+session:
+  name: authelia_sub_session  # or any other unique name
+```
+
+Pick a different name per Authelia instance. The cookie name is sent to the browser, so it must be stable across restarts once users have logged in; renaming it invalidates all existing sessions.
+
+The `session.cookies[].domain` ranges can still overlap; the cookie name is what differentiates the two sessions in the browser jar.
+
 ## References
 
 - [Authelia Docker deployment](https://www.authelia.com/integration/deployment/docker/)
