@@ -17,15 +17,15 @@ starting the service.
 ## Setup
 
 1. Copy `.env.dist` to `.env`.
-2. Set `MINIMAX_TOKEN` to a valid bearer from the MiniMax Token Plan page.
-3. Start the stack with `docker compose up -d`.
+2. Start the stack with `docker compose up -d`.
 
-Open WebUI can reach the proxy over the shared `ai-tools` network at
-`http://minimax-openai-image-proxy:8080/v1`. Set
-`OPENAI_API_BASE_URL=http://minimax-openai-image-proxy:8080/v1` and any
-non-empty `OPENAI_API_KEY` in Open WebUI's environment; the proxy does not
-verify the key but Open WebUI requires the variable to be set to enable
-its OpenAI-compatible backend.
+The API key is supplied by the caller (Open WebUI) at request time as
+`Authorization: Bearer <key>` and is forwarded upstream unchanged on every
+request. The service does not store the key.
+
+For the Open WebUI side of the wiring, see the
+[Open WebUI configuration](https://git.skobk.in/skobkin/minimax-openai-image-proxy#open-webui-configuration)
+section in the upstream README.
 
 ## Optional Traefik exposure
 
