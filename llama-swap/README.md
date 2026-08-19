@@ -19,6 +19,17 @@ from the host.
 Open WebUI can reach the OpenAI-compatible endpoint at
 `http://llama-swap:8080/v1` over the shared `ai-tools` network.
 
+## Authentication
+
+Auth is disabled by default. To require an API key on every inference request:
+
+1. Uncomment the `#apiKeys:` block in `config/config.yaml` and set the value
+   to `"${env.API_KEY}"`.
+2. Uncomment `#API_KEY=` in `.env` and set it to a non-empty secret.
+
+Clients must then send the key via `Authorization: Bearer <key>`,
+`Authorization: Basic <key>`, or the `x-api-key` header.
+
 ## Setup
 
 1. Copy `.env.dist` to `.env`.

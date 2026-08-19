@@ -10,6 +10,12 @@ globalTTL: 0
 # Uncomment to unload idle models after N seconds by default.
 # globalTTL: 600
 
+# apiKeys: optional. When non-empty, llama-swap requires an API key on every
+# inference request (Authorization: Bearer / Basic, or x-api-key header).
+# See https://github.com/mostlygeek/llama-swap/blob/main/internal/server/auth.go
+#apiKeys:
+#  - "${env.API_KEY}"
+
 macros:
   "models_dir": /models
   "llama_server": >
