@@ -65,6 +65,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | llama-swap              | llama-swap        | 8011                | 8080           | ✅       | TCP      | OpenAI-compatible model router      |
 | magnetico-web           | magnetico-web     | 8080                | 80             | ✅       | TCP      | Torrent search                      |
 | magneticod              | magneticod        | varies              | varies         | ❌       | UDP      | DHT crawler                         |
+| minimax-openai-image-proxy | minimax-openai-image-proxy | 8407     | 8080           | ✅       | TCP      | OpenAI-compatible image-generation proxy |
 | mariadb                 | mariadb           | 3306                | 3306           | ❌       | TCP      | Shared MariaDB server               |
 | mastodon-fe-gts         | masto-fe          | 8398                | 80             | ✅       | TCP      | Mastodon frontend                   |
 | meshtastic-web          | meshtastic-web    | 8397                | 8080           | ✅       | TCP      | LoRa mesh UI                        |
