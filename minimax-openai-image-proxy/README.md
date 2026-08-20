@@ -3,7 +3,7 @@
 [minimax-openai-image-proxy](https://git.skobk.in/skobkin/minimax-openai-image-proxy)
 is a small stateless Go service that exposes an OpenAI-compatible
 `/v1/images/generations` endpoint and translates requests to the
-[MiniMax](https://api.minimax.chat/) `image-01` model.
+[MiniMax](https://api.minimax.io/) `image-01` model.
 
 Open WebUI's built-in `generate_image` tool can drive MiniMax by pointing it
 at this service without any frontend changes.
