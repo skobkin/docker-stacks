@@ -1,0 +1,71 @@
+# Official image: https://hub.docker.com/r/jellyfin/jellyfin
+# Documentation:  https://jellyfin.org/docs/general/installation/container/
+# Source:         https://github.com/jellyfin/jellyfin
+
+services:
+  jellyfin:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
+    image: "${DOCKER_IMAGE:-jellyfin/jellyfin}:${IMAGE_TAG:-latest}"
+    container_name: jellyfin
+    # Bridge networking by default so the optional `proxy` and `traefik`
+    # external networks can be joined. Override to `host` only when you
+    # accept losing access to those external networks (and the `ports:`
+    # mapping is then ignored by Docker).
+    network_mode: "${NETWORK_MODE:-bridge}"
+    # The official image does not honor LinuxServer-style PUID/PGID.
+    # Use Compose `user:` to remap to the host user that owns the media
+    # files so Jellyfin can write NFO files, downloaded artwork,
+    # subtitles, and similar sidecar metadata alongside the media.
+    user: "${HOST_USER:-1000}:${HOST_GROUP:-1000}"
+    devices:
+      # AMD VA-API acceleration passes the host render node into the
+      # container. The /dev/null fallback keeps the stack runnable on
+      # hosts that do not expose /dev/dri/renderD128 (Jellyfin then has
+      # no usable device and falls back to software transcoding).
+      - "${VIDEO_ACCEL_DEVICE:-/dev/null}:${VIDEO_ACCEL_DEVICE:-/dev/null}"
+    group_add:
+      # Host render group GID for AMD VA-API. Discover with:
+      #   getent group render | cut -d: -f3
+      # The default 0 (root) is harmless when unset.
+      - "${VIDEO_RENDER_GROUP:-0}"
+    volumes:
+      - "${HOST_CONFIG_DIR:-./config}:/config"
+      - "${HOST_CACHE_DIR:-./cache}:/cache"
+      # HOST_MEDIA_DIR is required; the operator must point it at a
+      # real host path before the stack starts. MEDIA_READ_ONLY, when
+      # set to any non-empty value, mounts the path read-only.
+      - "${HOST_MEDIA_DIR:?Set HOST_MEDIA_DIR in .env}:${INT_MEDIA_DIR:-/media}${MEDIA_READ_ONLY:+:ro}"
+      # Optional additional media mounts (up to 4). Set EXTRA_MOUNT_<N>
+      # to a host path and EXTRA_MOUNT_<N>_LABEL to a label suffix; the
+      # in-container target is /libraries/<label> — a sibling tree of
+      # /media, not nested inside it (avoids shadowing the primary
+      # mount when a label collides with a subdirectory of the
+      # primary's host tree). Leave unset to skip the mount; the
+      # /dev/null defaults keep unused slots harmless. Inspired by the
+      # `beszel-agent` extra-filesystem pattern.
+      - "${EXTRA_MOUNT_1:-/dev/null}:/libraries/${EXTRA_MOUNT_1_LABEL:-library-1}${MEDIA_READ_ONLY:+:ro}"
+      - "${EXTRA_MOUNT_2:-/dev/null}:/libraries/${EXTRA_MOUNT_2_LABEL:-library-2}${MEDIA_READ_ONLY:+:ro}"
+      - "${EXTRA_MOUNT_3:-/dev/null}:/libraries/${EXTRA_MOUNT_3_LABEL:-library-3}${MEDIA_READ_ONLY:+:ro}"
+      - "${EXTRA_MOUNT_4:-/dev/null}:/libraries/${EXTRA_MOUNT_4_LABEL:-library-4}${MEDIA_READ_ONLY:+:ro}"
+    ports:
+      # Bridge mode only. Ignored when NETWORK_MODE=host.
+      - "${WEBUI_BIND_ADDR:-127.0.0.1}:${WEBUI_BIND_PORT:-8096}:${WEBUI_INT_BIND_PORT:-8096}/tcp"
+    env_file: .env
+    environment:
+      TZ: "${TZ:-UTC}"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  proxy:
+    external: true
+    name: "${PROXY_NETWORK:-proxy}"
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"

@@ -57,6 +57,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | inbucket                | inbucket          | 8389                | 1100           | ❌       | TCP      | POP3 server                         |
 | ip-detect               | ip-detect         | 8396                | 8080           | ✅       | TCP      | IP address resolver                 |
 | invokeai                | invokeai          | 9090                | 9090           | ✅       | TCP      | Stable Diffusion UI                 |
+| Jellyfin                | jellyfin          | 8096                | 8096           | ✅       | TCP      | Media server, localhost-bound       |
 | kf2-server              | kf2-server        | 8080                | 8080           | ✅       | TCP      | Web admin                           |
 | kf2-server              | kf2-server        | 7777                | 7777           | ❌       | UDP      | Game port                           |
 | kf2-server              | kf2-server        | 20560               | 20560          | ❌       | UDP      | Query port                          |

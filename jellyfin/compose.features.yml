@@ -1,0 +1,27 @@
+services:
+  default: {}
+
+  proxy:
+    networks:
+      - proxy
+
+  traefik:
+    networks:
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.jellyfin.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.jellyfin.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.jellyfin.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.services.jellyfin.loadbalancer.server.port: "${WEBUI_INT_BIND_PORT:-8096}"
+
+  traefik_proxy:
+    networks:
+      - proxy
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.jellyfin.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.jellyfin.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.jellyfin.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.services.jellyfin.loadbalancer.server.port: "${WEBUI_INT_BIND_PORT:-8096}"
