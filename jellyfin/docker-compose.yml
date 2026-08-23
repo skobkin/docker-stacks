@@ -9,11 +9,6 @@ services:
       service: "${COMPOSE_VARIANT:-default}"
     image: "${DOCKER_IMAGE:-jellyfin/jellyfin}:${IMAGE_TAG:-latest}"
     container_name: jellyfin
-    # Bridge networking by default so the optional `proxy` and `traefik`
-    # external networks can be joined. Override to `host` only when you
-    # accept losing access to those external networks (and the `ports:`
-    # mapping is then ignored by Docker).
-    network_mode: "${NETWORK_MODE:-bridge}"
     # The official image does not honor LinuxServer-style PUID/PGID.
     # Use Compose `user:` to remap to the host user that owns the media
     # files so Jellyfin can write NFO files, downloaded artwork,
