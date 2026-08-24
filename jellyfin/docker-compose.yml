@@ -47,6 +47,9 @@ services:
     ports:
       # Bridge mode only. Ignored when NETWORK_MODE=host.
       - "${WEBUI_BIND_ADDR:-127.0.0.1}:${WEBUI_BIND_PORT:-8096}:${WEBUI_INT_BIND_PORT:-8096}/tcp"
+      # Jellyfin discovery port:
+      # https://jellyfin.org/docs/general/post-install/networking/
+      - "${DISCOVERY_BIND_ADDR:-127.0.0.1}:7359:7359/udp"
     env_file: .env
     environment:
       TZ: "${TZ:-UTC}"
