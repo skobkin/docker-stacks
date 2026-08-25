@@ -1,0 +1,41 @@
+# https://hub.docker.com/r/crazymax/samba
+# https://github.com/crazy-max/docker-samba
+
+services:
+  samba:
+    image: "${DOCKER_IMAGE:-ghcr.io/crazy-max/samba}:${IMAGE_TAG:-4.23.8-r0}"
+    container_name: samba
+    # SMB over TCP/445 for performance, multichannel, and host interface
+    # visibility. There is intentionally no `ports:` block and no Traefik
+    # integration: Samba should bind directly to the host network.
+    network_mode: host
+    env_file: .env
+    environment:
+      TZ: "${TZ:-UTC}"
+      SAMBA_LOG_LEVEL: "${SAMBA_LOG_LEVEL:-0}"
+      SAMBA_WORKGROUP: "${SAMBA_WORKGROUP:-WORKGROUP}"
+      SAMBA_SERVER_STRING: "${SAMBA_SERVER_STRING:-Docker Samba Server}"
+    volumes:
+      # The image expects /data inside the container (it's the default
+      # CONFIG_FILE location). Bind-mount the host config dir there so
+      # config/config.yml on the host lands at /data/config.yml in the
+      # container. The operator's real config.yml is gitignored.
+      - "${HOST_CONFIG_DIR:-./config}:/data"
+      # Configurable host storage mount. HOST_STORAGE_DIR is required:
+      # an empty value would silently make Compose fall back to /storage
+      # pointing at "" — the `${VAR:?...}` form forces the operator to
+      # pick a real host path before the stack starts.
+      - "${HOST_STORAGE_DIR:?Set HOST_STORAGE_DIR in .env}:/storage"
+      # Read-only mount for password files referenced by
+      # `password_file: /run/secrets/<name>` in config/config.yml.
+      - "${SECRETS_DIR:-./secrets}:/run/secrets:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+    restart: unless-stopped
+    # No explicit Compose healthcheck: the upstream image already ships
+    # a Docker HEALTHCHECK (s6 service probe including smbd). It is
+    # inherited unchanged.
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"

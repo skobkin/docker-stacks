@@ -99,6 +99,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | restreamer              | restreamer        | 8406                | 8080           | ✅       | TCP      | Local web UI                        |
 | restreamer              | restreamer        | 1935                | 1935           | ❌       | TCP      | RTMP ingest                         |
 | restreamer              | restreamer        | 6000                | 6000           | ❌       | UDP      | SRT ingest                          |
+| samba                   | samba             | *host mode*         | *host mode*    | ❌       | TCP      | SMB/CIFS over host networking (TCP 445) |
 | sish                    | sish              | 8395                | 8395           | ✅       | TCP      | HTTP tunneling                      |
 | sish                    | sish              | 2222                | 2222           | ❌       | TCP      | SSH tunneling                       |
 | sonarr                  | sonarr            | 8989                | 8989           | ✅       | TCP      | TV show management                  |
