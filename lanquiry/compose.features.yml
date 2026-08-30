@@ -17,7 +17,7 @@ services:
     environment:
       LANQUIRY_HTTP_BIND: '0.0.0.0:8080'
       # Non-loopback public URLs must use https://.
-      LANQUIRY_HTTP_PUBLIC_BASE_URL: '${LANQUIRY_HTTP_PUBLIC_BASE_URL:?}'
+      LANQUIRY_HTTP_PUBLIC_BASE_URL: '${LANQUIRY_HTTP_PUBLIC_BASE_URL:-http://127.0.0.1:8420}'
       LANQUIRY_DISCOVERY_MDNS_DISABLED: 'true'
       LANQUIRY_DISCOVERY_SSDP_DISABLED: 'true'
     networks:
@@ -50,7 +50,7 @@ services:
     network_mode: host
     environment:
       LANQUIRY_HTTP_BIND: '${BIND_ADDRESS:-127.0.0.1}:${BIND_PORT:-8420}'
-      LANQUIRY_HTTP_PUBLIC_BASE_URL: '${LANQUIRY_HTTP_PUBLIC_BASE_URL:?}'
+      LANQUIRY_HTTP_PUBLIC_BASE_URL: '${LANQUIRY_HTTP_PUBLIC_BASE_URL:-http://127.0.0.1:8420}'
     healthcheck:
       test: ['CMD', 'wget', '-qO-', 'http://${BIND_ADDRESS:-127.0.0.1}:${BIND_PORT:-8420}/readyz']
       interval: 30s
