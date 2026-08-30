@@ -5,9 +5,9 @@ LAN inventory and device monitor: polls a MikroTik router's RouterOS API
 with host networking, performs local mDNS/SSDP discovery. Read-only towards
 the network — it never changes router configuration.
 
-- Upstream: [github.com/skobkin/LANquiry](https://github.com/skobkin/LANquiry)
-- Configuration reference: [docs/configuration.md](https://github.com/skobkin/LANquiry/blob/master/docs/configuration.md)
-- Concepts (devices, findings, notifications): [docs/CONCEPTS.md](https://github.com/skobkin/LANquiry/blob/master/docs/CONCEPTS.md)
+- Upstream: [git.skobk.in/skobkin/LANquiry](https://git.skobk.in/skobkin/LANquiry)
+- Configuration reference: [docs/configuration.md](https://git.skobk.in/skobkin/LANquiry/src/branch/master/docs/configuration.md)
+- Concepts (devices, findings, notifications): [docs/CONCEPTS.md](https://git.skobk.in/skobkin/LANquiry/src/branch/master/docs/CONCEPTS.md)
 
 ## Quick start
 
@@ -38,7 +38,7 @@ entirely through environment variables — no configuration file is mounted.
 If you would rather keep the RouterOS credentials and the admin hash out of
 the environment (they are readable via `docker inspect`), upstream supports a
 `0600` configuration file started with `--config`; see
-[docs/configuration.md](https://github.com/skobkin/LANquiry/blob/master/docs/configuration.md).
+[docs/configuration.md](https://git.skobk.in/skobkin/LANquiry/src/branch/master/docs/configuration.md).
 
 ## Read-only RouterOS user
 
@@ -134,7 +134,7 @@ docker network inspect traefik --format '{{(index .IPAM.Config 0).Subnet}}'
 See [_docs/traefik.md](../_docs/traefik.md) and
 [_docs/traefik_network.md](../_docs/traefik_network.md) for the repo-wide
 Traefik setup, and the upstream
-[reverse-proxy deployment notes](https://github.com/skobkin/LANquiry/blob/master/docs/deployment/reverse-proxy.md)
+[reverse-proxy deployment notes](https://git.skobk.in/skobkin/LANquiry/src/branch/master/docs/deployment/reverse-proxy.md)
 for proxy-related configuration details.
 
 ## Data and backup
@@ -154,8 +154,8 @@ still sitting in the WAL file.
 
 ## Docs
 
-- Upstream repository: [github.com/skobkin/LANquiry](https://github.com/skobkin/LANquiry)
+- Upstream repository: [git.skobk.in/skobkin/LANquiry](https://git.skobk.in/skobkin/LANquiry)
 - Configuration reference (all `LANQUIRY_*` variables and defaults):
-  [docs/configuration.md](https://github.com/skobkin/LANquiry/blob/master/docs/configuration.md)
+  [docs/configuration.md](https://git.skobk.in/skobkin/LANquiry/src/branch/master/docs/configuration.md)
 - Image: [hub.docker.com/r/skobkin/lanquiry](https://hub.docker.com/r/skobkin/lanquiry)
 - Port usage: [../PORTS.md](../PORTS.md)

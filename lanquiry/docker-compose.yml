@@ -1,5 +1,5 @@
 # lanquiry - LAN inventory and device monitor (read-only RouterOS polling + optional mDNS/SSDP)
-# https://github.com/skobkin/LANquiry
+# https://git.skobk.in/skobkin/LANquiry
 
 services:
   lanquiry:
