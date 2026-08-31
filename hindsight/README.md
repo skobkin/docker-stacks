@@ -71,8 +71,8 @@ external `traefik` network to expose Hindsight on the LAN. See the common
 
 A single hostname serves both components without a custom image build:
 
-- `/v1`, `/mcp`, `/docs`, `/openapi.json`, `/health`, and `/metrics` route to
-  the API on port 8888.
+- `/v1`, `/mcp`, `/docs`, `/openapi.json`, `/health` (including sub-paths such
+  as `/health/live`), and `/metrics` route to the API on port 8888.
 - All remaining paths, including `/`, route to the Control Plane on port 9999.
 
 The API router has a higher priority than the UI catch-all. Both use the shared

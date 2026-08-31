@@ -15,7 +15,7 @@ services:
         PathPrefix(`/mcp`) ||
         PathPrefix(`/docs`) ||
         Path(`/openapi.json`) ||
-        Path(`/health`) ||
+        PathPrefix(`/health`) ||
         Path(`/metrics`))
       traefik.http.routers.hindsight-api.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
       traefik.http.routers.hindsight-api.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
