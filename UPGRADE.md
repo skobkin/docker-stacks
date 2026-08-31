@@ -1,3 +1,55 @@
+## 2026-08-31 - Immich: Compose refresh from upstream v3.1.0
+
+### Affected stacks
+
+- `immich`
+
+### Changes
+
+- **Redis replaced with Valkey.** `redis:6.2-alpine` is now the upstream
+  `valkey/valkey:9` image (digest-pinned). The service is still named
+  `redis` and Redis has no persistent volume, so no datastore migration
+  is needed — ephemeral queue/cache state is lost on the swap.
+- **ML image suffix selection.** The `immich-machine-learning` image tag
+  now ends with `${HWACCEL_ML_IMAGE_SUFFIX:-}`, so hardware-accelerated
+  inference actually uses the hardware-specific image
+  (`${IMMICH_VERSION}-rocm`, `-cuda`, `-openvino`, `-armnn`, `-rknn`).
+  Previously `HWACCEL_ML` only changed the device/container configuration
+  while always pulling the default (cpu) image. `HWACCEL_ML=rocm` also
+  needs `VIDEO_GROUP_ID` set to the host `video` group GID.
+- **Hardware acceleration backends.** `hwaccel.ml.yml` adds the upstream
+  `rocm` (AMD GPU) and `rknn` (Rockchip NPU) backends;
+  `hwaccel.transcoding.yml` adds `/dev/dxg` to `vaapi-wsl`. Documentation
+  URLs updated to `docs.immich.app`.
+- **Media mount path.** The upload volume target changed from
+  `/usr/src/app/upload` to `/data` (upstream v3 layout). The host-side
+  `UPLOAD_LOCATION` is unchanged and the old in-container path is still
+  supported, so no library move is required.
+- **Healthchecks** restored/enabled for `immich-server`,
+  `immich-machine-learning`, and `database` (upstream default).
+- **Default `IMMICH_VERSION`** changed from `release` to `v3`.
+
+Local customizations are preserved: Traefik variant, bind address/port,
+DB sharing mode, bind-mounted model cache, log rotation, `unless-stopped`,
+and the lean VectorChord-only PostgreSQL image.
+
+### Migration
+
+1. Run the swap while Immich is idle (no upload/scan jobs), then recreate:
+
+   ```shell
+   cd immich
+   docker compose up -d
+   ```
+
+   Recreating the stack replaces Redis with Valkey and remounts media at
+   `/data`; the database keeps its existing volume.
+
+2. If `HWACCEL_ML` is set to a non-cpu backend, add the matching image
+   suffix in `.env` (e.g. `HWACCEL_ML=rocm` → `HWACCEL_ML_IMAGE_SUFFIX=-rocm`,
+   plus `VIDEO_GROUP_ID` for ROCm) and run
+   `docker compose up -d --force-recreate immich-machine-learning`.
+
 ## 2026-06-25 - Basic Memory MCP: streamable HTTP transport and persistent index
 
 ### Affected stacks
