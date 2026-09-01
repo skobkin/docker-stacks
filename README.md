@@ -27,6 +27,10 @@ or comments in the `docker-compose.yml` files or `.env.dist` templates.
 
 Use the optional external [`databases`](_docs/databases_network.md) Docker network for bare-metal databases running on the Docker host and for shared database containers.
 
+## Connecting AI agents via MCP
+
+Several stacks expose MCP servers. To register any MCP server — stdio or streamable HTTP — with Claude Code, Codex, OpenCode, or Hermes, see the common [MCP client guide](_docs/mcp.md).
+
 ## Is it working?
 
 Not every stack is tested to fully work.

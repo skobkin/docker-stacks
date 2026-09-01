@@ -35,8 +35,8 @@ The default local endpoints are:
 
 | Purpose | URL |
 |---|---|
-| REST API and documentation | `http://127.0.0.1:8417` |
-| MCP, per bank | `http://127.0.0.1:8417/mcp/<bank_id>/` |
+| REST API and documentation | `http://127.0.0.1:8419` |
+| MCP, per bank | `http://127.0.0.1:8419/mcp/<bank_id>/` |
 | Control Plane UI | `http://127.0.0.1:8418` |
 | Same-network API | `http://hindsight:8888` |
 
@@ -148,8 +148,9 @@ Integration details:
 
 - [Hindsight coding agents](https://hindsight.vectorize.io/sdks/integrations/coding-agents)
 - [Claude Code MCP](https://code.claude.com/docs/en/mcp)
-- [Codex MCP](https://learn.chatgpt.com/docs/extend/mcp)
+- [Codex MCP](https://developers.openai.com/codex/mcp)
 - [OpenCode plugins](https://opencode.ai/docs/plugins/)
+- [MCP client configuration](../_docs/mcp.md) — manual setup of any MCP server, including this one, in Claude Code, Codex, OpenCode, and Hermes
 
 ## Storage and resources
 

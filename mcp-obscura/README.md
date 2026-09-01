@@ -26,6 +26,8 @@ This service joins the external [`ai-tools`](../_docs/ai_tools_network.md) Docke
 docker network create ai-tools
 ```
 
+To add this server to an MCP client such as Claude Code, Codex, OpenCode, or Hermes, see the common [MCP client guide](../_docs/mcp.md).
+
 ## Security
 
 Obscura's MCP HTTP server has no built-in authentication. Any client that can reach it can control the shared browser session, navigate to URLs, read page contents, and execute the exposed browser tools. Keep the default localhost binding or add authentication and restrictive access control at the reverse proxy.

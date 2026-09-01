@@ -43,6 +43,15 @@ Private keys should remain mode `0600`. Hermes runs as UID/GID `10000:10000` by 
 
 See the [official terminal backend documentation](https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/configuration.md#terminal-backend-configuration) for other supported backends and configuration options.
 
+## MCP servers
+
+Hermes connects to MCP servers configured under `mcp_servers:` in
+`${HOST_DATA_DIR:-./data}/config.yaml`. Edit it with
+`docker compose exec hermes hermes config edit`; see the common
+[MCP client guide](../_docs/mcp.md) for stdio and streamable HTTP examples
+with authenticated endpoints. Because the stack joins the `ai-tools`
+network, Hermes can reach the repository's MCP stacks by container name.
+
 ## Variants
 
 Set `COMPOSE_VARIANT` in `.env`:

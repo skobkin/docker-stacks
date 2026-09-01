@@ -136,19 +136,21 @@ before they reach the MCP server.
 ## Transport
 
 The container runs the MCP server with the modern streamable HTTP transport
-(MCP spec 2025-03-26) by default. Streamable HTTP is required by Codex and
-accepted by OpenCode and Claude Code. The upstream image's `CMD` defaults to
+(MCP spec 2025-03-26) by default. The upstream image's `CMD` defaults to
 the deprecated SSE transport, so the stack overrides it in `docker-compose.yml`.
+See the common [MCP client guide](../_docs/mcp.md) for which agents support
+which transport.
 
 `BASIC_MEMORY_TRANSPORT` in `.env` selects the transport:
 
-- `streamable-http` (default) — recommended; required by Codex.
+- `streamable-http` (default) — recommended.
 - `sse` — legacy; upstream marks it as deprecated. Use only if you need to
   roll back to a client that does not support streamable HTTP yet.
 
 The transport is the only MCP-server flag the stack exposes; `--host`,
 `--port`, and `--path` are hardcoded to the upstream defaults (`0.0.0.0`,
-`8000`, `/mcp`).
+`8000`, `/mcp`). To add this server to Claude Code, Codex, OpenCode, or
+Hermes, see the common [MCP client guide](../_docs/mcp.md).
 
 ## Traefik
 

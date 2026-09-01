@@ -33,6 +33,8 @@ This service joins the external [`ai-tools`](../_docs/ai_tools_network.md) Docke
 docker network create ai-tools
 ```
 
+To add this server to an MCP client such as Claude Code, Codex, OpenCode, or Hermes, see the common [MCP client guide](../_docs/mcp.md).
+
 ## Authentication
 
 Three modes, selected by `MASTODON_MCP_AUTH__MODE` in `.env`:
