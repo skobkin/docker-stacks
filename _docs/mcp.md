@@ -52,7 +52,24 @@ Which style a stack expects is listed in the table above. Every example below wr
 
 ## Claude Code
 
-Project-scoped servers live in `.mcp.json` at the project root; user- and local-scoped servers live in `~/.claude.json` (top-level `mcpServers` for user scope). Claude Code does not read `~/.claude/mcp.json`.
+Add servers with the CLI:
+
+```shell
+# stdio server with environment variables
+claude mcp add example-stdio --env EXAMPLE_API_KEY=replace-with-api-key -- npx -y @scope/example-mcp
+
+# streamable HTTP server with a Bearer token
+claude mcp add --transport http example-http https://mcp.example.com/mcp \
+  --header "Authorization: Bearer replace-with-token"
+
+# custom header instead of a Bearer token
+claude mcp add --transport http example-http https://mcp.example.com/mcp \
+  --header "X-Example-Token: replace-with-token"
+```
+
+`--scope` selects where the entry is written: `local` (default) for the current directory, `user` for `~/.claude.json`, or `project` for the project's `.mcp.json`. `claude mcp add-json <name> '<json>'` accepts a full entry as JSON.
+
+The same servers can be configured by editing the files directly. Project-scoped servers live in `.mcp.json` at the project root; user- and local-scoped servers live in `~/.claude.json` (top-level `mcpServers` for user scope). Claude Code does not read `~/.claude/mcp.json`.
 
 ```json
 {
@@ -88,18 +105,19 @@ To authenticate with a custom header instead, replace the `headers` content:
 - `"streamable-http"` is accepted as an alias for `"http"`.
 - `"sse"` is deprecated; prefer `"http"`.
 
-The same servers can be added with the CLI:
-
-```shell
-claude mcp add --transport http example-http https://mcp.example.com/mcp \
-  --header "Authorization: Bearer replace-with-token"
-```
-
-`--scope` selects `local`, `user`, or `project`; stdio servers need the `--` separator before the command; `claude mcp add-json` accepts the JSON entry directly.
-
 ## Codex
 
-Codex reads `~/.codex/config.toml`, or `.codex/config.toml` in a trusted project. Each server is a `[mcp_servers.<name>]` table:
+Add servers with the CLI:
+
+```shell
+# stdio server with an environment variable
+codex mcp add example-stdio --env EXAMPLE_API_KEY=replace-with-api-key -- npx -y @scope/example-mcp
+
+# streamable HTTP server
+codex mcp add example-http --url https://mcp.example.com/mcp
+```
+
+The only token option the CLI offers is the env-based `--bearer-token-env-var`; literal header values are not supported. Add `http_headers` by editing the generated table afterwards. Codex reads `~/.codex/config.toml`, or `.codex/config.toml` in a trusted project; each server is a `[mcp_servers.<name>]` table:
 
 ```toml
 [mcp_servers.example-stdio]
@@ -118,7 +136,7 @@ http_headers = { "Authorization" = "Bearer replace-with-token" }
 http_headers = { "X-Example-Token" = "replace-with-token" }
 ```
 
-`bearer_token_env_var` also exists but reads the token from the environment. Optional per-server keys include `startup_timeout_sec`, `tool_timeout_sec`, and `enabled`.
+Optional per-server keys include `startup_timeout_sec`, `tool_timeout_sec`, and `enabled`.
 
 ## OpenCode v1
 
