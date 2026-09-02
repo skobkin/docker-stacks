@@ -1,0 +1,56 @@
+# https://hub.docker.com/r/vernette/ss-zapret2
+# https://github.com/vernette/ss-zapret2 (wraps https://github.com/bol-van/zapret2)
+
+services:
+  zapret2:
+    image: "${IMAGE_REPOSITORY:-vernette/ss-zapret2}:${IMAGE_TAG:-v1.0.2}"
+    container_name: zapret2
+    hostname: zapret2
+    # nfqws2 installs its NFQUEUE rules inside this container's own network
+    # namespace only, so NET_ADMIN is enough: no host network, no privileged.
+    cap_add:
+      - NET_ADMIN
+    ports:
+      # The SOCKS5 entry (ss-local) has no authentication: keep it
+      # localhost-bound unless you fully trust every network the host is
+      # reachable from. Shadowsocks is intentionally not published to the host.
+      - "${SOCKS_BIND_ADDRESS:-127.0.0.1}:${SOCKS_HOST_PORT:-1060}:${SOCKS_CONTAINER_PORT:-1080}/tcp"
+    volumes:
+      # Single-file mount: zapret2 reads its config from this exact path.
+      - "./config/config:/opt/zapret2/config"
+      # Seeded from the image on first start by the entrypoint, then yours.
+      - "./data/lua:/opt/zapret2/lua"
+      - "./data/fake:/opt/zapret2/files/fake"
+      - "./data/custom.d:/opt/zapret2/init.d/sysv/custom.d"
+    env_file: .env
+    environment:
+      # Internal listeners are derived from the container port knobs so the
+      # published ports, the daemons and the healthcheck can never disagree.
+      SOCKS_PORT: "${SOCKS_CONTAINER_PORT:-1080}"
+      SS_PORT: "${SS_CONTAINER_PORT:-8388}"
+      SS_PASSWORD: "${SS_PASSWORD}"
+      SS_ENCRYPT_METHOD: "${SS_ENCRYPT_METHOD:-chacha20-ietf-poly1305}"
+      SS_TIMEOUT: "${SS_TIMEOUT:-300}"
+      SS_VERBOSE: "${SS_VERBOSE:-0}"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost ${SOCKS_CONTAINER_PORT:-1080} && nc -z localhost ${SS_CONTAINER_PORT:-8388}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
+    name: "${PROXY_NETWORK:-proxy}"

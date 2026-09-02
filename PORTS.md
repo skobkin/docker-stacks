@@ -125,6 +125,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | woodpecker              | woodpecker-server | 9400                | 9000           | ❌       | TCP      | gRPC endpoint for agents            |
 | webhook-tester          | webhook-tester    | 8414                | 8080           | ✅       | TCP      | Webhook testing                     |
 | zerotier-one            | zerotier-one      | *host mode*         | *host mode*    | ❌       | UDP/TCP  | ZeroTier control/API, UDP 9993      |
+| zapret2                 | zapret2           | 1060                | 1080           | ❌       | TCP      | SOCKS5 proxy, unauthenticated, localhost-bound |
 
 ## Notes for Stack Creators
 
