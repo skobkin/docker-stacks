@@ -1,0 +1,43 @@
+services:
+  gopeed:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
+    image: "liwei2633/gopeed:${IMAGE_TAG:-v1.9.3}"
+    container_name: gopeed
+    hostname: gopeed
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${BIND_PORT:-8421}:9999/tcp"
+    volumes:
+      - "${HOST_CONFIG_DIR:-./config}:/app/storage"
+      - "${HOST_DOWNLOADS_DIR:-./downloads}:/app/Downloads"
+      - "/etc/localtime:/etc/localtime:ro"
+    environment:
+      # The image starts as root and drops privileges itself via su-exec
+      # (chown -R /app, then exec as PUID:PGID). A compose `user:` key is
+      # not supported by the upstream entrypoint.
+      PUID: "${HOST_USER:-1000}"
+      PGID: "${HOST_GROUP:-1000}"
+      UMASK: "${UMASK:-022}"
+      # Web UI auth (fail-closed): empty AUTH_PASSWORD disables auth.
+      GOPEED_USERNAME: "${AUTH_USER}"
+      GOPEED_PASSWORD: "${AUTH_PASSWORD}"
+      # Global download proxy. Seeded into Gopeed's settings on FIRST start
+      # only; afterwards the proxy is managed in the web UI (Settings ->
+      # Proxy). Requires the proxy or traefik_proxy variant.
+      GOPEED_DOWNLOADCONFIG: '{"proxy":{"enable":${GOPEED_PROXY_ENABLE:-false},"scheme":"${GOPEED_PROXY_SCHEME:-socks5}","host":"${GOPEED_PROXY_HOST:-mihomo}:${GOPEED_PROXY_PORT:-1050}"}}'
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+
+networks:
+  proxy:
+    external: true
+    name: "${PROXY_NETWORK:-proxy}"
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"

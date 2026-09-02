@@ -1,0 +1,27 @@
+services:
+  default: {}
+
+  proxy:
+    networks:
+      - proxy
+
+  traefik:
+    networks:
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.gopeed.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.gopeed.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.gopeed.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.services.gopeed.loadbalancer.server.port: "${TRAEFIK_SERVICE_PORT:-9999}"
+
+  traefik_proxy:
+    networks:
+      - proxy
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.gopeed.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.gopeed.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.gopeed.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.services.gopeed.loadbalancer.server.port: "${TRAEFIK_SERVICE_PORT:-9999}"
