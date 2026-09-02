@@ -84,6 +84,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | murmur                  | murmur            | 64738               | 64738          | ❌       | TCP/UDP  | Voice chat                          |
 | ntfy                    | ntfy              | 8405                | 8080           | ✅       | TCP      | Notification service web UI/API     |
 | ollama                  | ollama            | 11434               | 11434          | ✅       | TCP      | AI API server                       |
+| opencloud               | opencloud         | 9200                | 9200           | ✅       | TCP      | File sync and share cloud, localhost-bound; tika/collabora profiles publish no host ports |
 | openhands               | openhands         | 3000                | 3000           | ✅       | TCP      | AI coding assistant                 |
 | open-webui              | webui             | 8010                | 8080           | ✅       | TCP      | AI chat interface                   |
 | openwebrxplus           | openwebrxplus     | 8402                | 8073           | ✅       | TCP      | WebSDR receiver UI                  |

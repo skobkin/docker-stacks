@@ -1,0 +1,21 @@
+services:
+  # Bridge networking; localhost-bound published port.
+  default:
+    ports:
+      - '${BIND_ADDRESS:-127.0.0.1}:${BIND_PORT:-9200}:9200/tcp'
+
+  # default plus Traefik labels; the localhost binding stays enabled
+  # (see _docs/traefik.md).
+  traefik:
+    ports:
+      - '${BIND_ADDRESS:-127.0.0.1}:${BIND_PORT:-9200}:9200/tcp'
+    networks:
+      - default
+      - traefik
+    labels:
+      traefik.enable: 'true'
+      traefik.docker.network: '${TRAEFIK_NETWORK:-traefik}'
+      traefik.http.routers.opencloud.rule: 'Host(`${TRAEFIK_HOST}`)'
+      traefik.http.routers.opencloud.entrypoints: '${TRAEFIK_ENTRYPOINT:-websecure}'
+      traefik.http.routers.opencloud.middlewares: '${TRAEFIK_ACCESS_POLICY:-default-access@file}'
+      traefik.http.services.opencloud.loadbalancer.server.port: '${TRAEFIK_SERVICE_PORT:-9200}'

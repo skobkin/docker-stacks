@@ -1,0 +1,216 @@
+# OpenCloud - open-source file sync and share platform (ownCloud oCIS successor)
+# Documentation:  https://docs.opencloud.eu/docs/admin/
+# Deployment ref: https://docs.opencloud.eu/docs/admin/getting-started/container/docker-compose/docker-compose-base
+# Source:         https://github.com/opencloud-eu/opencloud
+# Image:          https://hub.docker.com/r/opencloudeu/opencloud
+
+services:
+  # Single-process deployment: web frontend, built-in IdP, reverse proxy and
+  # the WOPI/collaboration service run inside this one container. No external
+  # database is required.
+  opencloud:
+    extends:
+      file: ./compose.features.yml
+      service: '${COMPOSE_VARIANT:-default}'
+    image: '${DOCKER_IMAGE:-opencloudeu/opencloud}:${IMAGE_TAG:-7}'
+    container_name: 'opencloud'
+    hostname: 'opencloud'
+    # The image runs as UID/GID 1000 by default. The host directories below
+    # must exist and be owned by HOST_USER:HOST_GROUP (see README.md).
+    user: '${HOST_USER:-1000}:${HOST_GROUP:-1000}'
+    # First start runs `opencloud init` to generate initial secrets into
+    # /etc/opencloud; later starts go straight to `opencloud server`.
+    entrypoint: ['/bin/sh']
+    command: ['-c', 'opencloud init || true; opencloud server']
+    volumes:
+      - '${HOST_CONFIG_DIR:-./config}:/etc/opencloud'
+      - '${HOST_DATA_DIR:-./data}:/var/lib/opencloud'
+      - '${HOST_APPS_DIR:-./config/apps}:/var/lib/opencloud/web/assets/apps'
+      - '/etc/localtime:/etc/localtime:ro'
+    env_file: '.env'
+    environment:
+      TZ: '${TZ:-UTC}'
+      # Public URL of the instance; generated links and OIDC redirects use it.
+      # default variant: http://127.0.0.1:9200 - traefik variant: https://<TRAEFIK_HOST>
+      OC_URL: '${OC_URL:?Set OC_URL in .env}'
+      # Initial `admin` password. Only effective on the FIRST start of a fresh
+      # data directory; afterwards it is ignored (rotate via web UI or CLI).
+      IDM_ADMIN_PASSWORD: '${INITIAL_ADMIN_PASSWORD:?Set INITIAL_ADMIN_PASSWORD in .env}'
+      IDM_CREATE_DEMO_USERS: '${IDM_CREATE_DEMO_USERS:-false}'
+      OC_DEFAULT_LANGUAGE: '${OC_DEFAULT_LANGUAGE:-}'
+      # Additional internal services (comma-separated), e.g. `collaboration`
+      # when the collabora profile is enabled, or `antivirus`.
+      OC_ADD_RUN_SERVICES: '${OC_ADD_RUN_SERVICES:-}'
+      # TLS is terminated in front of the container (Traefik or the local
+      # port binding), so the built-in proxy serves plain HTTP.
+      PROXY_TLS: 'false'
+      OC_INSECURE: '${OC_INSECURE:-false}'
+      PROXY_ENABLE_BASIC_AUTH: '${PROXY_ENABLE_BASIC_AUTH:-false}'
+      OC_LOG_LEVEL: '${OC_LOG_LEVEL:-info}'
+      OC_LOG_COLOR: '${OC_LOG_COLOR:-false}'
+      OC_LOG_PRETTY: '${OC_LOG_PRETTY:-false}'
+      FRONTEND_ARCHIVER_MAX_SIZE: '${FRONTEND_ARCHIVER_MAX_SIZE:-10000000000}'
+      FRONTEND_CHECK_FOR_UPDATES: '${FRONTEND_CHECK_FOR_UPDATES:-true}'
+      OC_SHARING_PUBLIC_SHARE_MUST_HAVE_PASSWORD: '${OC_SHARING_PUBLIC_SHARE_MUST_HAVE_PASSWORD:-true}'
+      OC_SHARING_PUBLIC_WRITEABLE_SHARE_MUST_HAVE_PASSWORD: '${OC_SHARING_PUBLIC_WRITEABLE_SHARE_MUST_HAVE_PASSWORD:-false}'
+      OC_PASSWORD_POLICY_DISABLED: '${OC_PASSWORD_POLICY_DISABLED:-false}'
+      OC_PASSWORD_POLICY_MIN_CHARACTERS: '${OC_PASSWORD_POLICY_MIN_CHARACTERS:-8}'
+      OC_PASSWORD_POLICY_MIN_LOWERCASE_CHARACTERS: '${OC_PASSWORD_POLICY_MIN_LOWERCASE_CHARACTERS:-1}'
+      OC_PASSWORD_POLICY_MIN_UPPERCASE_CHARACTERS: '${OC_PASSWORD_POLICY_MIN_UPPERCASE_CHARACTERS:-1}'
+      OC_PASSWORD_POLICY_MIN_DIGITS: '${OC_PASSWORD_POLICY_MIN_DIGITS:-1}'
+      OC_PASSWORD_POLICY_MIN_SPECIAL_CHARACTERS: '${OC_PASSWORD_POLICY_MIN_SPECIAL_CHARACTERS:-1}'
+      # Email notifications; all empty by default (no outbound mail).
+      NOTIFICATIONS_SMTP_HOST: '${NOTIFICATIONS_SMTP_HOST:-}'
+      NOTIFICATIONS_SMTP_PORT: '${NOTIFICATIONS_SMTP_PORT:-}'
+      NOTIFICATIONS_SMTP_SENDER: '${NOTIFICATIONS_SMTP_SENDER:-}'
+      NOTIFICATIONS_SMTP_USERNAME: '${NOTIFICATIONS_SMTP_USERNAME:-}'
+      NOTIFICATIONS_SMTP_PASSWORD: '${NOTIFICATIONS_SMTP_PASSWORD:-}'
+      NOTIFICATIONS_SMTP_INSECURE: '${NOTIFICATIONS_SMTP_INSECURE:-}'
+      NOTIFICATIONS_SMTP_AUTHENTICATION: '${NOTIFICATIONS_SMTP_AUTHENTICATION:-}'
+      NOTIFICATIONS_SMTP_ENCRYPTION: '${NOTIFICATIONS_SMTP_ENCRYPTION:-}'
+      # --- Full-text search (COMPOSE_PROFILES=fulltext) ---
+      # Empty SEARCH_EXTRACTOR_TYPE keeps the basic built-in extractor.
+      SEARCH_EXTRACTOR_TYPE: '${SEARCH_EXTRACTOR_TYPE:-}'
+      SEARCH_EXTRACTOR_TIKA_TIKA_URL: '${SEARCH_EXTRACTOR_TIKA_TIKA_URL:-http://tika:9998}'
+      FRONTEND_FULL_TEXT_SEARCH_ENABLED: '${FRONTEND_FULL_TEXT_SEARCH_ENABLED:-false}'
+      # --- Collabora Online (COMPOSE_PROFILES=collabora) ---
+      # Everything below stays empty while the profile is off; uncomment the
+      # Collabora block in .env when enabling it.
+      COLLABORA_DOMAIN: '${COLLABORA_HOST:-}'
+      FRONTEND_APP_HANDLER_SECURE_VIEW_APP_ADDR: '${FRONTEND_APP_HANDLER_SECURE_VIEW_APP_ADDR:-}'
+      GRAPH_AVAILABLE_ROLES: '${GRAPH_AVAILABLE_ROLES:-}'
+      COLLABORATION_WOPI_SRC: '${COLLABORATION_WOPI_SRC:-${OC_URL}}'
+      COLLABORATION_APP_NAME: '${COLLABORATION_APP_NAME:-}'
+      COLLABORATION_APP_PRODUCT: '${COLLABORATION_APP_PRODUCT:-}'
+      COLLABORATION_APP_ADDR: '${COLLABORA_HOST:+https://${COLLABORA_HOST}}'
+      COLLABORATION_APP_ICON: '${COLLABORA_HOST:+https://${COLLABORA_HOST}/favicon.ico}'
+      COLLABORATION_APP_INSECURE: '${COLLABORATION_APP_INSECURE:-true}'
+      COLLABORATION_CS3API_DATAGATEWAY_INSECURE: '${COLLABORATION_CS3API_DATAGATEWAY_INSECURE:-true}'
+    restart: unless-stopped
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'
+
+  # Apache Tika content extractor for full-text search
+  # (COMPOSE_PROFILES=fulltext). opencloud deliberately does not depend on
+  # this service: it starts independently and the extractor is picked up
+  # once Tika is reachable.
+  tika:
+    image: 'apache/tika:${TIKA_IMAGE_TAG:-latest}'
+    container_name: 'opencloud-tika'
+    profiles: ['fulltext']
+    # The base variant keeps the image small; the -full variants only add
+    # OCR and specialized handlers. https://tika.apache.org
+    healthcheck:
+      test: ['CMD', 'bash', '-c', "exec 3<>/dev/tcp/127.0.0.1/9998 && printf 'GET /tika HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep '200 OK' <&3"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'
+
+  # One-shot generator of the RSA-4096 WOPI proof key required by
+  # Collabora (COMPOSE_PROFILES=collabora). The key is kept in a named
+  # volume; remove the volume to rotate it:
+  #   docker compose --profile collabora down collabora \
+  #     && docker volume rm opencloud-collabora-proof-key
+  collabora-proof-key:
+    image: 'alpine/openssl:3.5.8'
+    container_name: 'opencloud-collabora-proof-key'
+    profiles: ['collabora']
+    entrypoint: ['/bin/sh']
+    command:
+      - '-ec'
+      - |
+        if [ ! -s /proof/proof_key ]; then
+          openssl genrsa -traditional -out /proof/proof_key.tmp 4096
+          chown 1001:1001 /proof/proof_key.tmp
+          chmod 400 /proof/proof_key.tmp
+          mv /proof/proof_key.tmp /proof/proof_key
+          echo "WOPI proof key generated"
+        else
+          echo "WOPI proof key already exists"
+        fi
+    volumes:
+      - 'collabora-proof-key:/proof'
+    restart: 'no'
+
+  # Collabora Online office suite (COMPOSE_PROFILES=collabora). Browsers
+  # talk to it directly, so it needs its own public hostname routed via
+  # Traefik (COLLABORA_HOST) and realistically the traefik variant. The
+  # WOPI endpoint itself is served by the opencloud process on the main
+  # domain (/wopi and /collaboration), no separate wopiserver is needed.
+  collabora:
+    image: 'collabora/code:${COLLABORA_IMAGE_TAG:-26.04.3.2.1}'
+    container_name: 'opencloud-collabora'
+    profiles: ['collabora']
+    depends_on:
+      collabora-proof-key:
+        condition: service_completed_successfully
+    environment:
+      # WOPI host allowlist: the public OpenCloud origin.
+      aliasgroup1: '${OC_URL}'
+      username: '${COLLABORA_ADMIN_USER:-admin}'
+      password: '${COLLABORA_ADMIN_PASSWORD:-}'
+      extra_params: >-
+        --o:ssl.enable=${COLLABORA_SSL_ENABLE:-true}
+        --o:ssl.ssl_verification=${COLLABORA_SSL_VERIFICATION:-true}
+        --o:ssl.termination=true
+        --o:welcome.enable=false
+        --o:net.frame_ancestors=${OC_URL}
+        --o:net.lok_allow.host[14]=${OC_URL}
+        --o:home_mode.enable=${COLLABORA_HOME_MODE:-false}
+    # Required by the Collabora container to run its own nested namespaces.
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - seccomp=unconfined
+      - apparmor:unconfined
+    volumes:
+      # Host fonts so documents render with the fonts installed on the host.
+      - '/usr/share/fonts/truetype:/usr/share/fonts/truetype/more:ro'
+      - '/usr/share/fonts/truetype:/opt/cool/systemplate/usr/share/fonts/truetype/more:ro'
+      # WOPI proof key generated by the collabora-proof-key service.
+      - type: volume
+        source: collabora-proof-key
+        target: /etc/coolwsd/proof_key
+        read_only: true
+        volume:
+          subpath: proof_key
+    healthcheck:
+      test: ['CMD', '/usr/bin/coolwsd', '--probe', '--use-env-vars']
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - default
+      - traefik
+    labels:
+      traefik.enable: 'true'
+      traefik.docker.network: '${TRAEFIK_NETWORK:-traefik}'
+      traefik.http.routers.opencloud-collabora.rule: 'Host(`${COLLABORA_HOST:-}`)'
+      traefik.http.routers.opencloud-collabora.entrypoints: '${TRAEFIK_ENTRYPOINT:-websecure}'
+      traefik.http.routers.opencloud-collabora.middlewares: '${TRAEFIK_ACCESS_POLICY:-default-access@file}'
+      traefik.http.services.opencloud-collabora.loadbalancer.server.port: '${TRAEFIK_COLLABORA_SERVICE_PORT:-9980}'
+    restart: unless-stopped
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'
+
+networks:
+  traefik:
+    external: true
+    name: '${TRAEFIK_NETWORK:-traefik}'
+
+volumes:
+  collabora-proof-key:
+    name: opencloud-collabora-proof-key
