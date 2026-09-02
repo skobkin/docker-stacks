@@ -1,0 +1,41 @@
+services:
+  marinara:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
+    image: "${IMAGE_REPOSITORY:-ghcr.io/pasta-devs/marinara-engine}:${IMAGE_TAG:-lite}"
+    container_name: marinara
+    hostname: marinara
+    # Upstream recommends init so signals reach the app: the entrypoint
+    # starts as root, repairs data-dir ownership, then drops privileges.
+    init: true
+    ports:
+      - "${HTTP_BIND_ADDR:-127.0.0.1}:${HTTP_BIND_PORT:-7860}:7860/tcp"
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATA_DIR: /app/data
+      FILE_STORAGE_DIR: /app/data/storage
+      MARINARA_DOCKER: "true"
+      AUTO_CREATE_DEFAULT_CONNECTION: "${AUTO_CREATE_DEFAULT_CONNECTION:-true}"
+      # Off by default upstream; enabled in .env.dist so private base URLs
+      # such as http://llama-swap:8080/v1 work as provider endpoints.
+      PROVIDER_LOCAL_URLS_ENABLED: "${PROVIDER_LOCAL_URLS_ENABLED:-false}"
+      TZ: "${TZ:-UTC}"
+    volumes:
+      - "${HOST_DATA_DIR:-./data}:/app/data"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"
+    networks:
+      - ai-tools
+
+networks:
+  ai-tools:
+    external: true
+  traefik:
+    external: true
+    name: "${TRAEFIK_NETWORK:-traefik}"

@@ -1,0 +1,14 @@
+services:
+  default: {}
+
+  traefik:
+    networks:
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
+      traefik.http.routers.marinara.rule: "Host(`${TRAEFIK_HOST}`)"
+      traefik.http.routers.marinara.entrypoints: "${TRAEFIK_ENTRYPOINT:-websecure}"
+      traefik.http.routers.marinara.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
+      traefik.http.routers.marinara.service: marinara
+      traefik.http.services.marinara.loadbalancer.server.port: "${TRAEFIK_SERVICE_PORT:-7860}"

@@ -68,6 +68,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | magnetico-web           | magnetico-web     | 8080                | 80             | ✅       | TCP      | Torrent search                      |
 | magneticod              | magneticod        | varies              | varies         | ❌       | UDP      | DHT crawler                         |
 | mariadb                 | mariadb           | 3306                | 3306           | ❌       | TCP      | Shared MariaDB server               |
+| marinara                | marinara          | 7860                | 7860           | ✅       | TCP      | AI chat/roleplay frontend, localhost-bound |
 | mastodon-fe-gts         | masto-fe          | 8398                | 80             | ✅       | TCP      | Mastodon frontend                   |
 | meshtastic-web          | meshtastic-web    | 8397                | 8080           | ✅       | TCP      | LoRa mesh UI                        |
 | meshmap-lite            | meshmap-lite      | 8401                | 8080           | ✅       | TCP      | Meshtastic map/chat UI              |
