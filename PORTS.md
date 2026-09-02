@@ -38,6 +38,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | frigate                 | frigate           | 8555                | 8555           | ❌       | TCP      | WebRTC signaling/two-way talk       |
 | frigate                 | frigate           | 8555                | 8555           | ❌       | UDP      | WebRTC media transport              |
 | gatus                   | gatus             | 8080                | 8080           | ✅       | TCP      | Status page                         |
+| gopeed                  | gopeed            | 8421                | 9999           | ✅       | TCP      | Download manager web UI, localhost-bound |
 | gotosocial              | gotosocial        | 8080                | 8080           | ✅       | TCP      | Mastodon-compatible                 |
 | hedgedoc                | hedgedoc          | 8394                | 8394           | ✅       | TCP      | Collaborative editor                |
 | hermes                  | hermes            | 8410                | 9119           | ✅       | TCP      | Authenticated dashboard             |
