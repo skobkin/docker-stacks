@@ -21,9 +21,68 @@ err() {
   echo "ERROR: $*" >&2
 }
 
+# User the server runs as inside the container (official image default).
+CONTAINER_UID=30000
 # Read a simple KEY=VALUE from .env without sourcing it.
 env_value() {
   grep -E "^$1=" .env 2>/dev/null | tail -n1 | cut -d= -f2- | tr -d '"' | tr -d "'" || true
+}
+
+# Can the given numeric UID reach <path> through the standard owner, group
+# and other permission bits?
+access_by_uid() {
+  local mode="$1" uid="$2" path="$3" perms owner group class bit
+  [ -e "$path" ] || return 1
+  read -r perms owner group _ < <(stat -c '%a %u %g' "$path") || return 1
+  # Normalize to four octal digits (stat omits leading zeros).
+  perms="$(printf '%04o' "$((8#$perms))")"
+  if [ "$owner" = "$uid" ]; then
+    class=1
+  elif [ "$group" = "$uid" ]; then
+    class=2
+  else
+    class=3
+  fi
+  bit="${perms:$class:1}"
+  case "$mode" in
+    r) [ $((8#$bit & 4)) -ne 0 ] ;;
+    w) [ $((8#$bit & 2)) -ne 0 ] ;;
+    x) [ $((8#$bit & 1)) -ne 0 ] ;;
+    *) return 1 ;;
+  esac
+}
+
+# Find expression matching paths that the container user cannot read (files)
+# or traverse (directories), judged by owner/group/other permission bits.
+UNREADABLE_EXPR=(
+  \( -type d ! \( -user "$CONTAINER_UID" -perm -u+x \) ! \( -group "$CONTAINER_UID" -perm -g+x \) ! -perm -o+x \) -o
+  \( -type f ! \( -user "$CONTAINER_UID" -perm -u+r \) ! \( -group "$CONTAINER_UID" -perm -g+r \) ! -perm -o+r \)
+)
+
+# Make sure the installed game is readable by the container user. Takes no
+# permissions away and only touches paths the server cannot read.
+ensure_game_readable() {
+  local target="$1" broken count
+  broken="$(find "$target" "${UNREADABLE_EXPR[@]}" -print)"
+  if [ -z "$broken" ]; then
+    echo "All game files are readable by the server (UID $CONTAINER_UID), no permission changes needed."
+    return 0
+  fi
+  count="$(echo "$broken" | wc -l)"
+  echo "$count path(s) are not readable by the server (UID $CONTAINER_UID), for example:"
+  echo "$broken" | head -n 3 | sed 's/^/  /'
+  if [ "$count" -gt 3 ]; then
+    echo "  ..."
+  fi
+  echo "Applying 'chmod o+rX' to the affected paths ..."
+  # The whole expression is grouped so chmod applies to files and directories.
+  find "$target" \( "${UNREADABLE_EXPR[@]}" \) -exec chmod o+rX {} +
+  if [ -n "$(find "$target" "${UNREADABLE_EXPR[@]}" -print)" ]; then
+    err "Some game files are still not readable by the server. Fix manually with:"
+    echo "  sudo chmod -R o+rX '$target'" >&2
+    return 1
+  fi
+  echo "Permissions fixed."
 }
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -140,6 +199,9 @@ else
   echo "Cloning into $target ..."
   git clone --branch "$tag" --depth 1 "$repo" "$target"
 fi
+
+# Games are mounted read-only: the server only needs to read them.
+ensure_game_readable "$target"
 
 echo
 echo "Done. Game '$game' ($tag) is installed in $target"

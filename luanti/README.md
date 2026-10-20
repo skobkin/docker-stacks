@@ -50,6 +50,7 @@ The helper script:
 3. Offers the latest upstream release tag (you can type an older tag to pin or roll back).
 4. Shows the resolved game, version and target path, and asks for confirmation.
 5. Clones the game at that tag into `$HOST_GAMES_DIR/<game-id>` — or, if it is already installed, fetches and checks out the chosen tag (this is how updates and rollbacks are done; it refuses to touch a directory that is not a git clone of the same repository).
+6. Makes sure the installed files are readable by the container user (UID/GID 30000), adding read permissions (`chmod o+rX`) only where they are missing (relevant under a restrictive umask).
 
 Manual updates/rollbacks work the same way without the script:
 
