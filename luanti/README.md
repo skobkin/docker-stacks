@@ -46,11 +46,12 @@ Games live under the directory configured in `HOST_GAMES_DIR` (default `./games`
 The helper script:
 
 1. Warns and exits if `.env` does not exist (create it with `cp .env.dist .env` first).
-2. Asks which game to install (marks the one currently selected via `GAME_ID`).
-3. Offers the latest upstream release tag (you can type an older tag to pin or roll back).
-4. Shows the resolved game, version and target path, and asks for confirmation.
-5. Clones the game at that tag into `$HOST_GAMES_DIR/<game-id>` — or, if it is already installed, fetches and checks out the chosen tag (this is how updates and rollbacks are done; it refuses to touch a directory that is not a git clone of the same repository).
-6. Makes sure the installed files are readable by the container user (UID/GID 30000), adding read permissions (`chmod o+rX`) only where they are missing (relevant under a restrictive umask).
+2. Checks that the data directory (`HOST_DATA_DIR`) is writable by the container user (UID/GID 30000) — the only directory the server writes to — and offers to fix its ownership with sudo if it is not.
+3. Asks which game to install (marks the one currently selected via `GAME_ID`).
+4. Offers the latest upstream release tag (you can type an older tag to pin or roll back).
+5. Shows the resolved game, version and target path, and asks for confirmation.
+6. Clones the game at that tag into `$HOST_GAMES_DIR/<game-id>` — or, if it is already installed, fetches and checks out the chosen tag (this is how updates and rollbacks are done; it refuses to touch a directory that is not a git clone of the same repository).
+7. Makes sure the installed files are readable by the container user (UID/GID 30000), adding read permissions (`chmod o+rX`) only where they are missing (relevant under a restrictive umask).
 
 Manual updates/rollbacks work the same way without the script:
 

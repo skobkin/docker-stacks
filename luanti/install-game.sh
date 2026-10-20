@@ -107,6 +107,57 @@ case "$games_dir" in
   *) games_dir="${script_dir%/}/${games_dir#./}" ;;
 esac
 
+# Pre-flight: the server writes all runtime data (worlds, players,
+# authentication) as UID/GID 30000, so the data directory must be writable
+# by that user. Games and mods are only read, they need no special ownership.
+data_dir="$(env_value HOST_DATA_DIR)"
+[ -n "$data_dir" ] || data_dir="./data"
+case "$data_dir" in
+  /*) ;; # already absolute
+  *) data_dir="${script_dir%/}/${data_dir#./}" ;;
+esac
+
+data_problems=()
+if [ ! -d "$data_dir" ]; then
+  data_problems+=("data directory $data_dir does not exist")
+elif ! access_by_uid w "$CONTAINER_UID" "$data_dir"; then
+  data_problems+=("$data_dir is not writable by the container user (UID/GID $CONTAINER_UID)")
+fi
+
+# The server opens .minetest/debug.txt at startup and gives up when it
+# cannot; create the directory if it is missing.
+if [ -d "$data_dir" ] && [ ! -e "$data_dir/.minetest" ]; then
+  mkdir -p "$data_dir/.minetest" 2>/dev/null || true
+fi
+if [ -d "$data_dir" ] && ! access_by_uid w "$CONTAINER_UID" "$data_dir/.minetest"; then
+  data_problems+=("$data_dir/.minetest does not exist or is not writable by the container user (UID/GID $CONTAINER_UID)")
+fi
+
+if [ "${#data_problems[@]}" -gt 0 ]; then
+  echo "WARNING: the server will not be able to store its data:" >&2
+  for problem in "${data_problems[@]}"; do
+    echo "  - $problem" >&2
+  done
+  fix_cmd="sudo mkdir -p '$data_dir/.minetest' && sudo chown -R $CONTAINER_UID:$CONTAINER_UID '$data_dir'"
+  read -r -p "Attempt to fix with sudo now? [y/N]: " fix_reply
+  case "$fix_reply" in
+    y | Y | yes | Yes)
+      if sudo mkdir -p "$data_dir/.minetest" && sudo chown -R "$CONTAINER_UID:$CONTAINER_UID" "$data_dir"; then
+        echo "Data directory is now writable by the container user."
+      else
+        err "Automatic fix failed. Run it manually before starting the server:"
+        echo "  $fix_cmd" >&2
+      fi
+      ;;
+    *)
+      echo "Fix it manually before starting the server:" >&2
+      echo "  $fix_cmd" >&2
+      ;;
+  esac
+else
+  echo "Data directory $data_dir is writable by the container user (UID/GID $CONTAINER_UID)."
+fi
+
 selected_game="$(env_value GAME_ID)"
 
 echo "Luanti game installer"
