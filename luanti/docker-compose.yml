@@ -1,0 +1,35 @@
+services:
+  luanti:
+    # Official Luanti (formerly Minetest) server image
+    # https://docs.luanti.org/for-server-hosts/setup/containers/
+    image: 'ghcr.io/luanti-org/luanti:${IMAGE_TAG:-5.17}'
+    container_name: luanti
+    # Game and world selection. A world that does not exist yet is created
+    # on first start and permanently bound to GAME_ID (world.mt). Never point
+    # an existing world at a mismatched GAME_ID - see README.md.
+    command:
+      - --config
+      - /etc/minetest/minetest.conf
+      - --world
+      - /var/lib/minetest/.minetest/worlds/${WORLD_NAME:-world}
+      - --gameid
+      - ${GAME_ID:-voxelibre}
+    ports:
+      - "${BIND_ADDRESS:-0.0.0.0}:${BIND_PORT:-30000}:30000/udp"
+    volumes:
+      # Worlds, players, authentication data (owned by UID/GID 30000)
+      - "${HOST_DATA_DIR:-./data}:/var/lib/minetest"
+      # Server configuration (minetest.conf)
+      - "${HOST_CONFIG_DIR:-./config}:/etc/minetest:ro"
+      # Installed games (voxelibre, mineclonia)
+      - "${HOST_GAMES_DIR:-./games}:/var/lib/minetest/.minetest/games:ro"
+      # Optional mods
+      - "${HOST_MODS_DIR:-./mods}:/var/lib/minetest/.minetest/mods:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+    env_file: .env
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-5m}"
+        max-file: "${LOG_MAX_FILE:-5}"

@@ -65,6 +65,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | lanquiry                | lanquiry          | 8420                | 8080           | ✅       | TCP      | LAN inventory monitor, localhost-bound; host variants bind 127.0.0.1:8420 directly |
 | lidarr                  | lidarr            | varies              | 8686           | ✅       | TCP      | Music management                    |
 | llama-swap              | llama-swap        | 8011                | 8080           | ✅       | TCP      | OpenAI-compatible model router      |
+| luanti                  | luanti            | 30000               | 30000          | ❌       | UDP      | Game server (Luanti protocol)       |
 | magnetico-web           | magnetico-web     | 8080                | 80             | ✅       | TCP      | Torrent search                      |
 | magneticod              | magneticod        | varies              | varies         | ❌       | UDP      | DHT crawler                         |
 | mariadb                 | mariadb           | 3306                | 3306           | ❌       | TCP      | Shared MariaDB server               |

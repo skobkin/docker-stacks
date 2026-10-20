@@ -1,0 +1,53 @@
+# Luanti server configuration template.
+#
+# Setup:
+#   cp config/minetest.conf.dist config/minetest.conf
+#
+# This template intentionally stays minimal and tuned for a small private
+# survival server. Full option reference for your engine version:
+#   https://github.com/luanti-org/luanti/blob/5.17.0/minetest.conf.example
+# (settings are documented inline there; keys below were verified for 5.17)
+
+# --- Server identity ---------------------------------------------------------
+
+# Name shown to joining players and in the server list (if announced).
+server_name = My Luanti server
+
+# Description shown to joining players and in the server list.
+server_description = Private survival server for friends
+
+# Homepage shown in the server list (only relevant if announcing publicly).
+#server_url = https://example.com
+
+# Message of the day displayed to players on connect.
+motd = Welcome! Behave, build, survive.
+
+# --- Access and accounts -----------------------------------------------------
+
+# Shared join password: new players must enter this to register an account.
+# Existing players authenticate with their own password.
+# Change this before exposing the server publicly!
+# Comment out or leave empty for fully open registration (see README.md).
+default_password = change_this_join_password
+
+# Admin player name: a client connecting with this exact name becomes
+# server admin (all privileges). Set it to your own player name.
+#name = your_admin_name
+
+# Public server list announcement. This only controls visibility on
+# servers.luanti.org - it is NOT an access control mechanism.
+server_announce = false
+
+# --- Gameplay ----------------------------------------------------------------
+
+# Max simultaneous players.
+max_users = 10
+
+# Players take damage and can die (survival).
+enable_damage = true
+
+# Players cannot damage or kill each other.
+enable_pvp = false
+
+# Record node and inventory actions for rollback (uses extra disk space).
+#enable_rollback_recording = false
