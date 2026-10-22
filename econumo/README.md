@@ -11,17 +11,28 @@ A single [distroless](https://github.com/GoogleContainerTools/distroless) contai
 
 ## Setup
 
+Prepare and start, in order:
+
 ```shell
+# 1. Environment file: copy the template and edit it.
+#    For the default Traefik variant set TRAEFIK_HOST there (and ECONUMO_URL, see below).
 cp .env.dist .env
-nano -w .env          # set TRAEFIK_HOST (and ECONUMO_URL, see below)
-mkdir -p data/db data/jwt
-sudo chown -R 65532:65532 data
+nano -w .env
+
+# 2. Data directory. The app runs as UID/GID 65532 and needs data/db/ and
+#    data/jwt/ to exist and be writable by 65532 BEFORE the first start.
+#    One command creates all three directories with the right owner:
+sudo install -d -o 65532 -g 65532 data data/db data/jwt
+
+# 3. Start.
 docker compose up -d
 ```
 
+Skipping step 2 is the most common failure: the container then loops on `startup failed ... unable to open database file (14)` and nothing appears in `data/`.
+
 Traefik is the default variant: the app is published at `https://<TRAEFIK_HOST>` through the reverse proxy and no host port is opened (the external `traefik` network must exist, see [_docs/traefik_network.md](../_docs/traefik_network.md)). To run standalone without a reverse proxy instead, set `COMPOSE_VARIANT=default` in `.env` and open `http://127.0.0.1:8421`.
 
-Why the `mkdir` and `chown`: the image runs as distroless `nonroot` (65532) and pre-creates `/app/var/db` inside the image, but the bind mount over `/app/var` shadows that, bind mounts get no Docker copy-on-first-use ownership fixup, and the app does not create the directories itself — it fails at startup with `unable to open database file` until `db/` and `jwt/` exist and are writable by 65532. On first boot the app creates `data/db/db.sqlite` (and puts the JWT keypair into `data/jwt/` when the first token is issued); you can verify the ownership with `ls -l data/db`.
+Why the ownership requirement: the image runs as distroless `nonroot` (65532) and pre-creates `/app/var/db` inside the image, but the bind mount over `/app/var` shadows that, bind mounts get no Docker copy-on-first-use ownership fixup, and the app does not create the directories itself. On first boot it creates `data/db/db.sqlite` (and puts the JWT keypair into `data/jwt/` when the first token is issued); verify with `ls -l data/db`. If `data/` already exists with the wrong owner, fix it in place with `sudo chown -R 65532:65532 data`.
 
 Version note: upstream publishes only exact `vX.Y.Z` image tags plus `latest` and `dev` — there are no rolling `v1`/`v1.6` tags. The default `latest` works with the repository's watchtower stack for automatic updates; see [Upgrading](#upgrading) for the trade-offs. Never use `dev`.
 
