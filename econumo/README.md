@@ -74,7 +74,21 @@ docker compose exec econumo /app/econumo user:deactivate user@example.com
 docker compose exec econumo /app/econumo user:activate user@example.com
 ```
 
-Also available: `user:change-email`, `currency:add`, `currency:update-rates`, `jwt:generate` (the JWT keypair is generated automatically on first boot; the command is only for manual rotation). Running the binary with no command prints the full usage for your version.
+Also available: `user:change-email`, `jwt:generate` (the JWT keypair is generated automatically on first boot; the command is only for manual rotation). Running the binary with no command prints the full usage for your version.
+
+Currencies are added from the CLI ([multi-currency docs](https://econumo.com/docs/self-hosting/multi-currency/)); the optional `fraction-digits` is the ISO 4217 minor-unit count — KZT has 2 (1 tenge = 100 tiyn):
+
+```shell
+# Add the Kazakhstani tenge
+docker compose exec econumo /app/econumo currency:add KZT 'Kazakhstani tenge' 2
+
+# Load exchange rates for every stored currency from Open Exchange Rates
+# (today by default; pass YYYY-MM-DD for historical rates)
+docker compose exec econumo /app/econumo currency:update-rates
+docker compose exec econumo /app/econumo currency:update-rates 2026-01-15
+```
+
+`currency:update-rates` requires `OPEN_EXCHANGE_RATES_TOKEN` in `.env` — a free API token from [openexchangerates.org](https://openexchangerates.org/); rates are loaded against the base currency `ECONUMO_CURRENCY_BASE` (default `USD`). Optionally set `ECONUMO_CURRENCY_UPDATE_INTERVAL` to a number of days (1–31) to refresh rates automatically in-process; when it is unset, drive the command from your own cron.
 
 ## MCP access
 
