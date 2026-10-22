@@ -1,0 +1,39 @@
+# econumo - Self-hosted personal finance and budgeting with a built-in MCP server
+# https://github.com/econumo/econumo
+
+services:
+  econumo:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-default}"
+    image: 'ghcr.io/econumo/econumo:${IMAGE_TAG:-latest}'
+    container_name: 'econumo'
+    hostname: 'econumo'
+    env_file: '.env'
+    environment:
+      TZ: '${TZ:-UTC}'
+    volumes:
+      # Whole /app/var: SQLite db (db/) and JWT keypair (jwt/).
+      # Distroless nonroot is 65532:65532 — the host dir must be writable by it.
+      - '${HOST_DATA_DIR:-./data}:/app/var'
+    restart: unless-stopped
+    healthcheck:
+      # Upstream healthcheck (distroless: no shell, binary subcommand only).
+      test: ['CMD', '/app/econumo', 'healthcheck']
+      interval: 1m30s
+      timeout: 10s
+      retries: 12
+      start_period: 30s
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'
+
+networks:
+  databases:
+    external: true
+    name: '${DATABASES_NETWORK:-databases}'
+  traefik:
+    external: true
+    name: '${TRAEFIK_NETWORK:-traefik}'

@@ -20,6 +20,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | matrix-calls            | livekit           | 7881                | 7881           | ❌       | TCP      | LiveKit ICE over TCP                |
 | matrix-calls            | livekit           | 50100-50200         | 50100-50200    | ❌       | UDP      | LiveKit ICE media transport         |
 | matrix-calls            | lk-jwt-service    | 8411                | 8411           | ✅       | TCP      | MatrixRTC JWT service, localhost-bound |
+| econumo                 | econumo           | 8421                | 80             | ✅       | TCP      | Personal finance, localhost-bound (no port in Traefik variants) |
 | element-web             | element-web       | varies              | 80             | ✅       | TCP      | Matrix client                       |
 | emby                    | emby              | 8096                | 8096           | ✅       | TCP      | Media server                        |
 | esphome                 | esphome           | 6052                | 6052           | ✅       | TCP      | ESP device builder                  |

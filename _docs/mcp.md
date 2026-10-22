@@ -12,6 +12,7 @@ Several stacks in this repository expose [MCP](https://modelcontextprotocol.io) 
 | [mcp-mastodon](../mcp-mastodon/README.md) | Mastodon/GoToSocial accounts, timelines, and statuses | Custom header `X-Mastodon-Access-Token` |
 | [mcp-miniflux](../mcp-miniflux/README.md) | Miniflux RSS feeds and entries | `Authorization: Bearer <token>` (`MCP_AUTH_TOKEN`) |
 | [hindsight](../hindsight/README.md) | Long-term memory for AI agents | `Authorization: Bearer <token>` (`HINDSIGHT_API_KEY`) |
+| [econumo](../econumo/README.md) | Personal finance accounts, budgets, and transactions | OAuth 2.1 browser sign-in (needs a public HTTPS `ECONUMO_URL`) or `Authorization: Bearer <token>` with a personal access token |
 
 Endpoint URLs and ports live in each stack README and in [PORTS.md](../PORTS.md), so they are documented in one place only. Hindsight serves one MCP endpoint per memory bank with the bank id in the URL path.
 
@@ -49,6 +50,8 @@ X-Example-Token: <token>
 ```
 
 Which style a stack expects is listed in the table above. Every example below writes the token literally into the client configuration. Each agent also offers environment-variable indirection (Claude Code `${VAR}` in header values, Codex `bearer_token_env_var`, OpenCode `{env:NAME}`); it is deliberately not used here.
+
+Econumo is the exception to the static-token rule: its `/mcp` endpoint authenticates with OAuth 2.1 browser sign-in that clients discover automatically, and it additionally accepts a personal access token as a plain Bearer header — see the [Econumo README](../econumo/README.md).
 
 ## Claude Code
 
