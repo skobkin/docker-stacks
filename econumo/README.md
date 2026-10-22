@@ -150,7 +150,9 @@ Password recovery, email verification, and similar emails are configured with `M
 MAILER_DSN=resend://re_xxxxxxxxxxxxxxxxxxxxxxxx?from=noreply@yourdomain.com&reply_to=you@yourdomain.com
 ```
 
-Leaving `MAILER_DSN` unset prints the emails to the container log (visible via `docker logs economo`), which is often fine for a personal instance.
+Leaving `MAILER_DSN` unset prints the emails to the container log (visible via `docker logs econumo`), which is often fine for a personal instance.
+
+If you need an SMTP relay instead, generic SMTP support is requested upstream: [econumo/econumo#362](https://github.com/econumo/econumo/issues/362).
 
 ## OIDC (optional)
 
