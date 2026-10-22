@@ -5,7 +5,7 @@ services:
   econumo:
     extends:
       file: ./compose.features.yml
-      service: "${COMPOSE_VARIANT:-default}"
+      service: "${COMPOSE_VARIANT:-traefik}"
     image: 'ghcr.io/econumo/econumo:${IMAGE_TAG:-latest}'
     container_name: 'econumo'
     hostname: 'econumo'

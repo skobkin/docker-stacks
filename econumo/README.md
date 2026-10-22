@@ -13,13 +13,13 @@ A single [distroless](https://github.com/GoogleContainerTools/distroless) contai
 
 ```shell
 cp .env.dist .env
-nano -w .env
+nano -w .env          # set TRAEFIK_HOST (and ECONUMO_URL, see below)
 mkdir -p data/db data/jwt
 sudo chown -R 65532:65532 data
 docker compose up -d
 ```
 
-The web UI is then available at `http://127.0.0.1:8421` (default and `databases` variants only — the Traefik variants publish no port).
+Traefik is the default variant: the app is published at `https://<TRAEFIK_HOST>` through the reverse proxy and no host port is opened (the external `traefik` network must exist, see [_docs/traefik_network.md](../_docs/traefik_network.md)). To run standalone without a reverse proxy instead, set `COMPOSE_VARIANT=default` in `.env` and open `http://127.0.0.1:8421`.
 
 Why the `mkdir` and `chown`: the image runs as distroless `nonroot` (65532) and pre-creates `/app/var/db` inside the image, but the bind mount over `/app/var` shadows that, bind mounts get no Docker copy-on-first-use ownership fixup, and the app does not create the directories itself — it fails at startup with `unable to open database file` until `db/` and `jwt/` exist and are writable by 65532. On first boot the app creates `data/db/db.sqlite` (and puts the JWT keypair into `data/jwt/` when the first token is issued); you can verify the ownership with `ls -l data/db`.
 
@@ -69,7 +69,7 @@ Also available: `user:change-email`, `currency:add`, `currency:update-rates`, `j
 
 Econumo serves an MCP endpoint at `/mcp` on the same port as the web UI, using OAuth 2.1 (authorization code with PKCE, dynamic client registration): the client opens a browser, you sign in to Econumo and approve the app — there is no token to copy.
 
-Browser sign-in requires `ECONUMO_URL` to be set to the public **HTTPS origin** of the instance (no path, e.g. `https://econumo.example.com`), so in practice you need the [Traefik variant](#traefik). The plain `Host()` router passes everything through, including the `/.well-known/*` discovery and `/oauth/*` routes the flow needs.
+Browser sign-in requires `ECONUMO_URL` to be set to the public **HTTPS origin** of the instance (no path, e.g. `https://econumo.example.com`) — set it in `.env` next to `TRAEFIK_HOST`. The plain `Host()` router of the Traefik variant (the default) passes everything through, including the `/.well-known/*` discovery and `/oauth/*` routes the flow needs.
 
 **Claude Code:**
 
@@ -96,13 +96,13 @@ Caveat: with the Traefik variant, the `default-access@file` access policy is an 
 
 ## Traefik
 
-Set `COMPOSE_VARIANT=traefik` in `.env`, set `TRAEFIK_HOST`, and also set `ECONUMO_URL=https://<TRAEFIK_HOST>` (required for MCP browser sign-in and correct links in emails). No host port is published in this variant — the stack is reachable only through the reverse proxy.
+Traefik is the default variant (`COMPOSE_VARIANT=traefik` in `.env.dist`). Set `TRAEFIK_HOST` and also set `ECONUMO_URL=https://<TRAEFIK_HOST>` (required for MCP browser sign-in and correct links in emails). No host port is published — the stack is reachable only through the reverse proxy, so the external `traefik` network must exist.
 
-See [_docs/traefik.md](../_docs/traefik.md) and [_docs/traefik_network.md](../_docs/traefik_network.md).
+See [_docs/traefik.md](../_docs/traefik.md) and [_docs/traefik_network.md](../_docs/traefik_network.md). To opt out and bind a localhost port instead, set `COMPOSE_VARIANT=default`.
 
 ## PostgreSQL via the databases network
 
-Econumo runs on SQLite by default; no PostgreSQL container is bundled with this stack. To use a PostgreSQL server connected to the shared `databases` network, set `COMPOSE_VARIANT=databases` (or `traefik_databases`) and point `DATABASE_URL` at it, e.g.:
+Econumo runs on SQLite by default; no PostgreSQL container is bundled with this stack. To use a PostgreSQL server connected to the shared `databases` network, set `COMPOSE_VARIANT=traefik_databases` (or `databases` for a localhost-bound setup) and point `DATABASE_URL` at it, e.g.:
 
 ```dotenv
 DATABASE_URL=postgres://econumo:change-me@postgres:5432/econumo?sslmode=disable

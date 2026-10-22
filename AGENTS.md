@@ -46,6 +46,7 @@ logging:
   what should be exposed through Traefik, which entrypoint should be used (`web` for local HTTP-only setups or `websecure` for HTTPS/public exposure), how it should be configured, and whether the simple or advanced pattern fits better.
 - When using the shared `websecure` entrypoint, do not add router-level TLS labels unless you intentionally need to override Traefik's entrypoint defaults such as ACME/certresolver behavior.
 - Publish host ports only in variants that do not use Traefik (for example `default` and `databases`). Traefik variants should not publish ports: with the reverse proxy enabled the stack is reached through it only, which keeps a single exposure path and supports fronting the stack with a different proxy.
+- Starting from the `econumo` stack, new stacks default to the Traefik variant: `COMPOSE_VARIANT` falls back to `traefik` in the base compose file and `.env.dist` ships it active. Keep the localhost-bound variants (`default` and combined ones) available as an explicit opt-out.
 
 ## Done Criteria
 
