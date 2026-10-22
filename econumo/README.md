@@ -92,7 +92,7 @@ codex mcp login econumo
 
 Revoke connected apps in Settings → Profile → Connected apps.
 
-Caveat: with the Traefik variant, the `default-access@file` access policy is an IP allow-list that rejects clients before they reach Econumo — make sure it permits the networks your non-browser MCP clients and remote OAuth browsers come from.
+Caveat: what the `default-access@file` access policy does depends on which middleware definition is uncommented in your Traefik's `default-access` dynamic config (template: `traefik/config/dynamic/default-access.yml.dist`). If it is a restrictive IP allow-list, make sure it permits the networks your non-browser MCP clients and remote OAuth browsers come from, or the Traefik layer rejects them before they reach Econumo.
 
 ## Traefik
 
