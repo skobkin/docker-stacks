@@ -142,6 +142,16 @@ With the default `IMAGE_TAG=latest`, watchtower updates the image automatically 
 
 To roll back a failed upgrade: restore the backup and set `IMAGE_TAG` to the previous `vX.Y.Z` release before starting the container again.
 
+## Transactional email
+
+Password recovery, email verification, and similar emails are configured with `MAILER_DSN`. **Resend is the only supported transport** — there is no SMTP support (so no Brevo/Gmail/whatever relays), and other schemes fail at boot:
+
+```dotenv
+MAILER_DSN=resend://re_xxxxxxxxxxxxxxxxxxxxxxxx?from=noreply@yourdomain.com&reply_to=you@yourdomain.com
+```
+
+Leaving `MAILER_DSN` unset prints the emails to the container log (visible via `docker logs economo`), which is often fine for a personal instance.
+
 ## OIDC (optional)
 
 To add "Sign in with..." via an OpenID Connect provider, set `ECONUMO_URL` and the `ECONUMO_OIDC_*` variables in `.env` (see comments there). Full walkthrough: [OIDC setup](https://github.com/econumo/econumo/blob/main/docs/oidc-setup.md).
