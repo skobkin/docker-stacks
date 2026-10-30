@@ -16,9 +16,13 @@ services:
       # Whole /app/data (APP_DIR): SQLite config store, database, request logs.
       # The image runs as UID 1000 - the host dir must be writable by it.
       - '${HOST_DATA_DIR:-./data}:/app/data'
-      # Optional declarative config seed (Web UI stays authoritative for rows
-      # the file does not change). Copy config/config.json.dist and uncomment:
-      # - '${HOST_CONFIG_DIR:-./config}/config.json:/app/data/config.json:ro'
+      # Config seed mounted at /app/data/config.json. Bifrost requires the
+      # file to exist and hold valid JSON even when it carries no settings,
+      # so the default source is the shipped no-op template; a /dev/null
+      # mount would fail startup on the empty input. To activate the seed,
+      # copy config/config.json.dist to config/config.json, edit it, and
+      # point HOST_CONFIG_FILE at it (see README).
+      - '${HOST_CONFIG_FILE:-./config/config.json.dist}:/app/data/config.json:ro'
     restart: unless-stopped
     ulimits:
       # Upstream recommendation for many concurrent LLM streams.

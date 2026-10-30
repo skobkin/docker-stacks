@@ -51,21 +51,40 @@ A fresh Bifrost install serves an **unauthenticated admin dashboard** until the 
 
    Both variants need the external `ai-tools` network ([guide](../_docs/ai_tools_network.md)).
 
-### Optional: declarative config seed
+### Declarative config seed
 
-Bifrost can seed its database from `/app/data/config.json` on startup. In the default `split` mode the Web UI stays authoritative for rows the file does not change; rows changed in the file are re-applied on restart, so the file remains the place to keep versioned provider defaults. The Web UI/database config model is never disabled by this stack's template.
+Bifrost can seed its database from `/app/data/config.json` on startup. The compose file mounts it **always**: by default the shipped no-op template (`config/config.json.dist`) is mounted, which carries no settings and leaves the Web UI/database config model fully in charge. The file must exist and hold valid JSON even when it carries no settings — an empty or missing file fails startup, which is why the mount never points at `/dev/null`.
+
+To activate the seed, copy the template, add settings, and point `HOST_CONFIG_FILE` at your copy in `.env`:
 
 ```shell
 cp config/config.json.dist config/config.json
 ```
 
-Then set the referenced provider keys (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`) in `.env` and uncomment the config mount in `docker-compose.yml`:
-
-```yaml
-      - '${HOST_CONFIG_DIR:-./config}/config.json:/app/data/config.json:ro'
+```dotenv
+HOST_CONFIG_FILE=./config/config.json
 ```
 
-Secrets are only ever referenced as `env.VARIABLE_NAME` in the file — never write literal keys into it.
+Example seed content — note secrets are only ever referenced as `env.VARIABLE_NAME`, never written literally:
+
+```json
+{
+  "$schema": "https://www.getbifrost.ai/schema",
+  "encryption_key": "env.BIFROST_ENCRYPTION_KEY",
+  "setup_token": "env.BIFROST_SETUP_TOKEN",
+  "config_store": { "source_of_truth": "split" },
+  "providers": {
+    "openai": {
+      "keys": [{ "name": "openai", "value": "env.OPENAI_API_KEY", "models": ["*"], "weight": 1.0 }]
+    },
+    "anthropic": {
+      "keys": [{ "name": "anthropic", "value": "env.ANTHROPIC_API_KEY", "models": ["*"], "weight": 1.0 }]
+    }
+  }
+}
+```
+
+In the default `split` mode the Web UI stays authoritative for rows the file does not change; rows changed in the file are re-applied on restart, so the file remains the place to keep versioned provider defaults. Full reference: https://docs.getbifrost.ai/deployment-guides/config-json.
 
 ## First admin
 
