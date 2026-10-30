@@ -16,12 +16,13 @@ services:
       # Whole /app/data (APP_DIR): SQLite config store, database, request logs.
       # The image runs as UID 1000 - the host dir must be writable by it.
       - '${HOST_DATA_DIR:-./data}:/app/data'
-      # Optional config seed. Inactive by default: both sides resolve to
+      # Optional config seed. Inactive by default: both sides fall back to
       # /dev/null, a no-op mount. A seed mounted at /app/data/config.json
       # must exist and hold valid JSON - an empty or missing file fails
       # startup. To activate: copy config/config.json.dist to
-      # config/config.json, add settings, and set CONFIG_MOUNT (see README).
-      - '${CONFIG_MOUNT:-/dev/null:/dev/null}'
+      # config/config.json, add settings, and set CONFIG_FILE together with
+      # CONFIG_FILE_MAPPED=/app/data/config.json (see README).
+      - '${CONFIG_FILE:-/dev/null}:${CONFIG_FILE_MAPPED:-/dev/null}:ro'
     restart: unless-stopped
     ulimits:
       # Upstream recommendation for many concurrent LLM streams.

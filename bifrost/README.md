@@ -55,14 +55,15 @@ A fresh Bifrost install serves an **unauthenticated admin dashboard** until the 
 
 Bifrost can seed its database from `/app/data/config.json` on startup. The compose file always declares the mount, but by default **both sides resolve to `/dev/null`** — a no-op mount, so no seed file exists and the Web UI/database config model stays fully in charge. Once a seed is mounted at `/app/data/config.json`, the file must exist and hold valid JSON: an empty or missing file fails startup, which is why the inactive default must not put `/dev/null` on the config path itself.
 
-To activate the seed, copy the template, add settings, and set the full mount spec in `.env`:
+To activate the seed, copy the template, add settings, and set both mount variables in `.env`:
 
 ```shell
 cp config/config.json.dist config/config.json
 ```
 
 ```dotenv
-CONFIG_MOUNT=./config/config.json:/app/data/config.json:ro
+CONFIG_FILE=./config/config.json
+CONFIG_FILE_MAPPED=/app/data/config.json
 ```
 
 Example seed content — note secrets are only ever referenced as `env.VARIABLE_NAME`, never written literally:
