@@ -13,6 +13,7 @@ Several stacks in this repository expose [MCP](https://modelcontextprotocol.io) 
 | [mcp-miniflux](../mcp-miniflux/README.md) | Miniflux RSS feeds and entries | `Authorization: Bearer <token>` (`MCP_AUTH_TOKEN`) |
 | [hindsight](../hindsight/README.md) | Long-term memory for AI agents | `Authorization: Bearer <token>` (`HINDSIGHT_API_KEY`) |
 | [econumo](../econumo/README.md) | Personal finance accounts, budgets, and transactions | OAuth 2.1 browser sign-in (needs a public HTTPS `ECONUMO_URL`) or `Authorization: Bearer <token>` with a personal access token |
+| [bifrost](../bifrost/README.md) | Proxied access to registered MCP servers through one governed endpoint | Virtual key via `Authorization: Bearer` or `x-bf-vk` header (default); optional OAuth 2.1 browser sign-in (MCP auth mode `both`/`oauth`) |
 
 Endpoint URLs and ports live in each stack README and in [PORTS.md](../PORTS.md), so they are documented in one place only. Hindsight serves one MCP endpoint per memory bank with the bank id in the URL path.
 

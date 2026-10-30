@@ -14,6 +14,7 @@ This document tracks all exposed ports across Docker stacks to prevent conflicts
 | beszel                  | beszel            | 8391                | 8090           | ✅       | TCP      | Monitoring hub web UI               |
 | BookLore                | booklore          | 6060                | 6060           | ✅       | TCP      | Book collection manager               |
 | beszel-agent            | beszel-agent      | disabled by default | 45876          | ❌       | TCP      | Enable by setting DISABLE_SSH=false |
+| bifrost                 | bifrost           | 8422                | 8080           | ✅       | TCP      | LLM gateway UI/APIs, localhost-bound (no port in the Traefik variant) |
 | castopod                | castopod          | 8393                | 8000           | ✅       | TCP      | Podcast hosting                     |
 | continuwuity            | continuwuity      | 6167                | 6167           | ✅       | TCP      | Matrix homeserver                   |
 | matrix-calls            | livekit           | 7880                | 7880           | ✅       | TCP      | LiveKit HTTP/API, localhost-bound   |

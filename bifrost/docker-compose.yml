@@ -1,0 +1,46 @@
+# bifrost - Self-hosted LLM gateway: Web UI, OpenAI/Anthropic-compatible APIs, MCP gateway
+# https://github.com/maximhq/bifrost
+
+services:
+  bifrost:
+    extends:
+      file: ./compose.features.yml
+      service: "${COMPOSE_VARIANT:-traefik}"
+    image: 'maximhq/bifrost:${IMAGE_TAG:-latest}'
+    container_name: 'bifrost'
+    hostname: 'bifrost'
+    env_file: '.env'
+    environment:
+      TZ: '${TZ:-UTC}'
+    volumes:
+      # Whole /app/data (APP_DIR): SQLite config store, database, request logs.
+      # The image runs as UID 1000 - the host dir must be writable by it.
+      - '${HOST_DATA_DIR:-./data}:/app/data'
+      # Optional declarative config seed (Web UI stays authoritative for rows
+      # the file does not change). Copy config/config.json.dist and uncomment:
+      # - '${HOST_CONFIG_DIR:-./config}/config.json:/app/data/config.json:ro'
+    restart: unless-stopped
+    ulimits:
+      # Upstream recommendation for many concurrent LLM streams.
+      nofile: 65536
+    healthcheck:
+      # GET /health returns 200 when ready, 503 while failing; wget is in the image.
+      test: ['CMD-SHELL', 'wget -q -T 5 -O /dev/null http://127.0.0.1:8080/health || exit 1']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '${LOG_MAX_SIZE:-5m}'
+        max-file: '${LOG_MAX_FILE:-5}'
+    networks:
+      - ai-tools
+
+networks:
+  ai-tools:
+    external: true
+  traefik:
+    external: true
+    name: '${TRAEFIK_NETWORK:-traefik}'
