@@ -12,9 +12,9 @@ Set `COMPOSE_VARIANT=proxy` when the bot needs the external `proxy` network. Cre
 
 Set `COMPOSE_VARIANT=ai_tools_proxy` when both external networks are needed.
 
-When using the repo-local llama-swap stack, set `LLM_BACKEND_OPENAI_COMPAT_BASE_URL=http://llama-swap:8080/v1`.
-When using the repo-local Ollama stack directly, set `LLM_BACKEND_OPENAI_COMPAT_BASE_URL=http://ollama:11434/v1`.
+When using the repo-local llama-swap stack, set `LLM__BACKENDS__OPENAI_COMPAT__BASE_URL=http://llama-swap:8080/v1`.
+When using the repo-local Ollama stack directly, set `LLM__BACKENDS__OPENAI_COMPAT__BASE_URL=http://ollama:11434/v1`.
 The bot stores admin configuration and reminders in SQLite under `HOST_DATA_DIR` (`./data` by default).
-Set `BOT_ADMIN_IDS` before using admin DM commands; leaving it empty disables admin controls.
+Set `BOT__ADMIN_IDS` to manage the bot through the `/admin` panel in an admin DM; leaving it empty disables admin controls.
 
 For general setup instructions, please refer to the [root README](../README.md).

@@ -1,3 +1,48 @@
+## 2026-11-11 - Telegram LLM Bot 0.23.0: env variables renamed, explicit access policy
+
+### Affected stacks
+
+- `telegram-llm-bot`
+
+### Explanation
+
+The stack keeps tracking `latest`; `.env.dist` was updated for the bot's 0.23.0 release ([upstream UPGRADE.md](https://git.skobk.in/skobkin/telegram-ollama-reply-bot/src/branch/main/UPGRADE.md)), which contains two breaking changes:
+
+- **Every bot env variable was renamed** (config loader migrated to Koanf, `__` is now the path delimiter, e.g. `TELEGRAM_TOKEN` → `BOT__TELEGRAM__TOKEN`). Old names are silently ignored, so an unrenewed `.env` makes the bot run on defaults or fail to boot (e.g. missing token/model). Value parsing is stricter: booleans accept `TRUE`/`1`, and unparseable integers or admin IDs now abort startup instead of falling back silently.
+- **Access control is now an explicit policy.** Installs with an empty whitelist (previously "answer everyone") are migrated to `allowlist` and deny all ordinary chats until chats are added or the policy is switched to `allow_all`. Admin DM commands (`/config_*`, `/whitelist_*`, …) were removed in favor of the interactive `/admin` panel.
+
+Also: `LLM_FEATURE_TOOL_USE_MODEL` was removed (already since 0.20.2 — the chat model must support tool calls). New optional features include external MCP tool servers (`MCP__ENABLED`, `MCP__SERVERS__*`), alternative image-recognition back-ends, and `BOT__DM_ADMINS_ONLY`.
+
+### Migration
+
+1. Update `telegram-llm-bot/.env` from the new `.env.dist`, renaming the variables you use:
+
+   | Old | New |
+   |---|---|
+   | `TELEGRAM_TOKEN` | `BOT__TELEGRAM__TOKEN` |
+   | `LLM_BACKEND_OPENAI_COMPAT_BASE_URL` | `LLM__BACKENDS__OPENAI_COMPAT__BASE_URL` |
+   | `LLM_BACKEND_OPENAI_COMPAT_API_TOKEN` | `LLM__BACKENDS__OPENAI_COMPAT__API_TOKEN` |
+   | `LLM_FEATURE_CHAT_MODEL` | `LLM__FEATURES__CHAT__MODEL` |
+   | `LLM_FEATURE_SUMMARIZE_MODEL` | `LLM__FEATURES__SUMMARIZE__MODEL` |
+   | `LLM_FEATURE_IMAGE_RECOGNITION_MODEL` | `LLM__FEATURES__IMAGE_RECOGNITION__MODEL` |
+   | `PERSISTENT_STORE_PATH` | `PERSISTENT__STORE_PATH` |
+   | `BOT_ADMIN_IDS` | `BOT__ADMIN_IDS` |
+   | `SEARCH_BACKEND` / `SEARCH_BACKEND_CHAIN` | `SEARCH__BACKEND` / `SEARCH__CHAIN` |
+   | `PROVIDER_TAVILY_API_KEY` / `PROVIDER_KAGI_API_KEY` | `PROVIDERS__TAVILY__API_KEY` / `PROVIDERS__KAGI__API_KEY` |
+   | `LLM_TOOL_LOOP_MAX_ITERATIONS` | `LLM__TOOL_LOOP_MAX_ITERATIONS` |
+   | `STATE_MAX_BYTES` | `STATE__MAX_BYTES` |
+   | `STATE_HISTORY_MAX_BYTES` | `STATE__HISTORY_MAX_BYTES` |
+   | `STATE_HISTORY_STREAMS_MAX` | `STATE__HISTORY_STREAMS_MAX` |
+   | `STATE_IMAGE_CACHE_MAX_BYTES` | `STATE__IMAGE_CACHE_MAX_BYTES` |
+   | `STATE_IMAGE_CACHE_TTL` | `STATE__IMAGE_CACHE_TTL` |
+   | `LLM_UNCOMPRESSED_HISTORY_LIMIT` | `LLM__UNCOMPRESSED_HISTORY_LIMIT` |
+   | `LLM_HISTORY_SUMMARY_THRESHOLD` | `LLM__HISTORY_SUMMARY_THRESHOLD` |
+   | `BOT_PROCESSING_TIMEOUT` | `BOT__PROCESSING_TIMEOUT` |
+   | `LOG_LEVEL` / `SENTRY_DSN` | `LOG__LEVEL` / `SENTRY__DSN` |
+
+2. Remove `LLM_FEATURE_TOOL_USE_MODEL` if present, and `docker compose pull && docker compose up -d`.
+3. If your whitelist was empty, open `/admin` in an admin DM afterwards and either add the chats you serve (Access → Add chat) or confirm the switch to `allow_all`, or the bot will answer no ordinary chats.
+
 ## 2026-06-25 - Basic Memory MCP: streamable HTTP transport and persistent index
 
 ### Affected stacks
