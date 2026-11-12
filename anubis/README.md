@@ -135,6 +135,8 @@ Assistant web fetchers that send a plain browser user agent (e.g. Claude's web f
 
 Scope note: the open rule's blanket 1–2-segment match also covers other short paths on the Forgejo host, such as `/user/login` and `/user/sign_up`. Application-level authentication still protects those endpoints; only the proof-of-work gate is lifted.
 
+Federation: the enabled `gotosocial-activitypub-and-api` rule exempts the GoToSocial host's ActivityPub and Mastodon-API endpoints from all challenges — server-to-server senders use arbitrary HTTP-library user agents (`curl`, `undici`, `okhttp`) that the generic rules would otherwise challenge. Forgejo needs no equivalent rule: its ActivityPub surface lives under `/api/` (covered by `forgejo-api`) and its WebFinger under `/.well-known/` (covered sitewide by `keep-internet-working`).
+
 ## Customization recommendations
 
 - **Tune challenge difficulty.** The `DIFFICULTY` environment variable (4 by default) controls the proof-of-work cost. Increase it to slow down scrapers further; decrease it when legitimate users complain about slow challenges. See the [Anubis configuration documentation](https://anubis.techaro.lol/docs/).

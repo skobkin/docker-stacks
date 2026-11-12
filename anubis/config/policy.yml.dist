@@ -76,17 +76,20 @@ bots:
   #       - 'host.matches("^ci\\.domain\\.tld(?::443)?$")'
   #       - 'path.matches("^/(api(?:/|$)|hook$|webhook(?:/|$))")'
 
-  # Optional: GoToSocial on gts.domain.tld.
-  # Allows ActivityPub delivery/discovery and Mastodon-compatible API clients.
-  # GoToSocial/fediverse federation will break if inbox/webfinger/nodeinfo routes
-  # are challenged.
-  #
-  # - name: gotosocial-activitypub-and-api
-  #   action: ALLOW
-  #   expression:
-  #     all:
-  #       - 'host.matches("^gts\\.domain\\.tld(?::443)?$")'
-  #       - 'path.matches("^/(api(?:/|$)|users/[^/]+/(?:inbox|outbox|followers|following|collections/featured)(?:/|$)|inbox$|sharedInbox$|nodeinfo(?:/|$)|\\.well-known/(?:webfinger|nodeinfo|host-meta)(?:/|$))")'
+  # GoToSocial on gts.domain.tld: ActivityPub delivery/discovery and
+  # Mastodon-compatible API clients. Federation breaks when these routes
+  # are challenged: Mastodon (http.rb), Pleroma (Hackney) and Go clients
+  # pass by default, but curl/undici/okhttp senders (Misskey/Sharkey-style
+  # servers, WordPress ActivityPub bridges, mobile apps) hit the
+  # HTTP-library challenge below. /.well-known/* is already allowed
+  # sitewide by keep-internet-working. HTTP signatures remain GoToSocial's
+  # job; this rule only lifts the bot gate.
+  - name: gotosocial-activitypub-and-api
+    action: ALLOW
+    expression:
+      all:
+        - 'host.matches("^gts\\.domain\\.tld(?::443)?$")'
+        - 'path.matches("^/(api(?:/|$)|users/[^/]+/(?:inbox|outbox|followers|following|collections/featured)(?:/|$)|inbox$|sharedInbox$|nodeinfo(?:/|$)|\\.well-known/(?:webfinger|nodeinfo|host-meta)(?:/|$))")'
 
   # Optional example: allow only a JSON API on a specific host.
   # This is safer than allowing all paths for a user-agent.
