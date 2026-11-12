@@ -115,6 +115,26 @@ Common exemption patterns:
 
 The Anubis policy expression language supports more conditions than `host ==` and `path.startsWith(...)`. See the [Anubis policy expressions documentation](https://anubis.techaro.lol/docs/admin/policy/expressions/) for the full reference, including `path_regex`, `user_agent_regex`, `remote_address`, and nested `any`/`all`/`not` blocks.
 
+## Forgejo open collaboration paths and AI assistants
+
+The bundled `config/policy.yml.dist` opens Forgejo's collaboration surfaces — repo home, user profiles, issues, pull requests, releases, wiki (including subpaths: threads, attachments, release artifacts, wiki pages) — to **every client except known bad actors**. "Known bad actors" is the DENY block evaluated *before* the open rule: the upstream pathological-bot and AI-crawler lists (`_deny-pathological`, `ai-block-aggressive`) plus the local internet-wide-scanner, abusive-cloud-scraper, exploit-path, and CF-Worker denies. Anonymous browsers and unknown bots can read the open pages without solving a proof-of-work; expensive source/history routes are not matched by the open rule and keep their challenges.
+
+Anubis rules are first-match-wins with terminal actions, so the rule order is load-bearing. The contract, top to bottom:
+
+1. `forgejo-api` — machine API access, unchanged.
+2. `forgejo-ai-assistants` — user-directed AI assistants (`ChatGPT-User`, `Claude-User`, `Perplexity-User`, `MistralAI-User`) get an explicit ALLOW on the open paths. This must sit above the deny block because upstream `clients/ai.yaml` denies those user agents, and its header comment recommends exactly this kind of per-deployment positive entry.
+3. `(data)/crawlers/_allow-good.yaml` — good search crawlers; kept above the deny block.
+4. The known-bad DENY block.
+5. `forgejo-explore-protected` — `/explore` keeps a challenge (user/repo enumeration surface). It needs its own rule because the open rule's blanket 1–2-segment path match (required to cover arbitrary profile names) inevitably matches `/explore` too, and the RE2 engine Anubis uses has no negative lookahead to exclude it inline.
+6. `forgejo-open-collab` — the open ALLOW.
+7. Challenge rules for `src`, `raw`, `blame`, `commits`, `commit`, `compare`, `activity`, `graph` — narrowed to no longer list `issues|pulls|releases`, which never reach them anymore.
+
+Still protected: source/history scrape targets get a proof-of-work for browser-looking clients; AI training crawlers and indexers stay denied everywhere; assistant user agents get a 403 on those paths instead of a challenge (they cannot solve one anyway).
+
+Assistant web fetchers that send a plain browser user agent (e.g. Claude's web fetch) pass on the open paths as any browser would; the primary agent path remains the Forgejo API and MCP, already allowed by `forgejo-api`. To add an assistant token later (GLM, MiniMax, and Kimi publish none at the time of writing; `ChatGLM-Spider` is a training scraper and stays denied), append it to the `forgejo-ai-assistants` `userAgent.matches(...)` alternation.
+
+Scope note: the open rule's blanket 1–2-segment match also covers other short paths on the Forgejo host, such as `/user/login` and `/user/sign_up`. Application-level authentication still protects those endpoints; only the proof-of-work gate is lifted.
+
 ## Customization recommendations
 
 - **Tune challenge difficulty.** The `DIFFICULTY` environment variable (4 by default) controls the proof-of-work cost. Increase it to slow down scrapers further; decrease it when legitimate users complain about slow challenges. See the [Anubis configuration documentation](https://anubis.techaro.lol/docs/).

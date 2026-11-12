@@ -1,3 +1,18 @@
+## 2026-11-12 - Anubis: open Forgejo collaboration pages; exempt GoToSocial federation
+
+### Affected stacks
+
+- `anubis`
+- `forgejo` (any stack routed through the `anubis@file` middleware)
+
+### Explanation
+
+`anubis/config/policy.yml.dist` now opens Forgejo's collaboration surfaces (repo home, profiles, issues, PRs, releases, wiki) to all clients except known bad actors: the known-bad DENY block moved above a new `forgejo-open-collab` ALLOW, and user-directed AI assistants (`ChatGPT-User`, `Claude-User`, `Perplexity-User`, `MistralAI-User`) get an explicit ALLOW above the AI deny list, as upstream's `clients/ai.yaml` recommends. `/explore` keeps a challenge. Source/history scrape targets (`src`, `raw`, `blame`, `commits`, `commit`, `compare`, `activity`, `graph`) remain challenged for browsers; AI training crawlers and indexers remain denied. The previously commented `gotosocial-activitypub-and-api` rule is enabled so fediverse delivery and Mastodon-compatible apps (e.g. `okhttp` clients) are not challenged.
+
+### Migration
+
+Mirror the changed rules and their order from `policy.yml.dist` into the live `anubis/config/policy.yml` (replacing the `git.domain.tld` / `gts.domain.tld` placeholders with the real hostnames), then recreate the container with `docker compose up -d` in the anubis stack. Policy loads at container start.
+
 ## 2026-11-11 - Telegram LLM Bot 0.23.0: env variables renamed, explicit access policy
 
 ### Affected stacks

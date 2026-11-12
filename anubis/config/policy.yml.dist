@@ -4,6 +4,7 @@
 ## - allow clearly benign clients and infrastructure probes;
 ## - allow maintained upstream list of good search crawlers;
 ## - keep API/federation machine endpoints usable;
+## - open Forgejo collaboration pages to everyone except known bad actors;
 ## - challenge suspicious traffic;
 ## - hard-deny the really noisy scanner/scraper classes.
 ##
@@ -35,6 +36,23 @@ bots:
       all:
         - 'host.matches("^git\\.domain\\.tld(?::443)?$")'
         - 'path.matches("^/(api(?:/|$)|login/oauth/access_token$)")'
+
+  # User-directed AI assistants (a human asked the tool to read this repo):
+  # ChatGPT, Claude, Perplexity, Mistral. Upstream DENIES these UAs in
+  # (data)/clients/ai.yaml ("act on behalf of humans in AI tools") and its
+  # header comment recommends per-deployment positive ALLOW entries - this
+  # is that entry. MUST stay ABOVE the known-bad DENY block below (which
+  # imports ai-block-aggressive). GLM/MiniMax/Kimi publish no user-directed
+  # UA tokens yet (ChatGLM-Spider is a training scraper and stays DENIED);
+  # append tokens to the alternation as vendors document them.
+  - name: forgejo-ai-assistants
+    action: ALLOW
+    expression:
+      all:
+        - 'host.matches("^git\\.domain\\.tld(?::443)?$")'
+        - 'method in ["GET", "HEAD"]'
+        - 'userAgent.matches("(?:ChatGPT-User|Claude-User|Perplexity-User|MistralAI-User)")'
+        - 'path.matches("^/(?:[^/]+/[^/]+/(?:issues|pulls|releases|wiki)(?:/|$)|[^/]+/[^/]+/?$|[^/]+/?$|$)")'
 
   # Optional: allow Forgejo smart HTTP Git endpoints for non-browser Git clients.
   # Uncomment only if Anubis breaks git clone/fetch/push over HTTPS.
@@ -103,12 +121,97 @@ bots:
   - import: (data)/crawlers/_allow-good.yaml
 
   ###########################################################################
+  # Known bad actors.
+  #
+  # Evaluated BEFORE the Forgejo open-paths ALLOW below so that only clients
+  # these rules do not catch get the open treatment. Good crawlers stay
+  # allowed via the import above; it must keep precedency over this block.
+  ###########################################################################
+
+  # Pathological bot/scanner rules maintained upstream. At the time of writing,
+  # this includes Cloudflare Workers abuse, headless browsers, us-ai-scraper,
+  # Custom-AsyncHttpClient, Alibaba Cloud, and Huawei Cloud.
+  - import: (data)/bots/_deny-pathological.yaml
+
+  # AI/LLM crawlers. Use the aggressive preset for a small self-hosted site.
+  # If this blocks too much, replace with:
+  # - import: (data)/meta/ai-block-moderate.yaml
+  # - import: (data)/meta/ai-block-permissive.yaml
+  - import: (data)/meta/ai-block-aggressive.yaml
+
+  # x.ai scraper pressure has been called out by newer upstream Anubis defaults,
+  # but some released/container builds do not ship (data)/crawlers/xai.yaml yet.
+  # Keep this commented unless `anubis` in your image can resolve it.
+  #
+  # - import: (data)/crawlers/xai.yaml
+
+  ###########################################################################
+  # Extra hard-deny rules for noisy scanners and hostile automation.
+  ###########################################################################
+
+  - name: internet-wide-scanners
+    action: DENY
+    user_agent_regex: >-
+      (?i)(?:CensysInspect|zgrab|masscan|Nuclei|sqlmap|Nikto|OpenVAS|Nessus|Acunetix|Qualys|ZmEu|Morfeus|DirBuster|GoBuster|ffuf|wpscan|WhatWeb|Shodan|Palo Alto Networks|Expanse)
+
+  - name: abusive-cloud-scrapers
+    action: DENY
+    user_agent_regex: >-
+      (?i)(?:Alibaba|Aliyun|Huawei|HuaweiCloud|Tencent|Bytespider|PetalBot|BLEXBot|DataForSeoBot|SeekportBot|SemrushBot|AhrefsBot|DotBot|MJ12bot|Barkrowler)
+
+  - name: obvious-exploit-paths
+    action: DENY
+    path_regex: >-
+      (?i)^/(?:\.env|\.git/|wp-admin/|wp-login\.php|xmlrpc\.php|vendor/phpunit|cgi-bin/|boaform/|HNAP1|setup\.cgi|solr/|actuator/|manager/html|phpmyadmin|pma|_profiler|server-status)(?:/|$)
+
+  - name: cloudflare-workers
+    headers_regex:
+      CF-Worker: .*
+    action: DENY
+
+  ###########################################################################
+  # Forgejo open collaboration paths.
+  #
+  # Repo home, profiles, issues, PRs, releases, wiki: open to every client
+  # the rules above did not catch -- anonymous browsers, unknown bots,
+  # logged-in users. Only the known bad actors denied above are excluded.
+  # Expensive source/history routes are NOT matched here; they fall through
+  # to the challenge rules below.
+  ###########################################################################
+
+  # /explore stays behind a challenge (user/repo enumeration surface). Must
+  # sit ABOVE forgejo-open-collab: the blanket 1-2-segment match below also
+  # matches /explore, and RE2 has no negative lookahead to exclude it inline.
+  # No UA guard on purpose: good crawlers were allowed by _allow-good above,
+  # known bad actors were denied by the block above; everyone else gets the
+  # proof-of-work page.
+  - name: forgejo-explore-protected
+    action: CHALLENGE
+    expression:
+      all:
+        - 'host.matches("^git\\.domain\\.tld(?::443)?$")'
+        - 'path.matches("^/explore(?:/|$)")'
+    challenge:
+      algorithm: fast
+      difficulty: 4
+
+  # Keep this path regex in sync with forgejo-ai-assistants above.
+  - name: forgejo-open-collab
+    action: ALLOW
+    expression:
+      all:
+        - 'host.matches("^git\\.domain\\.tld(?::443)?$")'
+        - 'path.matches("^/(?:[^/]+/[^/]+/(?:issues|pulls|releases|wiki)(?:/|$)|[^/]+/[^/]+/?$|[^/]+/?$|$)")'
+
+  ###########################################################################
   # Forgejo emergency anti-DDoS rules.
   #
   # These target web UI scraping of expensive repository history/file routes.
   # They intentionally do NOT affect:
-  # - Forgejo API rules above;
-  # - good search crawlers allowed below;
+  # - Forgejo API and AI assistant ALLOW rules above;
+  # - the forgejo-open-collab ALLOW above: issues/pulls/releases/wiki and
+  #   repo home/profile traffic never reaches these rules;
+  # - good search crawlers allowed above;
   # - optional Git smart HTTP rule above, if you enable it.
   #
   # Tradeoff: direct external links to old commit/tree/raw/blame pages may be
@@ -131,7 +234,10 @@ bots:
       algorithm: fast
       difficulty: 8
 
-  # Strongly challenge other Forgejo web UI repository pages. This catches
+  # Challenge the remaining expensive Forgejo web UI repository pages:
+  # source, raw, blame, history, compare, activity, graph. Collaboration
+  # sections (issues/pulls/releases/wiki) are already allowed by the
+  # forgejo-open-collab rule above and never match here. This still catches
   # browser-looking scrapers before the generic low-difficulty browser rule.
   - name: forgejo-challenge-repo-web-ui
     action: CHALLENGE
@@ -140,7 +246,7 @@ bots:
         - 'host.matches("^git\\.domain\\.tld(?::443)?$")'
         - 'method in ["GET", "HEAD"]'
         - 'userAgent.matches("(?i)(Mozilla|Chrome|Firefox|Safari|AppleWebKit|Gecko)")'
-        - 'path.matches("^/[^/]+/[^/]+/(?:src|raw|blame|commits|commit|compare|pulls|issues|releases|activity|graph)(?:/|$)")'
+        - 'path.matches("^/[^/]+/[^/]+/(?:src|raw|blame|commits|commit|compare|activity|graph)(?:/|$)")'
     challenge:
       algorithm: fast
       difficulty: 5
@@ -198,52 +304,13 @@ bots:
     action: ALLOW
 
   ###########################################################################
-  # Upstream maintained allow/deny lists.
+  # Upstream maintained allow list.
   ###########################################################################
 
-  # Common public routes that should remain reachable.
+  # Common public routes that should remain reachable. Deliberately below
+  # the known-bad deny block above: bad actors lose robots.txt/favicon too,
+  # ordinary clients are unaffected (no deny rule matches their UAs).
   - import: (data)/common/keep-internet-working.yaml
-
-  # Pathological bot/scanner rules maintained upstream. At the time of writing,
-  # this includes Cloudflare Workers abuse, headless browsers, us-ai-scraper,
-  # Custom-AsyncHttpClient, Alibaba Cloud, and Huawei Cloud.
-  - import: (data)/bots/_deny-pathological.yaml
-
-  # AI/LLM crawlers. Use the aggressive preset for a small self-hosted site.
-  # If this blocks too much, replace with:
-  # - import: (data)/meta/ai-block-moderate.yaml
-  # - import: (data)/meta/ai-block-permissive.yaml
-  - import: (data)/meta/ai-block-aggressive.yaml
-
-  # x.ai scraper pressure has been called out by newer upstream Anubis defaults,
-  # but some released/container builds do not ship (data)/crawlers/xai.yaml yet.
-  # Keep this commented unless `anubis` in your image can resolve it.
-  #
-  # - import: (data)/crawlers/xai.yaml
-
-  ###########################################################################
-  # Extra hard-deny rules for noisy scanners and hostile automation.
-  ###########################################################################
-
-  - name: internet-wide-scanners
-    action: DENY
-    user_agent_regex: >-
-      (?i)(?:CensysInspect|zgrab|masscan|Nuclei|sqlmap|Nikto|OpenVAS|Nessus|Acunetix|Qualys|ZmEu|Morfeus|DirBuster|GoBuster|ffuf|wpscan|WhatWeb|Shodan|Palo Alto Networks|Expanse)
-
-  - name: abusive-cloud-scrapers
-    action: DENY
-    user_agent_regex: >-
-      (?i)(?:Alibaba|Aliyun|Huawei|HuaweiCloud|Tencent|Bytespider|PetalBot|BLEXBot|DataForSeoBot|SeekportBot|SemrushBot|AhrefsBot|DotBot|MJ12bot|Barkrowler)
-
-  - name: obvious-exploit-paths
-    action: DENY
-    path_regex: >-
-      (?i)^/(?:\.env|\.git/|wp-admin/|wp-login\.php|xmlrpc\.php|vendor/phpunit|cgi-bin/|boaform/|HNAP1|setup\.cgi|solr/|actuator/|manager/html|phpmyadmin|pma|_profiler|server-status)(?:/|$)
-
-  - name: cloudflare-workers
-    headers_regex:
-      CF-Worker: .*
-    action: DENY
 
   ###########################################################################
   # Suspicious clients: challenge, do not deny.
