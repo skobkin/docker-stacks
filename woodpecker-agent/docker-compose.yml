@@ -5,14 +5,16 @@ services:
     image: 'woodpeckerci/woodpecker-agent:${IMAGE_TAG:-latest}'
     container_name: woodpecker-agent
     volumes:
-      - '/var/run/docker.sock:/var/run/docker.sock'
+      # Persist agent config (agent.conf with the registered agent ID)
+      - '${HOST_DATA_DIR:-./data}:/etc/woodpecker'
+      - '${DOCKER_SOCK_PATH:-/var/run/docker.sock}:/var/run/docker.sock'
     # Optional HTTP health/metrics endpoint; enable port mapping only if you need host access
     #ports:
     #  - '${WEBUI_BIND_ADDR:-127.0.0.1}:${WEBUI_BIND_PORT:-8391}:3000'
     env_file: .env
     environment:
       - WOODPECKER_SERVER=${WOODPECKER_SERVER:-woodpecker:9400}
-      - WOODPECKER_AGENT_SECRET=${WOODPECKER_AGENT_SECRET:-super-duper-secret}
+      - WOODPECKER_AGENT_SECRET=${WOODPECKER_AGENT_SECRET:?Set WOODPECKER_AGENT_SECRET in .env}
       - WOODPECKER_MAX_WORKFLOWS=${WOODPECKER_MAX_WORKFLOWS:-2}
       - WOODPECKER_BACKEND=${WOODPECKER_BACKEND:-docker}
       - WOODPECKER_BACKEND_DOCKER_NETWORK=${WOODPECKER_BACKEND_DOCKER_NETWORK:-}

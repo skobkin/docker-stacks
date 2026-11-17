@@ -1,3 +1,23 @@
+## 2026-11-17 - Woodpecker agent: persistent agent config, gRPC TLS variable rename, required agent secret
+
+### Affected stacks
+
+- `woodpecker-agent`
+
+### Explanation
+
+The agent stores its registered identity (agent ID issued by the server) in `/etc/woodpecker/agent.conf`. The stack now mounts `./data` (`HOST_DATA_DIR`) to `/etc/woodpecker` so the file persists across container recreation instead of the agent re-registering as a new agent each time.
+
+Upstream deprecated `WOODPECKER_GRPC_VERIFY` in favor of `WOODPECKER_GRPC_SKIP_VERIFY` — with **inverted semantics**: the old variable now acts as an alias for "skip verification", so an existing `.env` with `WOODPECKER_GRPC_VERIFY=true` silently *disables* TLS certificate verification (also the upstream default for the new variable). The compose file also no longer falls back to a placeholder `WOODPECKER_AGENT_SECRET`; the variable is now required. Additionally, the Docker socket path is overridable via `DOCKER_SOCK_PATH` (default unchanged).
+
+### Migration
+
+1. In `woodpecker-agent/.env`, replace `WOODPECKER_GRPC_VERIFY=true` with `WOODPECKER_GRPC_SKIP_VERIFY=false` to keep certificate verification enabled.
+2. Make sure `WOODPECKER_AGENT_SECRET` holds the real agent/system token.
+3. If you previously persisted the agent config elsewhere, copy the existing `agent.conf` into `woodpecker-agent/data/` before recreating the container.
+4. Run `docker compose up -d` to recreate the agent with the new bind mount.
+5. Confirm `woodpecker-agent/data/agent.conf` is created and that logs contain no `could not persist agent config` errors; the agent identity should survive subsequent restarts.
+
 ## 2026-11-11 - Telegram LLM Bot 0.23.0: env variables renamed, explicit access policy
 
 ### Affected stacks
