@@ -8,7 +8,7 @@ external database.
 
 The stack defaults to the full image (`IMAGE_TAG=latest`), chosen for
 the application features it unlocks - built-in Memory Recall in
-particular - with the bundled local model kept dormant and every model
+particular - with the optional local model left undownloaded and every model
 role served by external providers (see
 [Image variants](#image-variants)).
 
@@ -32,13 +32,17 @@ credentials configured, the app accepts localhost connections only.
    [Authentication and Traefik exposure](#authentication-and-traefik-exposure)):
    `TRAEFIK_HOST`, then the `BASIC_AUTH_USER`/`BASIC_AUTH_PASS`/
    `ADMIN_SECRET` trio, then `TRUSTED_HOSTS` and `CSRF_TRUSTED_ORIGINS`.
-3. Start the stack with `docker compose up -d`.
+3. Start the stack: `docker compose up -d --wait` on the Traefik
+   variant (see below), or plain `docker compose up -d` on the
+   standalone `default` variant.
 4. Open `https://<TRAEFIK_HOST>` (or `http://127.0.0.1:7860` on the
    localhost `default` variant) and add a connection as described below.
 
-Until the settings from step 2 exist, the Traefik variant reports
-`unhealthy` on purpose: the container healthcheck validates them and
-names the missing variables (never their values) in its health log, so
+Compose does not check the required settings before creating the
+container: on the Traefik variant the validation runs as part of the
+container healthcheck. Until the settings from step 2 exist, the
+container starts but reports `unhealthy` on purpose and names the
+missing variables (never their values) in its health log, so
 `docker compose up -d --wait` fails instead of silently leaving a
 locked, unreachable deployment behind. The standalone `default` variant
 performs no such validation.
@@ -58,8 +62,8 @@ The same image repository publishes a full and a lite line:
 
 | Tag(s)                                | Contents                                                                                                          |
 |---------------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| `latest` (default), pinned `X.Y.Z` (e.g. `2.5.2`) | Full image, recommended stable. Includes the local Gemma model, local embeddings, Memory Recall, and local Whisper. |
-| `lite`, pinned `X.Y.Z-lite`  | Same application without the bundled local models. Works with external providers, but see [Choosing between lite and full](#choosing-between-lite-and-full). |
+| `latest` (default), pinned `X.Y.Z` (e.g. `2.5.2`) | Full image, recommended stable. Adds the optional local inference capability (the Gemma model downloads on demand), a built-in local embedding fallback, Memory Recall, and local Whisper. |
+| `lite`, pinned `X.Y.Z-lite`  | Same application without the local inference capability. Works with external providers, but see [Choosing between lite and full](#choosing-between-lite-and-full). |
 
 The moving `latest`/`lite` tags always point at the current stable
 release. Never pin anything in the `2.0.9` - `2.3.3` range: those
@@ -74,18 +78,23 @@ stack, and external embeddings from a connection, which are enough for
 [lorebook semantic search](#embeddings-and-semantic-search). The
 upstream "left out" list for lite is short: the built-in local chat
 model, the local embedding model, Memory Recall, local Whisper voice
-input, and the avatar mood reader. Memory Recall stays off on lite
-even when an external embedding service is configured - it depends on
-the local embedding model, not on any embedding-capable connection.
-Advanced Memory Recall and Character recollections are not affected by
-the image line: upstream does not list them among the lite
-limitations.
+input, and the avatar mood reader. The missing memory features are a
+lite build restriction, not a technical dependency on the local
+embedding model: the chat settings UI gates them off behind the lite
+build flag - Memory Recall in every chat mode, the setup wizard's
+Advanced Memory settings with character recollections, and semantic
+summary retrieval - so no external embedding source brings them back.
+On the full image the same features run on whatever embedding source
+the connection provides; the built-in local embedding model is only
+the fallback.
 
-Full supports the same external services and additionally carries the
-optional built-in components: the bundled local Gemma chat model
-(opt-in per chat through **Model for this chat** - nothing forces it
-as the chat model), the local embedding model that Memory Recall
-requires, and local Whisper voice input. See
+Full supports the same external services and additionally ships the
+optional local inference capability: the local runtime and the Gemma
+chat model are downloaded on demand - nothing is prebundled or loaded
+automatically (opt in per chat through **Model for this chat**;
+nothing forces it as the chat model). It also carries the built-in
+local embedding model - a fallback embedding source, not a requirement
+of Memory Recall - and local Whisper voice input. See
 [Recommended setup: Full with external inference](#recommended-setup-full-with-external-inference)
 for the recommended way of running Full with every model role delegated
 to llama-swap.
@@ -93,11 +102,13 @@ to llama-swap.
 ### Choosing between lite and full
 
 `lite` is the choice when minimizing image size and native dependencies
-matters most. The trade-off: it hard-disables built-in Memory Recall -
-the section does not exist on lite, and no external embedding source
-brings it back (upstream removes it together with the local embedding
-model, even though on the full image Memory Recall happily runs on
-connection embeddings). Full preserves the roleplay memory features
+matters most. The trade-off is the memory features: the lite build
+gates them off in the UI (Memory Recall in every chat mode, the setup
+wizard's Advanced Memory settings with character recollections, and
+semantic summary retrieval), so no external embedding source brings
+them back - a build restriction, not a dependency on the local
+embedding model lite drops (on the full image that model is only the
+fallback embedding source). Full preserves the roleplay memory features
 while all LLM and embedding inference can still be handled externally
 (see
 [Recommended setup: Full with external inference](#recommended-setup-full-with-external-inference)),
@@ -114,13 +125,15 @@ summaries, character records and lorebooks into a package-owned,
 durable vault inside the data directory and recalls relevant context
 before the main reply.
 
-It supports external embedding sources: recall embeds through the
-package's connection, with the built-in local model only as a fallback
-- and that fallback does not exist on lite, so there the package needs
-an embedding model on a connection. Beyond that, upstream documents no
-lite-specific restriction (engine compatibility 2.3.5 through before
-4.0.0). It is not a feature-equivalent replacement for the built-in
-features: in chats where it is on it replaces the built-in per-chat
+It supports external embedding sources: semantic recall embeds through
+the package's connection, with the built-in local model only as a
+fallback, and that fallback does not exist on lite. Without any
+embedding source the package still works, just with lexical-only
+retrieval instead of semantic matching. Its current package manifest
+requires Engine `>=2.5.1` and `<4.0.0`.
+
+It is not a feature-equivalent replacement for the built-in features:
+in chats where it is on it replaces the built-in per-chat
 recall entirely (v2.5.2 behavior) and it does not manage the live
 history window the way Advanced Memory Recall does. Its vault, drafts
 and settings are exported through the Memory Settings backup controls
@@ -151,8 +164,8 @@ belongs to llama-swap: this stack deliberately passes no GPU devices
 (`/dev/dri`, `/dev/kfd`, or anything else) to the Marinara container -
 do not add them. Full is selected for its additional application
 features, especially Advanced Memory - not for its built-in inference
-runtime. The bundled runtime and the local Gemma model do not need to
-be installed, downloaded, or started: Advanced Memory works entirely on
+runtime. The local runtime and the Gemma model never need to be
+installed, downloaded, or started: Advanced Memory works entirely on
 external providers.
 
 - **Chat / roleplay**: a local LLM through the llama-swap connection
@@ -229,11 +242,14 @@ Memory Recall. They are configured per connection (see the upstream
 
 1. Open a connection's model editor and find its **Semantic search
    (embeddings)** section.
-2. Set **Embedding Model** to a model ID the service serves. The
-   repository's llama-swap configuration ships no embedding model, so
-   for that stack this is `<your-embedding-model-id>`: add such a model
-   to `llama-swap/config/config.yaml.dist` yourself first. Alternatively
-   configure a separate external embedding provider.
+2. Set **Embedding Model** to a model ID the backend serves with
+   embeddings - the model name alone does not guarantee support: the
+   backend must expose a working OpenAI-compatible embeddings endpoint
+   for it. The repository's llama-swap configuration ships no embedding
+   model, so for that stack this is `<your-embedding-model-id>`: add an
+   embedding-capable model to the live `llama-swap/config/config.yaml`
+   first (the `.dist` file is only the tracked starting template).
+   Alternatively configure a separate external embedding provider.
 3. Optionally override where embedding requests go via **Embedding
    endpoint URL**, or borrow another account with **Embedding
    provider**. **Test embedding** verifies the setup before you
@@ -245,9 +261,10 @@ Memory Recall. They are configured per connection (see the upstream
 
 Semantic-search embeddings and Memory Recall availability are separate
 things: lorebook semantic search works on the lite image with
-connection embeddings, while Memory Recall requires the full image's
-local embedding model and stays off on lite regardless of the
-embedding source.
+connection embeddings, while Memory Recall is hidden on lite by the
+lite build itself. It does not need the local model: on the full image
+it uses the connection's embedding source, with the built-in local
+embedding model only as the fallback.
 
 Stored vectors belong to the embedding model that produced them. After
 switching embedding models, re-vectorize the affected lorebooks and
@@ -257,8 +274,8 @@ and Marinara refuses a partial re-vectorize when the vector dimensions
 change.
 
 Serving an embedding model through llama-swap needs nothing beyond
-listing the model in its config; how llama-swap loads, keeps resident,
-and swaps models is its own concern (see the
+listing the model in `llama-swap/config/config.yaml`; how llama-swap
+loads, keeps resident, and swaps models is its own concern (see the
 [llama-swap README](../llama-swap/README.md)). For slow embedding
 backends, raise `EMBEDDING_TIMEOUT_MS` (default 300000 ms) in `.env`.
 
@@ -273,13 +290,15 @@ OpenAI-compatible images endpoint at `https://api.minimax.io/v1`
 1. Create an API key in the [MiniMax platform](https://platform.minimax.io)
    under API Keys. The key belongs in Marinara's connection settings
    only - never in compose files or `.env`.
-2. In Marinara, open **Connections**, click **Add**, and create an
-   account under the **Images & video** section as a generic
-   **OpenAI-compatible** service (the workflow is documented in the
+2. In Marinara, create the connection: open **Connections**, click
+   **Add**, and in the **Add account** window choose the generic
+   **OpenAI-compatible address** service under the **Chat** section
+   (MiniMax has no dedicated tile; the workflow is documented in the
    upstream [image provider guide](https://github.com/Pasta-Devs/Marinara-Engine/blob/main/docs/media/image-providers.md)).
-3. Set the account address to `https://api.minimax.io/v1` and paste the
-   API key.
-4. Add an image model to the account and type the model ID
+3. Set the server address to `https://api.minimax.io/v1`, paste the
+   API key, and click **Connect** - Marinara tests the account.
+4. Add an image model to the connection: open the account's **⋯**
+   menu, choose **Add image model**, and type the model ID
    `MiniMax-H3-Image` (`MiniMax-H3-Image-Highspeed` is a faster variant
    with the same parameters and limits).
 5. Open the image model and click **Test image** - it makes a real

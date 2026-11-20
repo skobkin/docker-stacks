@@ -4,8 +4,9 @@ services:
       file: ./compose.features.yml
       service: "${COMPOSE_VARIANT:-traefik}"
     # Full image by default: chosen for the application features it
-    # unlocks (built-in Memory Recall), not for its bundled inference -
-    # see README "Recommended setup: Full with external inference".
+    # unlocks (built-in memory features), not for its built-in
+    # inference runtime - see README "Recommended setup: Full with
+    # external inference".
     # IMAGE_TAG=lite selects the smaller variant without the local models.
     image: "${IMAGE_REPOSITORY:-ghcr.io/pasta-devs/marinara-engine}:${IMAGE_TAG:-latest}"
     container_name: marinara
