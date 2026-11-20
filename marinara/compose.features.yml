@@ -1,8 +1,11 @@
 services:
-  default: {}
+  default:
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${BIND_PORT:-7860}:7860/tcp"
 
   traefik:
     networks:
+      - ai-tools
       - traefik
     labels:
       traefik.enable: "true"

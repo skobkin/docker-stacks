@@ -14,16 +14,28 @@ with external providers.
 
 This stack requires the external `ai-tools` Docker network. Please follow
 the [ai-tools](../_docs/ai_tools_network.md) configuration guide before
-starting the service.
+starting the service. Publishing through Traefik (the default compose
+variant) additionally requires the shared `traefik` network - see the
+[Traefik network setup](../_docs/traefik_network.md).
 
-The web UI is published on `127.0.0.1:7860` and, with no credentials
-configured, accepts localhost connections only.
+The stack defaults to the `traefik` compose variant and is served through
+the Traefik instance under `TRAEFIK_HOST`. The `default` variant is the
+localhost opt-out, binding the web UI to `127.0.0.1:7860`; with no
+credentials configured, the app accepts localhost connections only.
 
 ## Setup
 
 1. Copy `.env.dist` to `.env`.
-2. Start the stack with `docker compose up -d`.
-3. Open `http://127.0.0.1:7860` and add a connection as described below.
+2. For the default Traefik variant, set in `.env` (see
+   [Authentication and Traefik exposure](#authentication-and-traefik-exposure)):
+   `TRAEFIK_HOST`, then the `BASIC_AUTH_USER`/`BASIC_AUTH_PASS`/
+   `ADMIN_SECRET` trio, then `TRUSTED_HOSTS` and `CSRF_TRUSTED_ORIGINS`.
+3. Start the stack with `docker compose up -d`.
+4. Open `https://<TRAEFIK_HOST>` (or `http://127.0.0.1:7860` on the
+   localhost `default` variant) and add a connection as described below.
+
+To run without Traefik instead, set `COMPOSE_VARIANT=default` in `.env`
+and keep the port localhost-bound while no password is set.
 
 The container starts as root, repairs the ownership of the bind-mounted
 data directory, and then drops privileges, so no manual `chown` of
@@ -129,9 +141,9 @@ ADMIN_SECRET=replace-with-generated-secret
 
 Generate secrets with `openssl rand -hex 32`.
 
-For Traefik exposure set `COMPOSE_VARIANT=traefik` and configure
-`TRAEFIK_HOST` (plus the other `TRAEFIK_*` variables when deviating from
-the defaults). Reverse-proxy access additionally needs:
+For the default Traefik variant, configure `TRAEFIK_HOST` (plus the other
+`TRAEFIK_*` variables when deviating from the defaults). Reverse-proxy
+access additionally needs:
 
 ```shell
 TRUSTED_HOSTS=marinara.example.com

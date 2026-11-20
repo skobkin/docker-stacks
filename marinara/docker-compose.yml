@@ -2,15 +2,13 @@ services:
   marinara:
     extends:
       file: ./compose.features.yml
-      service: "${COMPOSE_VARIANT:-default}"
+      service: "${COMPOSE_VARIANT:-traefik}"
     image: "${IMAGE_REPOSITORY:-ghcr.io/pasta-devs/marinara-engine}:${IMAGE_TAG:-lite}"
     container_name: marinara
     hostname: marinara
     # Upstream recommends init so signals reach the app: the entrypoint
     # starts as root, repairs data-dir ownership, then drops privileges.
     init: true
-    ports:
-      - "${HTTP_BIND_ADDR:-127.0.0.1}:${HTTP_BIND_PORT:-7860}:7860/tcp"
     env_file: .env
     environment:
       NODE_ENV: production
