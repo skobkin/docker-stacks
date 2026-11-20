@@ -64,9 +64,59 @@ release. Never pin anything in the `2.0.9` - `2.3.3` range: those
 releases were withdrawn upstream for a security issue and their image
 artifacts were removed.
 
+### What each image line includes
+
+Lite supports everything through external services: text generation
+via OpenAI-compatible providers such as the repository's llama-swap
+stack, and external embeddings from a connection, which are enough for
+[lorebook semantic search](#embeddings-and-semantic-search). The
+upstream "left out" list for lite is short: the built-in local chat
+model, the local embedding model, Memory Recall, local Whisper voice
+input, and the avatar mood reader. Memory Recall stays off on lite
+even when an external embedding service is configured - it depends on
+the local embedding model, not on any embedding-capable connection.
+Advanced Memory Recall and Character recollections are not affected by
+the image line: upstream does not list them among the lite
+limitations.
+
+Full supports the same external services and additionally carries the
+optional built-in components: the bundled local Gemma chat model
+(opt-in per chat through **Model for this chat** - nothing forces it
+as the chat model), the local embedding model that Memory Recall
+requires, and local Whisper voice input.
+
+### Choosing between lite and full
+
+For long-running character roleplay, stay on lite when chat and
+embeddings come from external services and memories are handled by the
+Long-Term Memory package (below) or are not wanted; it is a much
+smaller download. Choose the full image for built-in Memory Recall (it
+requires the local embedding model), the offline built-in model as a
+fallback, or local Whisper dictation.
+
+### The optional Long-Term Memory package
+
+Long-Term Memory is a separately installed agent package (from Agent
+Organizer) and is distinct from both built-in Memory Recall and
+Advanced Memory Recall: it extracts lasting memories from chat
+summaries, character records and lorebooks into a package-owned,
+durable vault inside the data directory and recalls relevant context
+before the main reply.
+
+It supports external embedding sources: recall embeds through the
+package's connection, with the built-in local model only as a fallback
+- and that fallback does not exist on lite, so there the package needs
+an embedding model on a connection. Beyond that, upstream documents no
+lite-specific restriction (engine compatibility 2.3.5 through before
+4.0.0). It is not a feature-equivalent replacement for the built-in
+features: in chats where it is on it replaces the built-in per-chat
+recall entirely (v2.5.2 behavior) and it does not manage the live
+history window the way Advanced Memory Recall does. Its vault, drafts
+and settings are exported through the Memory Settings backup controls
+and survive uninstall.
+
 The default `IMAGE_TAG=lite` tracks the current stable release of the
-lite line. Memory Recall (per-chat semantic search over chat history)
-requires the full image; switching is a one-line change in `.env`:
+lite line. Switching between the lines is a one-line change in `.env`:
 
 ```shell
 # lite (default)
