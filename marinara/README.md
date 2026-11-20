@@ -178,9 +178,18 @@ CSRF_TRUSTED_ORIGINS=https://marinara.example.com
 #CORS_ORIGINS=https://marinara.example.com
 ```
 
-Keep the `default-access@file` access policy (the default) so the
-Traefik layer stays in front of the app-level authentication. See the
-common [Traefik usage guide](../_docs/traefik.md) and
+`TRAEFIK_ACCESS_POLICY` (default `default-access@file`) only selects a
+middleware chain that is already configured in the shared Traefik
+stack's dynamic configuration; this stack does not define one, and what
+`default-access@file` does depends on the live Traefik config (template:
+[`traefik/config/dynamic/default-access.yml.dist`](../traefik/config/dynamic/default-access.yml.dist)),
+so do not assume it is inherently private. Keep it as an allow list for
+LAN/VPN clients in front of the app-level authentication, or select an
+existing authenticated policy such as `public-auth-access@file`
+(Authelia SSO) when the deployment provides one; Marinara's own
+authentication requirements apply either way. See the
+[access policy notes](../_docs/traefik.md#access-policy) in the common
+[Traefik usage guide](../_docs/traefik.md) and the
 [network setup](../_docs/traefik_network.md).
 
 ## Updating
