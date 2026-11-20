@@ -174,9 +174,9 @@ external providers.
   Marinara for the agents and helper jobs doing background work.
 - **Embeddings**: an embedding model served by llama-swap, selected
   under **Connections → Defaults → Embeddings** (see
-  [Embeddings and semantic search](#embeddings-and-semantic-search));
-  llama-swap can serve embedding models on CPU without any change to
-  its model loading configuration.
+  [Embeddings and semantic search](#embeddings-and-semantic-search)
+  for the endpoint requirement); llama-swap can serve embedding models
+  on CPU.
 - **Decision model**: optional - point the **Decision** row under
   **Connections → Jobs → Behind the scenes** at a small llama-swap
   model, or leave it on **None** (the default).
@@ -273,11 +273,17 @@ mismatching entries are skipped in semantic matching without an error,
 and Marinara refuses a partial re-vectorize when the vector dimensions
 change.
 
-Serving an embedding model through llama-swap needs nothing beyond
-listing the model in `llama-swap/config/config.yaml`; how llama-swap
-loads, keeps resident, and swaps models is its own concern (see the
-[llama-swap README](../llama-swap/README.md)). For slow embedding
-backends, raise `EMBEDDING_TIMEOUT_MS` (default 300000 ms) in `.env`.
+Serving an embedding model through llama-swap takes more than listing
+the model in `llama-swap/config/config.yaml`: the backend serving the
+model must actually implement the OpenAI-compatible embeddings
+endpoint (`/v1/embeddings`) - for `llama-server`, that means an
+embedding configuration with a mode and pooling suited to the model.
+Verify the endpoint (**Test embedding** in step 3 above, or a direct
+`/v1/embeddings` request) before configuring embeddings in Marinara.
+How llama-swap loads, keeps resident, and swaps models is its own
+concern (see the [llama-swap README](../llama-swap/README.md)). For
+slow embedding backends, raise `EMBEDDING_TIMEOUT_MS` (default 300000
+ms) in `.env`.
 
 ## Image generation with MiniMax-H3-Image
 
@@ -308,6 +314,15 @@ OpenAI-compatible images endpoint at `https://api.minimax.io/v1`
    [Illustrator agent](https://github.com/Pasta-Devs/Marinara-Engine/blob/main/docs/media/illustrator-agent.md)
    uses the same default, or can be given its own image model on its
    **Open Setup** screen.
+
+If the account test in step 3 fails, the connection may still be
+perfectly usable for images: when creating an OpenAI-compatible
+account, Marinara can test it through chat or model-discovery
+endpoints that an image-only API does not implement. That is a
+possible compatibility quirk, not a broken setup - use **Continue
+anyway** to finish creating the connection, add `MiniMax-H3-Image` as
+in step 4, and confirm it with **Test image** (step 5), which
+exercises the endpoint actually used for image generation.
 
 ### Reference images are not supported through this connection
 
