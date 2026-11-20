@@ -205,6 +205,47 @@ resident at a time, so a chat model and an embedding model unload each
 other. For slow local backends, raise `EMBEDDING_TIMEOUT_MS` (default
 300000 ms) in `.env`.
 
+## Image generation with MiniMax-H3-Image
+
+Image generation runs against the native MiniMax API, without a proxy
+stack (the repository's minimax-openai-image-proxy targets the older
+`image-01` model): MiniMax serves `MiniMax-H3-Image` behind an
+OpenAI-compatible images endpoint at `https://api.minimax.io/v1`
+([image generation guide](https://platform.minimax.io/docs/guides/image-generation)).
+
+1. Create an API key in the [MiniMax platform](https://platform.minimax.io)
+   under API Keys. The key belongs in Marinara's connection settings
+   only - never in compose files or `.env`.
+2. In Marinara, open **Connections**, click **Add**, and create an
+   account under the **Images & video** section as a generic
+   **OpenAI-compatible** service (the workflow is documented in the
+   upstream [image provider guide](https://github.com/Pasta-Devs/Marinara-Engine/blob/main/docs/media/image-providers.md)).
+3. Set the account address to `https://api.minimax.io/v1` and paste the
+   API key.
+4. Add an image model to the account and type the model ID
+   `MiniMax-H3-Image` (`MiniMax-H3-Image-Highspeed` is a faster variant
+   with the same parameters and limits).
+5. Open the image model and click **Test image** - it makes a real
+   picture and can use credit.
+6. Set the **Images** job under **Defaults** at the top of the
+   Connections panel to make it the app-wide picture model. The
+   [Illustrator agent](https://github.com/Pasta-Devs/Marinara-Engine/blob/main/docs/media/illustrator-agent.md)
+   uses the same default, or can be given its own image model on its
+   **Open Setup** screen.
+
+### Reference images are not supported through this connection
+
+MiniMax-H3-Image itself accepts 1-16 reference images for image
+editing, but Marinara's OpenAI-compatible image handler only routes
+reference-image editing to GPT Image models (`gpt-image-1`, `1.5`,
+`2`); every other model gets a plain text-to-image
+`/images/generations` request and any reference images are dropped.
+Leaving **Send Avatar References** on for the Illustrator therefore
+does not make avatar references work with MiniMax: standard
+text-to-image generation works, sending NPC/character avatar references
+to MiniMax-H3-Image does not. This is a Marinara integration
+limitation, not a MiniMax one.
+
 ## Data and backups
 
 All state is file-native JSON under `DATA_DIR` (`/app/data`,
@@ -290,3 +331,6 @@ and full images.
 - [Github](https://github.com/Pasta-Devs/Marinara-Engine)
 - [Docker installation guide](https://github.com/Pasta-Devs/Marinara-Engine/blob/main/docs/installation/containers.md)
 - [Memory documentation](https://github.com/Pasta-Devs/Marinara-Engine/blob/main/docs/agents/memory.md)
+- [Lorebook semantic search guide](https://github.com/Pasta-Devs/Marinara-Engine/blob/main/docs/lorebooks/semantic-search.md)
+- [Image provider setup](https://github.com/Pasta-Devs/Marinara-Engine/blob/main/docs/media/image-providers.md)
+- [MiniMax image generation API guide](https://platform.minimax.io/docs/guides/image-generation)
