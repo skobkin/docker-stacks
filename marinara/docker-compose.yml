@@ -21,15 +21,8 @@ services:
       TZ: "${TZ:-UTC}"
     volumes:
       - "${HOST_DATA_DIR:-./data}:/app/data"
-    healthcheck:
-      # GET /api/health is the documented passwordless uptime endpoint
-      # (REMOTE_ACCESS.md); Node is guaranteed in the image, unlike curl
-      # or wget.
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:7860/api/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+    # No healthcheck here: it is variant-specific and defined per variant in
+    # compose.features.yml (extends gives the extending service precedence).
     restart: unless-stopped
     logging:
       driver: "json-file"

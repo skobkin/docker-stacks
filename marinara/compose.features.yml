@@ -2,11 +2,31 @@ services:
   default:
     ports:
       - "${BIND_ADDRESS:-127.0.0.1}:${BIND_PORT:-7860}:7860/tcp"
+    healthcheck:
+      # GET /api/health is the documented passwordless uptime endpoint
+      # (REMOTE_ACCESS.md); Node is guaranteed in the image, unlike curl
+      # or wget. Each variant defines its own healthcheck: extends gives
+      # this file's services precedence over the base service, so this is
+      # also the place to vary it per variant.
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:7860/api/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   traefik:
     networks:
       - ai-tools
       - traefik
+    environment:
+      # Compose interpolation processes every service in the file, so a
+      # variant-conditional ${VAR:?} requirement is impossible here without
+      # breaking the default variant. Required-setting validation therefore
+      # lives in the traefik-scoped healthcheck below. TRAEFIK_HOST is
+      # mirrored into the container env (not a secret, the app ignores it)
+      # so the healthcheck sees the same value the router rule is built
+      # from, regardless of whether it was set in .env or the shell.
+      TRAEFIK_HOST: "${TRAEFIK_HOST:-}"
     labels:
       traefik.enable: "true"
       traefik.docker.network: "${TRAEFIK_NETWORK:-traefik}"
@@ -15,3 +35,16 @@ services:
       traefik.http.routers.marinara.middlewares: "${TRAEFIK_ACCESS_POLICY:-default-access@file}"
       traefik.http.routers.marinara.service: marinara
       traefik.http.services.marinara.loadbalancer.server.port: "${TRAEFIK_SERVICE_PORT:-7860}"
+    healthcheck:
+      # Default-variant healthcheck plus a guard for the settings this
+      # variant requires. Missing or empty values are reported by name
+      # only (never by value) in the health log and turn the container
+      # unhealthy, so `docker compose up -d --wait` fails instead of
+      # leaving a broken deployment behind. The auth settings reach the
+      # container through env_file; TRAEFIK_HOST through the environment
+      # mirror above.
+      test: ["CMD", "node", "-e", "const required = ['TRAEFIK_HOST', 'BASIC_AUTH_USER', 'BASIC_AUTH_PASS', 'ADMIN_SECRET', 'TRUSTED_HOSTS', 'CSRF_TRUSTED_ORIGINS'];const missing = required.filter((name) => !process.env[name]);if (missing.length) {console.error('traefik variant: missing or empty required settings: ' + missing.join(', '));process.exit(1);}fetch('http://127.0.0.1:7860/api/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1));"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s

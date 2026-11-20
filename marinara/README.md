@@ -34,6 +34,13 @@ credentials configured, the app accepts localhost connections only.
 4. Open `https://<TRAEFIK_HOST>` (or `http://127.0.0.1:7860` on the
    localhost `default` variant) and add a connection as described below.
 
+Until the settings from step 2 exist, the Traefik variant reports
+`unhealthy` on purpose: the container healthcheck validates them and
+names the missing variables (never their values) in its health log, so
+`docker compose up -d --wait` fails instead of silently leaving a
+locked, unreachable deployment behind. The standalone `default` variant
+performs no such validation.
+
 To run without Traefik instead, set `COMPOSE_VARIANT=default` in `.env`
 and keep the port localhost-bound while no password is set.
 
