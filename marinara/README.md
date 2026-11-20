@@ -161,21 +161,49 @@ llama-swap auth is disabled by default, so any placeholder API key (for
 example `none`) works; if it runs with its optional `API_KEY` enabled,
 use the same key for the Marinara connection.
 
+Embedding models are configured separately on a connection - the
+shipped llama-swap configuration includes none. See
+[Embeddings and semantic search](#embeddings-and-semantic-search).
+
 ## Embeddings and semantic search
 
-On the lite image, Lorebook semantic search works but needs a connection
-that provides an embedding model; Memory Recall is not available. On the
-full image, Memory Recall embeddings can come from an OpenAI-compatible
-endpoint: set the per-connection "Embedding Model" and "Embedding
-Endpoint URL" options on an OpenAI-compatible connection.
+Embeddings power lorebook semantic search and, on the full image,
+Memory Recall. They are configured per connection (see the upstream
+[semantic search guide](https://github.com/Pasta-Devs/Marinara-Engine/blob/main/docs/lorebooks/semantic-search.md)):
 
-The llama-swap stack currently ships no embedding model. To keep
-embeddings local, add a small GGUF embedding model to the llama-swap
-configuration and point Marinara at it, or configure an external
-embedding provider. Note that with the shipped llama-swap configuration
-only one model is resident at a time, so a chat model and an embedding
-model unload each other. For slow local backends, raise
-`EMBEDDING_TIMEOUT_MS` (default 300000 ms) in `.env`.
+1. Open a connection's model editor and find its **Semantic search
+   (embeddings)** section.
+2. Set **Embedding Model** to a model ID the service serves. The
+   repository's llama-swap configuration ships no embedding model, so
+   for that stack this is `<your-embedding-model-id>`: add such a model
+   to `llama-swap/config/config.yaml.dist` yourself first. Alternatively
+   configure a separate external embedding provider.
+3. Optionally override where embedding requests go via **Embedding
+   endpoint URL**, or borrow another account with **Embedding
+   provider**. **Test embedding** verifies the setup before you
+   vectorize anything.
+4. To make one source the default for every connection that sets none,
+   choose it under **Connections → Defaults → Embeddings**; a
+   connection's own setting still wins, and the built-in local fallback
+   entry exists only on the full image.
+
+Semantic-search embeddings and Memory Recall availability are separate
+things: lorebook semantic search works on the lite image with
+connection embeddings, while Memory Recall requires the full image's
+local embedding model and stays off on lite regardless of the
+embedding source.
+
+Stored vectors belong to the embedding model that produced them. After
+switching embedding models, re-vectorize the affected lorebooks and
+memories (**Re-vectorize all**) so every vector matches again:
+mismatching entries are skipped in semantic matching without an error,
+and Marinara refuses a partial re-vectorize when the vector dimensions
+change.
+
+Note that with the shipped llama-swap configuration only one model is
+resident at a time, so a chat model and an embedding model unload each
+other. For slow local backends, raise `EMBEDDING_TIMEOUT_MS` (default
+300000 ms) in `.env`.
 
 ## Data and backups
 
