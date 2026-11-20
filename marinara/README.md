@@ -6,9 +6,11 @@ providers such as the repository's [llama-swap](../llama-swap/README.md)
 stack, stores all state as plain JSON files under `./data`, and needs no
 external database.
 
-The stack defaults to the `lite` image, which omits the bundled local
-models (see [Image variants](#image-variants)); everything else works
-with external providers.
+The stack defaults to the full image (`IMAGE_TAG=latest`), chosen for
+the application features it unlocks - built-in Memory Recall in
+particular - with the bundled local model kept dormant and every model
+role served by external providers (see
+[Image variants](#image-variants)).
 
 ## Prerequisites
 
@@ -56,8 +58,8 @@ The same image repository publishes a full and a lite line:
 
 | Tag(s)                                | Contents                                                                                                          |
 |---------------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| `latest`, pinned `X.Y.Z` (e.g. `2.5.2`) | Full image, recommended stable. Includes the local Gemma model, local embeddings, Memory Recall, and local Whisper. |
-| `lite` (default), pinned `X.Y.Z-lite`  | Same application without the bundled local models. Works with external providers.                                  |
+| `latest` (default), pinned `X.Y.Z` (e.g. `2.5.2`) | Full image, recommended stable. Includes the local Gemma model, local embeddings, Memory Recall, and local Whisper. |
+| `lite`, pinned `X.Y.Z-lite`  | Same application without the bundled local models. Works with external providers, but see [Choosing between lite and full](#choosing-between-lite-and-full). |
 
 The moving `latest`/`lite` tags always point at the current stable
 release. Never pin anything in the `2.0.9` - `2.3.3` range: those
@@ -115,14 +117,14 @@ history window the way Advanced Memory Recall does. Its vault, drafts
 and settings are exported through the Memory Settings backup controls
 and survive uninstall.
 
-The default `IMAGE_TAG=lite` tracks the current stable release of the
-lite line. Switching between the lines is a one-line change in `.env`:
+The default `IMAGE_TAG=latest` tracks the current stable release of the
+full line. Switching between the lines is a one-line change in `.env`:
 
 ```shell
-# lite (default)
-IMAGE_TAG=lite
-# full image, rolling stable - enables Memory Recall
-#IMAGE_TAG=latest
+# full image, rolling stable (default) - enables Memory Recall
+IMAGE_TAG=latest
+# lite: smaller image, hard-disables built-in Memory Recall
+#IMAGE_TAG=lite
 # pinned alternatives
 #IMAGE_TAG=2.5.2
 #IMAGE_TAG=2.5.2-lite
