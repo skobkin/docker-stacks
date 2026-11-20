@@ -85,16 +85,25 @@ Full supports the same external services and additionally carries the
 optional built-in components: the bundled local Gemma chat model
 (opt-in per chat through **Model for this chat** - nothing forces it
 as the chat model), the local embedding model that Memory Recall
-requires, and local Whisper voice input.
+requires, and local Whisper voice input. See
+[Recommended setup: Full with external inference](#recommended-setup-full-with-external-inference)
+for the recommended way of running Full with every model role delegated
+to llama-swap.
 
 ### Choosing between lite and full
 
-For long-running character roleplay, stay on lite when chat and
-embeddings come from external services and memories are handled by the
-Long-Term Memory package (below) or are not wanted; it is a much
-smaller download. Choose the full image for built-in Memory Recall (it
-requires the local embedding model), the offline built-in model as a
-fallback, or local Whisper dictation.
+`lite` is the choice when minimizing image size and native dependencies
+matters most. The trade-off: it hard-disables built-in Memory Recall -
+the section does not exist on lite, and no external embedding source
+brings it back (upstream removes it together with the local embedding
+model, even though on the full image Memory Recall happily runs on
+connection embeddings). Full preserves the roleplay memory features
+while all LLM and embedding inference can still be handled externally
+(see
+[Recommended setup: Full with external inference](#recommended-setup-full-with-external-inference)),
+which is why it is the default here. The optional Long-Term Memory
+package (below) is not a feature-equivalent replacement for the
+built-in memory features.
 
 ### The optional Long-Term Memory package
 
@@ -133,6 +142,51 @@ IMAGE_TAG=latest
 The `staging` tag tracks unstable builds and must not share a data
 directory with a stable deployment; point `HOST_DATA_DIR` at a separate
 directory when testing staging.
+
+## Recommended setup: Full with external inference
+
+On a server with an AMD GPU and an existing llama-swap deployment, run
+the Full image and delegate every model role to llama-swap. The GPU
+belongs to llama-swap: this stack deliberately passes no GPU devices
+(`/dev/dri`, `/dev/kfd`, or anything else) to the Marinara container -
+do not add them. Full is selected for its additional application
+features, especially Advanced Memory - not for its built-in inference
+runtime. The bundled runtime and the local Gemma model do not need to
+be installed, downloaded, or started: Advanced Memory works entirely on
+external providers.
+
+- **Chat / roleplay**: a local LLM through the llama-swap connection
+  (see [Connecting to llama-swap](#connecting-to-llama-swap)).
+- **Agent / helper models**: smaller llama-swap models, selected in
+  Marinara for the agents and helper jobs doing background work.
+- **Embeddings**: an embedding model served by llama-swap, selected
+  under **Connections → Defaults → Embeddings** (see
+  [Embeddings and semantic search](#embeddings-and-semantic-search));
+  llama-swap can serve embedding models on CPU without any change to
+  its model loading configuration.
+- **Decision model**: optional - point the **Decision** row under
+  **Connections → Jobs → Behind the scenes** at a small llama-swap
+  model, or leave it on **None** (the default).
+- **Memory**: with the Full image, built-in Memory Recall and Advanced
+  Memory Recall are available and work over the configured external
+  embedding source.
+- **Built-in Marinara model**: do not download or enable it (below).
+
+Keeping the built-in inference inactive: never download the Local Model
+(the Gemma card in the Connections panel) and never use **Use local
+model for all tracker agents**. The card's two switches - **Use for
+tracker agents (roleplay)** and **Use for game scene analysis** - decide
+whether Marinara keeps the local runtime running, and they appear only
+after a model has been downloaded, so with no model downloaded the
+runtime never starts on its own. (If a model was ever downloaded, turn
+both switches off - **Use for game scene analysis** ships enabled.)
+Installing the runtime is additionally a protected action on Docker
+installs - it needs an `ADMIN_SECRET` entry or
+`SIDECAR_RUNTIME_INSTALL_ENABLED=true` - so the built-in model stays
+dormant unless deliberately enabled. Point the background jobs at
+external providers instead: pick llama-swap models for agents and
+helpers in the Defaults section of the Connections panel, and never
+select **Local Model (sidecar)** in any model or embedding dropdown.
 
 ## Connecting to llama-swap
 
@@ -202,10 +256,11 @@ mismatching entries are skipped in semantic matching without an error,
 and Marinara refuses a partial re-vectorize when the vector dimensions
 change.
 
-Note that with the shipped llama-swap configuration only one model is
-resident at a time, so a chat model and an embedding model unload each
-other. For slow local backends, raise `EMBEDDING_TIMEOUT_MS` (default
-300000 ms) in `.env`.
+Serving an embedding model through llama-swap needs nothing beyond
+listing the model in its config; how llama-swap loads, keeps resident,
+and swaps models is its own concern (see the
+[llama-swap README](../llama-swap/README.md)). For slow embedding
+backends, raise `EMBEDDING_TIMEOUT_MS` (default 300000 ms) in `.env`.
 
 ## Image generation with MiniMax-H3-Image
 
