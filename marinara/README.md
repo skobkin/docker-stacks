@@ -49,8 +49,13 @@ The same image repository publishes a full and a lite line:
 
 | Tag(s)                                | Contents                                                                                                          |
 |---------------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| `latest`, pinned `X.Y.Z` (e.g. `2.4.4`) | Full image, recommended stable. Includes the local Gemma model, local embeddings, Memory Recall, and local Whisper. |
+| `latest`, pinned `X.Y.Z` (e.g. `2.5.2`) | Full image, recommended stable. Includes the local Gemma model, local embeddings, Memory Recall, and local Whisper. |
 | `lite` (default), pinned `X.Y.Z-lite`  | Same application without the bundled local models. Works with external providers.                                  |
+
+The moving `latest`/`lite` tags always point at the current stable
+release. Never pin anything in the `2.0.9` - `2.3.3` range: those
+releases were withdrawn upstream for a security issue and their image
+artifacts were removed.
 
 The default `IMAGE_TAG=lite` tracks the current stable release of the
 lite line. Memory Recall (per-chat semantic search over chat history)
@@ -62,8 +67,8 @@ IMAGE_TAG=lite
 # full image, rolling stable - enables Memory Recall
 #IMAGE_TAG=latest
 # pinned alternatives
-#IMAGE_TAG=2.4.4
-#IMAGE_TAG=2.4.4-lite
+#IMAGE_TAG=2.5.2
+#IMAGE_TAG=2.5.2-lite
 ```
 
 The `staging` tag tracks unstable builds and must not share a data
@@ -124,14 +129,25 @@ copy them elsewhere for real protection. Back up the whole data
 directory together with `.env`; it includes the auto-generated
 `.encryption-key`.
 
+Version changes (updates and switches between the lite and full images)
+can apply one-way storage-format migrations: once a newer release has
+opened the data directory, older releases may no longer be able to read
+it (the v2.5.2 migration is one-way, and v2.5.1 and older cannot open
+the data afterwards). Always back up `./data` before changing versions.
+
 `MARINARA_SKIP_DATA_CHOWN=true` is available in `.env` as an escape
 hatch when the startup ownership repair must be skipped.
 
 ## Authentication and Traefik exposure
 
-By default Marinara runs localhost-only with no password. Before any
-non-localhost exposure, uncomment and set all three in `.env` (they
-reach the container via `env_file`):
+Since v2.4.0 Marinara requires authentication for traffic arriving
+through a reverse proxy (`REQUIRE_AUTH_FOR_DOCKER_PROXY=true` upstream
+default), and newer releases additionally classify tunneled and
+container-name traffic as remote. The Traefik variant therefore stays
+locked until the credentials below are set; without them the app
+accepts localhost connections only.
+
+Set all three in `.env` (they reach the container via `env_file`):
 
 ```shell
 BASIC_AUTH_USER=replace-with-username
@@ -139,7 +155,11 @@ BASIC_AUTH_PASS=replace-with-generated-secret
 ADMIN_SECRET=replace-with-generated-secret
 ```
 
-Generate secrets with `openssl rand -hex 32`.
+Generate secrets with `openssl rand -hex 32`. On Docker installs
+`ADMIN_SECRET` is required for privileged actions (backups, data
+clearing, updates, runtime install). Since v2.5.2 browsers get an
+in-app sign-in page instead of the native Basic Auth dialog; Basic
+Auth headers keep working for scripts and API clients.
 
 For the default Traefik variant, configure `TRAEFIK_HOST` (plus the other
 `TRAEFIK_*` variables when deviating from the defaults). Reverse-proxy
@@ -157,6 +177,11 @@ common [Traefik usage guide](../_docs/traefik.md) and
 [network setup](../_docs/traefik_network.md).
 
 ## Updating
+
+Back up `./data` first (see
+[Data and backups](#data-and-backups)): releases can apply one-way
+storage-format migrations, and a release that already migrated the
+data cannot be rolled back.
 
 ```shell
 docker compose pull
